@@ -1,0 +1,84 @@
+{
+  "summary": {
+    "products": 12,
+    "inStock": 10,
+    "lowStock": 2,
+    "outOfStock": 1,
+    "dealers": 4,
+    "enquiries": 5,
+    "pendingOrders": 3,
+    "orderValue": 126450
+  },
+  "enquiries": [
+    {
+      "number": "ENQ-2026-031",
+      "date": "22 Oct 2026",
+      "dealer": "Shree Balaji Auto Parts",
+      "items": 2,
+      "amount": 13880,
+      "status": "Under Review"
+    },
+    {
+      "number": "ENQ-2026-030",
+      "date": "21 Oct 2026",
+      "dealer": "Highway Motors",
+      "items": 4,
+      "amount": 42600,
+      "status": "New"
+    },
+    {
+      "number": "ENQ-2026-029",
+      "date": "20 Oct 2026",
+      "dealer": "Central Truck Spares",
+      "items": 1,
+      "amount": 13250,
+      "status": "Approved"
+    },
+    {
+      "number": "ENQ-2026-028",
+      "date": "19 Oct 2026",
+      "dealer": "Shree Balaji Auto Parts",
+      "items": 1,
+      "amount": 7840,
+      "status": "Converted"
+    }
+  ],
+  "dealers": [
+    {
+      "code": "DEMO001",
+      "name": "Shree Balaji Auto Parts",
+      "city": "Raipur",
+      "salesperson": "Sales North",
+      "credit": 250000,
+      "outstanding": 87500,
+      "status": "Active"
+    },
+    {
+      "code": "DEMO002",
+      "name": "Highway Motors",
+      "city": "Durg",
+      "salesperson": "Sales West",
+      "credit": 400000,
+      "outstanding": 164200,
+      "status": "Active"
+    },
+    {
+      "code": "DEMO003",
+      "name": "Central Truck Spares",
+      "city": "Bilaspur",
+      "salesperson": "Sales North",
+      "credit": 300000,
+      "outstanding": 42000,
+      "status": "Active"
+    },
+    {
+      "code": "DEMO004",
+      "name": "Maa Bamleshwari Automobiles",
+      "city": "Rajnandgaon",
+      "salesperson": "Sales West",
+      "credit": 175000,
+      "outstanding": 128500,
+      "status": "On Hold"
+    }
+  ]
+}

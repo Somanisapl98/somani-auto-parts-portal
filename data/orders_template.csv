@@ -1,0 +1,5 @@
+﻿Order Number,Order Date,Dealer Code,Part Number,Quantity,Unit Price (INR),Order Status,Dispatch Status,Expected Date,Remarks
+ORD-2026-1001,2026-10-18,DEMO001,SAPL-BRK-1001,4,2450,Approved,Dispatch Pending,2026-10-24,Demo order
+ORD-2026-1002,2026-10-19,DEMO002,SAPL-FLT-2042,12,680,Confirmed,Packed,2026-10-23,Demo order
+ORD-2026-1003,2026-10-20,DEMO003,SAPL-CLT-3110,3,4850,Pending Approval,Not Started,2026-10-27,Demo order
+ORD-2026-1004,2026-10-21,DEMO001,SAPL-SUS-6014,2,3920,Dispatched,In Transit,2026-10-22,Demo order

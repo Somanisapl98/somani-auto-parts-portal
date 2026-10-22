@@ -1,0 +1,72 @@
+{
+  "dealer": {
+    "code": "DEMO001",
+    "name": "Shree Balaji Auto Parts",
+    "city": "Raipur, Chhattisgarh",
+    "salesperson": "Sales North",
+    "creditLimit": 250000,
+    "outstanding": 87500,
+    "availableCredit": 162500,
+    "overdue": 23000
+  },
+  "orders": [
+    {
+      "number": "ORD-2026-1004",
+      "date": "21 Oct 2026",
+      "amount": 7840,
+      "status": "In Transit",
+      "items": 2,
+      "eta": "22 Oct 2026"
+    },
+    {
+      "number": "ORD-2026-1001",
+      "date": "18 Oct 2026",
+      "amount": 9800,
+      "status": "Dispatch Pending",
+      "items": 4,
+      "eta": "24 Oct 2026"
+    },
+    {
+      "number": "ORD-2026-0988",
+      "date": "14 Oct 2026",
+      "amount": 16320,
+      "status": "Delivered",
+      "items": 9,
+      "eta": "19 Oct 2026"
+    },
+    {
+      "number": "ORD-2026-0976",
+      "date": "10 Oct 2026",
+      "amount": 6250,
+      "status": "Delivered",
+      "items": 5,
+      "eta": "15 Oct 2026"
+    }
+  ],
+  "invoices": [
+    {
+      "number": "INV-2026-4421",
+      "date": "19 Oct 2026",
+      "due": "18 Nov 2026",
+      "amount": 35600,
+      "balance": 35600,
+      "status": "Pending"
+    },
+    {
+      "number": "INV-2026-4388",
+      "date": "12 Oct 2026",
+      "due": "11 Nov 2026",
+      "amount": 28900,
+      "balance": 28900,
+      "status": "Pending"
+    },
+    {
+      "number": "INV-2026-4312",
+      "date": "03 Oct 2026",
+      "due": "02 Nov 2026",
+      "amount": 23000,
+      "balance": 23000,
+      "status": "Due Soon"
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+﻿Part Number,Part Name,Category,Brand,Vehicle Model,Unit,Product Group,MRP (INR),Dealer Price (INR),Available Stock,Reorder Level,Warehouse Location,Image File,Status,Remarks
+SAPL-BRK-1001,Brake Pad Set,Brakes,Somani Select,Tata 407 / LCV,Set,Brake System,2850,2450,18,5,Rack A-01,brake-pad.jpg,Active,Sample data
+SAPL-FLT-2042,Engine Oil Filter,Filters,Genuine Parts,Commercial Vehicle,Nos,Engine,820,680,54,12,Rack B-03,oil-filter.jpg,Active,Sample data
+SAPL-CLT-3110,Clutch Plate,Clutch,Somani Select,Heavy Commercial Vehicle,Nos,Transmission,5600,4850,12,4,Rack C-02,clutch-plate.jpg,Active,Sample data
+SAPL-BRG-4025,Wheel Bearing,Bearings,Premium Line,Light Commercial Vehicle,Nos,Wheel Assembly,2100,1780,7,5,Rack D-07,wheel-bearing.jpg,Active,Sample data
+SAPL-ELC-5088,Headlamp Assembly,Electrical,Genuine Parts,Commercial Vehicle,Nos,Electrical,3900,3250,0,3,Rack E-04,headlamp.jpg,Active,Sample data
+SAPL-SUS-6014,Shock Absorber,Suspension,Premium Line,Heavy Commercial Vehicle,Nos,Suspension,4500,3920,19,5,Rack F-02,shock-absorber.jpg,Active,Sample data
+SAPL-BLT-7017,Fan Belt,Engine,Genuine Parts,Light Commercial Vehicle,Nos,Engine,1050,890,35,10,Rack B-09,fan-belt.jpg,Active,Sample data
+SAPL-AIR-8021,Air Filter Element,Filters,Genuine Parts,Heavy Commercial Vehicle,Nos,Engine,1480,1250,22,6,Rack B-05,air-filter.jpg,Active,Sample data
+SAPL-BAT-9012,Commercial Battery 150Ah,Electrical,PowerDrive,Heavy Commercial Vehicle,Nos,Electrical,14800,13250,9,3,Floor G-01,battery.jpg,Active,Sample data
+SAPL-LUB-1015,Heavy Duty Engine Oil 15W40,Lubricants,DriveMax,Diesel Commercial Vehicle,20 L Pail,Lubrication,7200,6650,26,8,Rack H-01,engine-oil.jpg,Active,Sample data
+SAPL-STR-1118,Tie Rod End,Steering,Somani Select,LCV / MCV,Nos,Steering,1850,1575,15,5,Rack J-04,tie-rod.jpg,Active,Sample data
+SAPL-FUE-1230,Fuel Filter Assembly,Filters,Genuine Parts,Commercial Vehicle,Nos,Fuel System,2350,1990,31,8,Rack B-08,fuel-filter.jpg,Active,Sample data

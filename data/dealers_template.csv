@@ -1,0 +1,5 @@
+﻿Dealer Code,Dealer Name,City,State,Mobile,Email,Salesperson,Credit Limit (INR),Outstanding (INR),Status
+DEMO001,Shree Balaji Auto Parts,Raipur,Chhattisgarh,9000000001,dealer1@example.com,Sales North,250000,87500,Active
+DEMO002,Highway Motors,Durg,Chhattisgarh,9000000002,dealer2@example.com,Sales West,400000,164200,Active
+DEMO003,Central Truck Spares,Bilaspur,Chhattisgarh,9000000003,dealer3@example.com,Sales North,300000,42000,Active
+DEMO004,Maa Bamleshwari Automobiles,Rajnandgaon,Chhattisgarh,9000000004,dealer4@example.com,Sales West,175000,128500,On Hold

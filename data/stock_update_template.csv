@@ -1,0 +1,13 @@
+﻿Part Number,Available Stock,Reserved Stock,Free Stock,Warehouse,Batch/Lot,Last Updated,Updated By,Remarks
+SAPL-BRK-1001,18,2,,Rack A-01,DEMO-BATCH,2026-10-22,Demo Admin,Sample stock
+SAPL-FLT-2042,54,2,,Rack B-03,DEMO-BATCH,2026-10-22,Demo Admin,Sample stock
+SAPL-CLT-3110,12,2,,Rack C-02,DEMO-BATCH,2026-10-22,Demo Admin,Sample stock
+SAPL-BRG-4025,7,2,,Rack D-07,DEMO-BATCH,2026-10-22,Demo Admin,Sample stock
+SAPL-ELC-5088,0,0,,Rack E-04,DEMO-BATCH,2026-10-22,Demo Admin,Sample stock
+SAPL-SUS-6014,19,2,,Rack F-02,DEMO-BATCH,2026-10-22,Demo Admin,Sample stock
+SAPL-BLT-7017,35,2,,Rack B-09,DEMO-BATCH,2026-10-22,Demo Admin,Sample stock
+SAPL-AIR-8021,22,2,,Rack B-05,DEMO-BATCH,2026-10-22,Demo Admin,Sample stock
+SAPL-BAT-9012,9,2,,Floor G-01,DEMO-BATCH,2026-10-22,Demo Admin,Sample stock
+SAPL-LUB-1015,26,2,,Rack H-01,DEMO-BATCH,2026-10-22,Demo Admin,Sample stock
+SAPL-STR-1118,15,2,,Rack J-04,DEMO-BATCH,2026-10-22,Demo Admin,Sample stock
+SAPL-FUE-1230,31,2,,Rack B-08,DEMO-BATCH,2026-10-22,Demo Admin,Sample stock
