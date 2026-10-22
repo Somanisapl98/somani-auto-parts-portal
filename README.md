@@ -1,19 +1,14 @@
-# Somani Auto Portal - Admin Dashboard Edition
+# Somani Auto Portal - Hierarchy Edition
 
-Single-folder replacement build containing the sunlight parts portal, dealer dashboard and admin dashboard.
+Single-folder build with PG1-PG6 -> CV Product Hierarchy -> Part Number catalogue navigation, search suggestions, dealer dashboard and admin dashboard.
+
+The catalogue was derived from the uploaded internal workbook using only PG Group, CV Product Hierarchy, Part Number and Part Description. Invoice, dealer transaction, quantity and amount fields were intentionally excluded from the public site.
 
 ## Start
-```cmd
-python -m http.server 8080
-```
-Open `http://localhost:8080`.
+`python -m http.server 8080`
 
 ## Dealer login
-- Dealer Code: `DEMO001`
-- Password: `demo123`
+DEMO001 / demo123
 
 ## Admin login
-- Username: `admin`
-- Password: `admin123`
-
-All data and all changes are demonstration-only. Product edits are stored in browser local storage, not a server database.
+admin / admin123
