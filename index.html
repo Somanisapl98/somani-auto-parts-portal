@@ -1,14 +1,417 @@
-<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#02050a"><title>Somani Auto | Sunlight Parts Portal</title><link rel="stylesheet" href="styles.css?v=20261022-stableascii1"></head><body>
-<div class="noise"></div><div class="cursorGlow" id="cursorGlow"></div>
-<div class="demo"><span></span> CONCEPT EXPERIENCE &bull; DUMMY INVENTORY AND PRICING</div>
-<header><a class="brand" href="#"><img src="assets/images/somani-logo.png" alt="Somani"><div><b>SOMANI AUTO</b><small>PARTS INTELLIGENCE</small></div></a><nav><a href="#catalog">CATALOGUE</a><a href="#technology">PLATFORM</a><a href="#contact">CONTACT</a><button id="adminBtn" class="ghost">ADMIN</button><button id="loginBtn" class="ghost">DEALER ACCESS</button><button id="cartBtn" class="primary">ENQUIRY <span id="cartCount">0</span></button></nav></header>
-<main><section class="hero"><div class="gridLines"></div><div class="heroCopy"><div class="kicker"><i></i>ENGINEERED FOR BUSINESS</div><h1>Parts procurement,<br><em>reimagined.</em></h1><p>A cinematic digital catalogue for commercial vehicle parts. Discover inventory, compare dealer pricing and build enquiries with precision.</p><div class="actions"><a href="#catalog" class="primary xl">EXPLORE CATALOGUE <b>-&gt;</b></a><button id="talkSales" class="outline xl">TALK TO SALES</button></div><div class="micro"><div><b>01</b><span>VERIFIED<br>PARTS</span></div><div><b>02</b><span>SMART<br>SEARCH</span></div><div><b>03</b><span>FAST<br>ENQUIRY</span></div></div></div>
-<div class="heroVisual" id="heroVisual"><div class="halo h1"></div><div class="halo h2"></div><div class="imageFrame"><img src="assets/images/hero-parts.jpg" alt="Commercial vehicle brake parts"><div class="scan"></div></div><div class="dataCard top"><small>ACTIVE INVENTORY</small><strong>1,000<span>+</span></strong></div><div class="dataCard bottom"><i></i><div><small>SYSTEM STATUS</small><strong>CATALOGUE ONLINE</strong></div></div><div class="axis">X / 08.221 &nbsp; Y / 11.409</div></div></section>
-<section class="ticker"><div>GENUINE PARTS <i>|</i> PRECISION COMPONENTS <i>|</i> DEALER NETWORK <i>|</i> SMART INVENTORY <i>|</i> COMMERCIAL VEHICLES <i>|</i></div></section>
-<section class="metrics"><article><small>CATALOGUE</small><b>12</b><span>DEMO COMPONENTS</span></article><article><small>COVERAGE</small><b>08</b><span>PART CATEGORIES</span></article><article><small>NETWORK</small><b>04</b><span>DEMO DEALERS</span></article><article><small>AVAILABILITY</small><b>24/7</b><span>DIGITAL ACCESS</span></article></section>
-<section id="catalog" class="catalog"><div class="sectionHead"><div><span class="sectionNo">01 / PARTS CATALOGUE</span><h2>Browse by PG, hierarchy<br><em>and part number.</em></h2><p>Select PG1-PG6, then a product hierarchy, or search directly.</p></div><div class="searchWrap"><div class="searchBox"><span>Search</span><div id="search" class="partSearchEditor" contenteditable="true" role="searchbox" aria-label="Search part number or description" aria-autocomplete="list" aria-controls="suggestions" data-placeholder="Search part number or description..."></div></div><div id="suggestions" class="suggestions"></div></div></div><div class="catalogFlow"><div class="flowStep"><b>1</b><span>SELECT PG GROUP</span></div><div id="pgFilters" class="pgFilters"></div><div class="flowStep"><b>2</b><span>SELECT PRODUCT HIERARCHY</span></div><div class="hierarchyRow"><select id="hierarchyFilter"><option value="ALL">All product hierarchies</option></select><button id="clearFilters" class="clearBtn">CLEAR FILTERS</button></div><div id="catalogSummary" class="catalogSummary"></div></div><div id="grid" class="productGrid"></div><div id="pagination" class="pagination"></div></section>
-<section id="technology" class="technology"><div class="techVisual"><img src="assets/images/products/bearing.jpg" alt="Commercial vehicle bearing"><div class="ring r1"></div><div class="ring r2"></div><span>PRECISION / RELIABILITY / PERFORMANCE</span></div><div class="techCopy"><span class="sectionNo">02 / PLATFORM</span><h2>Built for the way modern dealers operate.</h2><div class="feature"><b>01</b><div><h3>Intelligent Discovery</h3><p>Search across part numbers, categories, brands and vehicle applications.</p></div></div><div class="feature"><b>02</b><div><h3>Commercial Control</h3><p>Future-ready dealer pricing, credit position, outstanding and order history.</p></div></div><div class="feature"><b>03</b><div><h3>Real-time Architecture</h3><p>Prepared to connect secure APIs, live inventory and the Somani production database.</p></div></div></div></section>
-<section id="contact" class="contact"><div><span class="sectionNo">03 / CONNECT</span><h2>Ready to move your<br>parts business forward?</h2></div><button id="startEnquiry" class="primary xl">START AN ENQUIRY -&gt;</button></section></main>
-<footer><div class="footerBrand"><img src="assets/images/somani-logo.png" alt="Somani"><p>Somani Auto Pvt. Ltd.<br>Raipur, Chhattisgarh</p></div><p>DEMO CONCEPT &bull; 2026</p></footer>
-<aside id="drawer"><div class="drawerHead"><div><small>YOUR SELECTION</small><h2>Parts Enquiry</h2></div><button id="closeCart">X</button></div><div id="cartItems" class="cartItems"></div><div class="cartFoot"><div><span>DEMO SUBTOTAL</span><b id="subtotal">INR 0</b></div><button id="submit" class="primary xl full">SUBMIT DEMO ENQUIRY</button><small>No real order will be placed.</small></div></aside><div id="overlay"></div>
-<div id="loginModal" class="modal"><div class="modalBox"><button id="closeLogin">X</button><img src="assets/images/somani-logo.png"><span class="sectionNo">DEALER ACCESS</span><h2>Welcome back.</h2><p>Demo credentials: DEMO001 / demo123</p><input id="dealerCode" placeholder="DEALER CODE"><input id="password" type="password" placeholder="PASSWORD"><button id="doLogin" class="primary xl full">ENTER PORTAL</button></div></div><div id="adminModal" class="modal"><div class="modalBox"><button id="closeAdmin">X</button><img src="assets/images/somani-logo.png"><span class="sectionNo">ADMIN ACCESS</span><h2>Control centre.</h2><p>Demo credentials: admin / admin123</p><input id="adminUser" placeholder="USERNAME"><input id="adminPass" type="password" placeholder="PASSWORD"><button id="doAdmin" class="primary xl full">ENTER ADMIN</button></div></div><script src="app.js?v=20261022-stableascii1"></script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#ffffff">
+  <title>Somani Auto Pvt. Ltd. | Parts Management &amp; OCR Portal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=20261120-mpmswhite1">
+</head>
+<body>
+  <!-- Hidden Mobile Rear Camera Inputs -->
+  <input type="file" id="quickCamInput" accept="image/*" capture="environment" hidden>
+  <input type="file" id="adminCamInput" accept="image/*" capture="environment" hidden>
+
+  <!-- MPMS Top Operational Command Bar -->
+  <header class="mpmsHeader">
+    <div class="headerInner">
+      <a class="brand" href="#top" onclick="switchView('catalog');return false;">
+        <img src="assets/images/somani-logo.png" alt="Somani Auto" onerror="this.style.display='none'">
+        <div class="brandMark" aria-hidden="true">SA</div>
+        <div class="brandText">
+          <div class="brandTitle">SOMANI AUTO PVT. LTD. <span class="badgeOrange">PARTS PORTAL</span></div>
+          <small>Commercial Vehicle Spares &amp; Lubricants &bull; Raipur, CG</small>
+        </div>
+      </a>
+
+      <nav class="mainTabs" aria-label="Primary Workspace">
+        <button class="tabBtn active" data-view="catalog" onclick="switchView('catalog')">
+          Parts Catalogue
+        </button>
+        <button class="tabBtn" data-view="admin" onclick="openAdminWorkspace()">
+          Admin Studio &amp; OCR
+        </button>
+        <button class="tabBtn" data-view="enquiries" onclick="openEnquiriesWorkspace()">
+          Enquiries Log
+        </button>
+      </nav>
+
+      <div class="headerActions">
+        <span id="apiStatusPill" class="statusPill checking" title="Azure Function API Status">
+          <i></i><span id="apiStatusText">Connecting API...</span>
+        </span>
+        <button id="dealerAccessBtn" class="btnGhost" onclick="openLoginModal('dealer')">
+          Dealer Login
+        </button>
+        <button id="adminAccessBtn" class="btnGhost" onclick="openLoginModal('admin')">
+          Admin
+        </button>
+        <button id="cartBtn" class="btnPrimary" onclick="openCart()">
+          Enquiry <span id="cartCount" class="pillCount">0</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main id="top" class="pageContainer">
+    <!-- MPMS 4-Card KPI Summary Strip -->
+    <section class="kpiGrid" aria-label="Portal KPIs">
+      <article class="kpiCard">
+        <div class="kpiTop">
+          <span>ACTIVE PARTS CATALOGUE</span>
+          <span class="kpiTag">LIVE SKU</span>
+        </div>
+        <strong id="kpiTotalParts">0</strong>
+        <small id="kpiDataSource">Loading inventory...</small>
+      </article>
+
+      <article class="kpiCard">
+        <div class="kpiTop">
+          <span>PRODUCT GROUPS</span>
+          <span class="kpiTag">PG1 &ndash; PG6</span>
+        </div>
+        <strong id="kpiActivePG">ALL PG</strong>
+        <small id="kpiHierarchyCount">All hierarchies active</small>
+      </article>
+
+      <article class="kpiCard">
+        <div class="kpiTop">
+          <span>AI LABEL SCANNER</span>
+          <span class="kpiTag blue">VISION OCR</span>
+        </div>
+        <strong>Ready</strong>
+        <small>Snap TATA / Eicher box labels via mobile camera</small>
+      </article>
+
+      <article class="kpiCard clickable" onclick="openCart()">
+        <div class="kpiTop">
+          <span>ENQUIRY BASKET</span>
+          <span class="kpiTag orange">QUICK QUOTE</span>
+        </div>
+        <strong id="kpiCartItems">0 Items</strong>
+        <small>Click to review &amp; submit enquiry to Raipur desk</small>
+      </article>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- VIEW 1: PARTS CATALOGUE & CAMERA LABEL SEARCH                       -->
+    <!-- =================================================================== -->
+    <section id="view-catalog" class="workspaceView active">
+      <div class="panelCard">
+        <div class="panelHeader">
+          <div>
+            <span class="eyebrow">01 / PARTS MASTER &amp; DISCOVERY</span>
+            <h1>Commercial Vehicle Parts Catalogue</h1>
+            <p>Filter by PG1&ndash;PG6, product hierarchy, part number, or snap a box sticker with your phone camera.</p>
+          </div>
+          <div class="viewSwitchGroup">
+            <button id="gridModeBtn" class="modeBtn active" onclick="setDisplayMode('grid')">Card Grid</button>
+            <button id="tableModeBtn" class="modeBtn" onclick="setDisplayMode('table')">MPMS Table</button>
+          </div>
+        </div>
+
+        <!-- Search + Mobile Camera Label Scan Bar -->
+        <div class="searchToolbar">
+          <div class="searchWrap">
+            <div class="searchBox">
+              <span class="searchIcon">&#128269;</span>
+              <input
+                id="searchInput"
+                type="search"
+                autocomplete="off"
+                placeholder="Search part number (e.g. 257342100102), description, or brand..."
+                aria-label="Search part number or description"
+              >
+              <button id="clearSearchBtn" class="iconClear" title="Clear search" onclick="clearSearchInput()">&times;</button>
+            </div>
+            <div id="suggestions" class="suggestions"></div>
+          </div>
+
+          <button class="btnCamera" type="button" onclick="triggerQuickCamera()">
+            <span>&#128247;</span> Scan Label (Camera)
+          </button>
+        </div>
+
+        <!-- Live OCR Quick-Scan Result Banner -->
+        <div id="quickOcrBanner" class="ocrBanner hidden">
+          <div class="ocrBannerLeft">
+            <span class="badgeBlue">AI OCR RESULT</span>
+            <div>
+              <strong id="quickOcrTitle">Scanning label...</strong>
+              <p id="quickOcrSub">Extracting part number, brand and MRP via Azure Vision...</p>
+            </div>
+          </div>
+          <div class="ocrBannerActions">
+            <button id="quickOcrUseAdminBtn" class="btnOutline sm hidden" onclick="sendQuickOcrToAdmin()">
+              + Add as New Part
+            </button>
+            <button class="btnGhost sm" onclick="hideQuickOcr()">Dismiss</button>
+          </div>
+        </div>
+
+        <!-- Step 1 & Step 2 MPMS Filter Controls -->
+        <div class="filterBar">
+          <div class="filterGroup">
+            <label class="filterLabel">1. PRODUCT GROUP (PG)</label>
+            <div id="pgFilters" class="pgFilters"></div>
+          </div>
+
+          <div class="filterRowBottom">
+            <div class="hierarchyControl">
+              <label class="filterLabel" for="hierarchyFilter">2. PRODUCT HIERARCHY</label>
+              <select id="hierarchyFilter">
+                <option value="ALL">All product hierarchies</option>
+              </select>
+            </div>
+            <div class="filterMetaActions">
+              <span id="catalogSummary" class="catalogSummary">Loading parts...</span>
+              <button id="clearFilters" class="btnGhost sm">Reset Filters</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Grid or MPMS Table Container -->
+        <div id="grid" class="productGrid"></div>
+        <div id="tableWrap" class="tableWrap hidden"></div>
+        <div id="pagination" class="pagination"></div>
+      </div>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- VIEW 2: ADMIN PART STUDIO (CAMERA CAPTURE + SAS UPLOAD + AI OCR)    -->
+    <!-- =================================================================== -->
+    <section id="view-admin" class="workspaceView hidden">
+      <div class="adminSplitGrid">
+        <!-- Left Column: Camera Capture & AI OCR Scanner -->
+        <div class="panelCard">
+          <div class="panelHeader compact">
+            <div>
+              <span class="eyebrow">STEP 1 / MOBILE CAMERA &amp; OCR</span>
+              <h2>Snap Part &amp; Label Photo</h2>
+              <p>Photos are compressed in-browser (~250 KB) and uploaded directly to Azure Blob Storage.</p>
+            </div>
+          </div>
+
+          <div id="cameraDropzone" class="cameraDropzone" onclick="triggerAdminCamera()">
+            <img id="adminPhotoPreview" class="photoPreview hidden" alt="Captured part preview">
+            <div id="cameraPlaceholder" class="cameraPlaceholder">
+              <div class="camCircle">&#128247;</div>
+              <strong>Tap to Open Rear Camera or Choose Photo</strong>
+              <span>Supports TATA, Eicher, Bosch, Fleetguard &amp; Lubricant labels</span>
+            </div>
+          </div>
+
+          <div id="compressionStats" class="infoStrip hidden"></div>
+
+          <div class="stackActions">
+            <button id="btnAdminCam" type="button" class="btnOutline full" onclick="triggerAdminCamera()">
+              &#128247; Capture / Retake Photo
+            </button>
+            <button id="btnUploadAndOcr" type="button" class="btnPrimary full" disabled onclick="uploadAndScanAdminPhoto()">
+              &#9889; Upload to Azure &amp; Auto-Fill via AI OCR
+            </button>
+          </div>
+
+          <div id="adminOcrStatus" class="statusBox hidden"></div>
+
+          <div id="adminOcrRawWrap" class="rawOcrBox hidden">
+            <label>EXTRACTED LABEL TEXT (AZURE VISION)</label>
+            <pre id="adminOcrRawText"></pre>
+          </div>
+        </div>
+
+        <!-- Right Column: MPMS Part Master Form -->
+        <div class="panelCard">
+          <div class="panelHeader compact">
+            <div>
+              <span class="eyebrow">STEP 2 / PART MASTER RECORD</span>
+              <h2>Save Part to Catalogue Database</h2>
+              <p>Review OCR-extracted fields below and save directly to <code>sapl_parts_db</code>.</p>
+            </div>
+            <button type="button" class="btnGhost sm" onclick="resetAdminForm()">Clear Form</button>
+          </div>
+
+          <form id="partMasterForm" class="mpmsForm" onsubmit="savePartMaster(event)">
+            <div class="formGrid2">
+              <div class="field">
+                <label for="fPartNo">PART NUMBER *</label>
+                <input id="fPartNo" required placeholder="e.g. 257342100102">
+              </div>
+              <div class="field">
+                <label for="fBrand">BRAND / OEM</label>
+                <input id="fBrand" value="TATA / OEM" placeholder="TATA, EICHER, BOSCH...">
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="fName">PART DESCRIPTION *</label>
+              <input id="fName" required placeholder="e.g. Front Brake Drum Assembly">
+            </div>
+
+            <div class="formGrid2">
+              <div class="field">
+                <label for="fPG">PRODUCT GROUP (PG) *</label>
+                <select id="fPG">
+                  <option value="PG1">PG1 &mdash; Engine &amp; Filtration</option>
+                  <option value="PG2">PG2 &mdash; Brake &amp; Clutch</option>
+                  <option value="PG3">PG3 &mdash; Axle, Bearing &amp; Suspension</option>
+                  <option value="PG4">PG4 &mdash; Electrical &amp; Sensors</option>
+                  <option value="PG5">PG5 &mdash; Body, Cabin &amp; Rubber</option>
+                  <option value="PG6">PG6 &mdash; Oils, Lubricants &amp; Coolants</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="fHierarchy">PRODUCT HIERARCHY</label>
+                <input id="fHierarchy" placeholder="e.g. Brake System" list="hierarchyDatalist">
+                <datalist id="hierarchyDatalist"></datalist>
+              </div>
+            </div>
+
+            <div class="formGrid3">
+              <div class="field">
+                <label for="fMrp">MRP (INR)</label>
+                <input id="fMrp" type="number" step="0.01" min="0" value="0">
+              </div>
+              <div class="field">
+                <label for="fDealerPrice">DEALER PRICE (INR)</label>
+                <input id="fDealerPrice" type="number" step="0.01" min="0" value="0">
+              </div>
+              <div class="field">
+                <label for="fStockQty">STOCK QTY</label>
+                <input id="fStockQty" type="number" step="1" min="0" value="1">
+              </div>
+            </div>
+
+            <div class="formGrid2">
+              <div class="field">
+                <label for="fUom">UNIT (UOM)</label>
+                <select id="fUom">
+                  <option value="NOS">NOS</option>
+                  <option value="SET">SET</option>
+                  <option value="LTR">LTR</option>
+                  <option value="KG">KG</option>
+                  <option value="PAIR">PAIR</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="fImageUrl">AZURE PHOTO URL</label>
+                <input id="fImageUrl" readonly placeholder="Auto-filled after Azure upload">
+              </div>
+            </div>
+
+            <input type="hidden" id="fBlobName">
+            <input type="hidden" id="fThumbnailUrl">
+
+            <div class="formSubmitRow">
+              <button id="btnSavePart" type="submit" class="btnPrimary lg full">
+                Save Part to Live Catalogue
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Bottom MPMS Recent Database Parts Table -->
+      <div class="panelCard mt16">
+        <div class="panelHeader compact">
+          <div>
+            <span class="eyebrow">DATABASE RECORDS</span>
+            <h2>Live Catalogue Entries</h2>
+          </div>
+          <button class="btnOutline sm" onclick="loadCatalogueData()">Refresh List</button>
+        </div>
+        <div id="adminPartsTableWrap" class="tableWrap"></div>
+      </div>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- VIEW 3: ENQUIRIES & ORDERS LOG (MPMS OPERATIONAL TABLE)             -->
+    <!-- =================================================================== -->
+    <section id="view-enquiries" class="workspaceView hidden">
+      <div class="panelCard">
+        <div class="panelHeader compact">
+          <div>
+            <span class="eyebrow">03 / DEALER &amp; COUNTER ENQUIRIES</span>
+            <h2>Submitted Parts Enquiries</h2>
+            <p>Live enquiries recorded in <code>sapl_parts_db</code> for Somani Auto Raipur sales desk.</p>
+          </div>
+          <button class="btnOutline sm" onclick="loadEnquiries()">Refresh Enquiries</button>
+        </div>
+        <div id="enquiriesTableWrap" class="tableWrap">
+          <p class="emptyNote">Sign in as Dealer or Admin to load enquiry records.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="mpmsFooter">
+    <div>
+      <strong>Somani Auto Pvt. Ltd.</strong> &bull; Raipur, Chhattisgarh &mdash; Commercial Vehicle Parts Intelligence
+    </div>
+    <div>Azure Cloud Architecture &bull; Central India</div>
+  </footer>
+
+  <!-- Slide-out Enquiry Cart Drawer -->
+  <aside id="drawer" class="cartDrawer" aria-label="Parts Enquiry Basket">
+    <div class="drawerHead">
+      <div>
+        <small>QUOTATION REQUEST</small>
+        <h2>Parts Enquiry Basket</h2>
+      </div>
+      <button id="closeCart" class="closeBtn" onclick="closeAll()">&times;</button>
+    </div>
+
+    <div id="cartItems" class="cartItems"></div>
+
+    <div class="cartFoot">
+      <div class="enquiryContactFields">
+        <input id="enqCompany" placeholder="Dealer / Workshop Name">
+        <div class="formGrid2">
+          <input id="enqName" placeholder="Contact Person">
+          <input id="enqPhone" placeholder="Mobile Number">
+        </div>
+        <input id="enqNotes" placeholder="Vehicle model / urgent remarks (optional)">
+      </div>
+
+      <div class="subtotalRow">
+        <span>SELECTED ITEMS</span>
+        <b id="subtotal">0 NOS</b>
+      </div>
+
+      <button id="submitEnquiryBtn" class="btnPrimary lg full" onclick="submitEnquiry()">
+        Submit Parts Enquiry
+      </button>
+    </div>
+  </aside>
+
+  <div id="overlay" class="overlay" onclick="closeAll()"></div>
+
+  <!-- Dealer / Admin Authentication Modal (Clean, No Exposed Passwords) -->
+  <div id="authModal" class="modal" role="dialog" aria-modal="true">
+    <div class="modalBox">
+      <button class="closeBtn modalClose" onclick="closeAll()">&times;</button>
+      <span id="authEyebrow" class="eyebrow">DEALER ACCESS</span>
+      <h2 id="authTitle">Dealer Portal Sign In</h2>
+      <p id="authSubtitle">Sign in with your Somani Auto credentials to view dealer pricing and track enquiries.</p>
+
+      <form onsubmit="submitLogin(event)">
+        <div class="field">
+          <label id="authIdLabel" for="authIdentifier">DEALER CODE</label>
+          <input id="authIdentifier" required autocomplete="username" placeholder="Enter Dealer Code">
+        </div>
+        <div class="field">
+          <label for="authPassword">PASSWORD</label>
+          <input id="authPassword" type="password" required autocomplete="current-password" placeholder="Enter Password">
+        </div>
+        <div id="authError" class="authError hidden"></div>
+        <button id="authSubmitBtn" type="submit" class="btnPrimary lg full">Sign In</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="app.js?v=20261120-mpmswhite1"></script>
+</body>
+</html>
