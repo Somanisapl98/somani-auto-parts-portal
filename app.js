@@ -1,11 +1,29 @@
 const API_BASE = 'https://func-sapl-parts-api-dev-h6fsevdbe3gfg7cx.centralindia-01.azurewebsites.net/api';
 
+const HERO_4K_SLIDES = [
+  {
+    url: 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&w=2560&q=90',
+    kicker: 'Genuine Commercial Vehicle Spares & Lubricants'
+  },
+  {
+    url: 'https://images.unsplash.com/photo-1519003722824-194d4455a60c?auto=format&fit=crop&w=2560&q=90',
+    kicker: 'TATA Motors • Eicher • Heavy-Duty Fleet Parts'
+  },
+  {
+    url: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=2560&q=90',
+    kicker: 'Somani Auto Pvt. Ltd. • Raipur Wholesale & Dealer Store'
+  }
+];
+
+let currentHeroIdx = 0;
+let activeHeroLayer = 'A';
+
 let products = [];
 let hierarchy = {};
 let cart = JSON.parse(localStorage.getItem('sapl_parts_cart') || '{}');
 let activePG = 'ALL';
 let activeHierarchy = 'ALL';
-let displayMode = 'grid';
+let catalogLayout = 'grid';
 let page = 1;
 const PAGE_SIZE = 24;
 
@@ -17,8 +35,7 @@ let authState = {
 };
 
 let pendingAdminBlob = null;
-let lastQuickOcrData = null;
-let apiOnline = false;
+let parsedExcelParts = [];
 
 const $ = s => document.querySelector(s);
 const $$ = s => document.querySelectorAll(s);
@@ -38,11 +55,77 @@ function esc(s) {
     .replace(/>/g, '&gt;');
 }
 
+function showToast(msg) {
+  const box = $('#toastBox');
+  $('#toastMsg').textContent = msg;
+  box.classList.remove('hidden');
+  box.classList.add('flex');
+  setTimeout(() => {
+    box.classList.add('hidden');
+    box.classList.remove('flex');
+  }, 3400);
+}
+
 // ---------------------------------------------------------------------------
-// Initialization & Live Azure API Connection
+// 4K Hero Banner Engine
+// ---------------------------------------------------------------------------
+function setHeroSlide(idx) {
+  currentHeroIdx = idx % HERO_4K_SLIDES.length;
+  const slide = HERO_4K_SLIDES[currentHeroIdx];
+  const layerA = $('#heroBgLayerA');
+  const layerB = $('#heroBgLayerB');
+  const kicker = $('#heroKicker');
+
+  if (activeHeroLayer === 'A') {
+    layerB.style.backgroundImage = `url('${slide.url}')`;
+    layerB.style.opacity = '1';
+    layerB.style.transform = 'scale(1)';
+    layerA.style.opacity = '0';
+    layerA.style.transform = 'scale(1.04)';
+    activeHeroLayer = 'B';
+  } else {
+    layerA.style.backgroundImage = `url('${slide.url}')`;
+    layerA.style.opacity = '1';
+    layerA.style.transform = 'scale(1)';
+    layerB.style.opacity = '0';
+    layerB.style.transform = 'scale(1.04)';
+    activeHeroLayer = 'A';
+  }
+
+  if (kicker) kicker.textContent = slide.kicker;
+
+  const dots = $('#heroDots');
+  if (dots) {
+    dots.innerHTML = HERO_4K_SLIDES.map(
+      (_, i) => `
+      <button type="button" onclick="setHeroSlide(${i})" aria-label="Slide ${i + 1}"
+        class="h-1.5 rounded-full transition-all cursor-pointer ${
+          i === currentHeroIdx ? 'w-7 bg-brand-orange' : 'w-2 bg-slate-400/60 hover:bg-slate-700'
+        }">
+      </button>`
+    ).join('');
+  }
+}
+
+function initHeroEngine() {
+  HERO_4K_SLIDES.forEach(s => {
+    const img = new Image();
+    img.src = s.url;
+  });
+  const layerA = $('#heroBgLayerA');
+  if (layerA) {
+    layerA.style.backgroundImage = `url('${HERO_4K_SLIDES[0].url}')`;
+    setHeroSlide(0);
+    setInterval(() => setHeroSlide(currentHeroIdx + 1), 6500);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// App Initialization & Live API Connection
 // ---------------------------------------------------------------------------
 document.addEventListener('DOMContentLoaded', () => {
-  updateAuthButtons();
+  initHeroEngine();
+  updateAuthUI();
   updateCart();
   bindEvents();
   checkApiHealth();
@@ -50,23 +133,18 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 async function checkApiHealth() {
-  const pill = $('#apiStatusPill');
-  const txt = $('#apiStatusText');
+  const badge = $('#apiBadge');
+  if (!badge) return;
   try {
     const res = await fetch(`${API_BASE}/health`);
     const data = await res.json();
     if (res.ok && data.ok) {
-      apiOnline = true;
-      pill.className = 'statusPill online';
-      txt.textContent = 'Azure API Online';
+      badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500 shrink-0"></span><span class="text-emerald-700 font-semibold">Live Store Online</span>`;
+      badge.className = 'hidden lg:flex items-center gap-1.5 text-xs bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-full';
       return;
     }
-  } catch (e) {
-    // Fallback mode when Function App code is not deployed yet
-  }
-  apiOnline = false;
-  pill.className = 'statusPill offline';
-  txt.textContent = 'Local Catalogue Mode';
+  } catch (e) {}
+  badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-500 shrink-0"></span><span class="text-amber-700 font-semibold">Catalogue Mode</span>`;
 }
 
 async function loadCatalogueData() {
@@ -74,7 +152,6 @@ async function loadCatalogueData() {
   let fallbackParts = [];
   let fallbackHierarchy = {};
 
-  // 1. Try loading live parts from PostgreSQL via Azure Function App
   try {
     const res = await fetch(`${API_BASE}/parts`);
     if (res.ok) {
@@ -84,10 +161,9 @@ async function loadCatalogueData() {
       }
     }
   } catch (err) {
-    console.warn('Live API /parts unavailable, using local JSON fallback:', err);
+    console.warn('API /parts fallback:', err);
   }
 
-  // 2. Load local JSON catalogue as baseline/fallback
   try {
     const [pRes, hRes] = await Promise.all([
       fetch('data/products.json').then(r => (r.ok ? r.json() : [])),
@@ -95,11 +171,8 @@ async function loadCatalogueData() {
     ]);
     fallbackParts = Array.isArray(pRes) ? pRes : [];
     fallbackHierarchy = hRes || {};
-  } catch (e) {
-    fallbackParts = [];
-  }
+  } catch (e) {}
 
-  // Merge live DB parts on top of fallback parts (deduplicating by partNo)
   const byPartNo = new Map();
   apiParts.forEach(p => byPartNo.set(String(p.partNo).toUpperCase(), { ...p, isLive: true }));
   fallbackParts.forEach(p => {
@@ -111,7 +184,6 @@ async function loadCatalogueData() {
 
   products = Array.from(byPartNo.values());
 
-  // Build dynamic hierarchy map combining JSON + live DB hierarchies
   const mergedHier = {};
   Object.entries(fallbackHierarchy).forEach(([pg, list]) => {
     mergedHier[pg] = new Set(list);
@@ -127,30 +199,41 @@ async function loadCatalogueData() {
     hierarchy[pg] = Array.from(setObj).sort();
   });
 
-  $('#kpiTotalParts').textContent = products.length.toLocaleString('en-IN');
-  $('#kpiDataSource').textContent =
+  $('#kpiTotal').textContent = products.length.toLocaleString('en-IN');
+  $('#kpiSourceText').textContent =
     apiParts.length > 0
-      ? `${apiParts.length} live DB records + ${products.length - apiParts.length} catalogue items`
-      : 'Connected to local JSON catalogue';
+      ? `${apiParts.length} live DB items + ${products.length - apiParts.length} catalogue`
+      : 'Verified OEM commercial parts';
 
   buildPG();
   updateHierarchy();
-  render();
+  renderCatalog();
   renderAdminPartsTable();
 }
 
 // ---------------------------------------------------------------------------
-// Catalogue Filtering, Rendering (Grid & MPMS Table)
+// Storefront Filtering & E-Commerce Product Cards
 // ---------------------------------------------------------------------------
 function buildPG() {
-  const groups = ['ALL', 'PG1', 'PG2', 'PG3', 'PG4', 'PG5', 'PG6'];
+  const groups = [
+    { id: 'ALL', label: 'All Parts' },
+    { id: 'PG1', label: 'PG1 • Engine' },
+    { id: 'PG2', label: 'PG2 • Brake & Clutch' },
+    { id: 'PG3', label: 'PG3 • Axle & Bearing' },
+    { id: 'PG4', label: 'PG4 • Electrical' },
+    { id: 'PG5', label: 'PG5 • Body & Rubber' },
+    { id: 'PG6', label: 'PG6 • Oils & Lubes' }
+  ];
+
   $('#pgFilters').innerHTML = groups
-    .map(
-      g =>
-        `<button class="${g === activePG ? 'active' : ''}" data-pg="${g}">${
-          g === 'ALL' ? 'ALL PG' : g
-        }</button>`
-    )
+    .map(g => {
+      const active = g.id === activePG;
+      return `<button type="button" data-pg="${g.id}" class="px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition cursor-pointer ${
+        active
+          ? 'bg-brand-blue text-white shadow-2xs'
+          : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+      }">${g.label}</button>`;
+    })
     .join('');
 
   $$('#pgFilters button').forEach(btn => {
@@ -158,10 +241,10 @@ function buildPG() {
       activePG = btn.dataset.pg;
       activeHierarchy = 'ALL';
       page = 1;
-      $('#kpiActivePG').textContent = activePG === 'ALL' ? 'ALL PG' : activePG;
+      $('#kpiPgLabel').textContent = activePG === 'ALL' ? 'PG1–PG6' : activePG;
       buildPG();
       updateHierarchy();
-      render();
+      renderCatalog();
     };
   });
 }
@@ -173,11 +256,11 @@ function updateHierarchy() {
       : hierarchy[activePG] || [];
 
   $('#hierarchyFilter').innerHTML =
-    '<option value="ALL">All product hierarchies</option>' +
+    '<option value="ALL">All Product Hierarchies</option>' +
     list.map(x => `<option value="${esc(x)}">${esc(x)}</option>`).join('');
 
   $('#hierarchyFilter').value = activeHierarchy;
-  $('#kpiHierarchyCount').textContent = `${list.length} hierarchies available`;
+  $('#kpiHierText').textContent = `${list.length} product categories`;
 
   const dl = $('#hierarchyDatalist');
   if (dl) {
@@ -188,7 +271,7 @@ function updateHierarchy() {
   }
 }
 
-function filtered() {
+function filteredProducts() {
   const q = $('#searchInput').value.trim().toLowerCase();
   return products.filter(
     p =>
@@ -216,153 +299,192 @@ function imageFor(p) {
   return p.thumbnailUrl || p.imageUrl || fallbackImageFor(p);
 }
 
-function formatPriceLabel(p) {
-  if (authState.token && Number(p.dealerPrice || p.mrp) > 0) {
-    return money(authState.role === 'dealer' ? p.dealerPrice || p.mrp : p.mrp);
+function priceBlockHtml(p) {
+  const mrp = Number(p.mrp || 0);
+  const dealer = Number(p.dealerPrice || mrp);
+
+  if (authState.role === 'dealer' && authState.token && dealer > 0) {
+    return `
+      <div>
+        <span class="text-[10px] font-bold uppercase text-emerald-600 block">Dealer Net</span>
+        <span class="text-sm sm:text-base font-extrabold text-slate-900 font-mono">${money(dealer)}</span>
+        ${mrp > dealer ? `<span class="text-[10px] text-slate-400 line-through ml-1">${money(mrp)}</span>` : ''}
+      </div>
+    `;
   }
-  if (Number(p.mrp) > 0) {
-    return `MRP ${money(p.mrp)}`;
+  if (mrp > 0) {
+    return `
+      <div>
+        <span class="text-[10px] font-semibold uppercase text-slate-400 block">MRP</span>
+        <span class="text-sm sm:text-base font-extrabold text-slate-900 font-mono">${money(mrp)}</span>
+      </div>
+    `;
   }
-  return 'ON REQUEST';
+  return `
+    <div>
+      <span class="text-[10px] font-semibold uppercase text-slate-400 block">Commercial</span>
+      <span class="text-xs sm:text-sm font-extrabold text-brand-blue">Quote on Request</span>
+    </div>
+  `;
 }
 
-function setDisplayMode(mode) {
-  displayMode = mode;
-  $('#gridModeBtn').classList.toggle('active', mode === 'grid');
-  $('#tableModeBtn').classList.toggle('active', mode === 'table');
-  render();
+function setCatalogLayout(mode) {
+  catalogLayout = mode;
+  $('#btnViewGrid').className =
+    mode === 'grid'
+      ? 'px-2.5 py-1 rounded-md text-xs font-semibold bg-brand-blue text-white cursor-pointer'
+      : 'px-2.5 py-1 rounded-md text-xs font-semibold text-slate-600 hover:text-slate-900 cursor-pointer';
+  $('#btnViewList').className =
+    mode === 'list'
+      ? 'px-2.5 py-1 rounded-md text-xs font-semibold bg-brand-blue text-white cursor-pointer'
+      : 'px-2.5 py-1 rounded-md text-xs font-semibold text-slate-600 hover:text-slate-900 cursor-pointer';
+  renderCatalog();
 }
 
-function render() {
-  const list = filtered();
+function renderCatalog() {
+  const list = filteredProducts();
   const pages = Math.max(1, Math.ceil(list.length / PAGE_SIZE));
   if (page > pages) page = pages;
   const shown = list.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
-  $('#catalogSummary').innerHTML = `<b>${list.length.toLocaleString('en-IN')}</b> parts found${
-    activePG !== 'ALL' ? ` in <strong>${esc(activePG)}</strong>` : ''
-  }${activeHierarchy !== 'ALL' ? ` &bull; ${esc(activeHierarchy)}` : ''}`;
+  const summaryText = `${list.length.toLocaleString('en-IN')} parts available${
+    activePG !== 'ALL' ? ` in ${activePG}` : ''
+  }`;
+  $('#catalogSummary').textContent = summaryText;
+  $('#mobileResultSummary').textContent = summaryText;
 
-  const gridEl = $('#grid');
-  const tableEl = $('#tableWrap');
+  const gridEl = $('#productGrid');
+  const tableWrap = $('#productTableWrap');
 
-  if (displayMode === 'grid') {
+  if (catalogLayout === 'grid') {
     gridEl.classList.remove('hidden');
-    tableEl.classList.add('hidden');
+    tableWrap.classList.add('hidden');
 
-    gridEl.innerHTML =
-      shown
-        .map(p => {
-          const fallback = fallbackImageFor(p);
-          const hasRealPhoto = Boolean(p.thumbnailUrl || p.imageUrl);
-          return `
-            <article class="card">
-              <div class="visual">
-                <img loading="lazy" src="${esc(imageFor(p))}" onerror="this.onerror=null;this.src='${fallback}'" alt="${esc(p.name)}">
-                <span class="pgBadge">${esc(p.pg)}</span>
-                ${hasRealPhoto ? '<span class="photoBadge">VERIFIED PHOTO</span>' : ''}
-              </div>
-              <div class="cardBody">
-                <span class="tag">${esc(p.hierarchy)}</span>
-                <h3>${esc(p.name)}</h3>
-                <div class="code">${esc(p.partNo)}</div>
-                <p class="meta">${esc(p.brand || 'OEM')} &bull; ${esc(p.pg)} &rarr; ${esc(p.hierarchy)}</p>
-                <div class="priceRow">
-                  <div>
-                    <small>COMMERCIAL</small><br>
-                    <b class="requestPrice">${formatPriceLabel(p)}</b>
-                  </div>
-                  <button class="btnPrimary sm" onclick="add('${esc(p.id)}')">ADD +</button>
+    gridEl.innerHTML = shown.length
+      ? shown
+          .map(p => {
+            const fallback = fallbackImageFor(p);
+            const hasPhoto = Boolean(p.thumbnailUrl || p.imageUrl);
+            const inCartQty = cart[String(p.id)] || 0;
+            return `
+              <article class="white-card rounded-2xl overflow-hidden flex flex-col shadow-2xs">
+                <div class="relative aspect-[4/3] bg-slate-100 border-b border-slate-100 overflow-hidden">
+                  <img loading="lazy" src="${esc(imageFor(p))}" onerror="this.onerror=null;this.src='${fallback}'" alt="${esc(p.name)}" class="w-full h-full object-cover" />
+                  <span class="absolute top-2 left-2 bg-slate-900/85 text-white text-[10px] font-bold px-2 py-0.5 rounded-md">${esc(p.pg)}</span>
+                  ${
+                    hasPhoto
+                      ? '<span class="absolute top-2 right-2 bg-emerald-600 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-md">ACTUAL PHOTO</span>'
+                      : ''
+                  }
                 </div>
-              </div>
-            </article>
-          `;
-        })
-        .join('') ||
-      '<div class="noResults"><b>No matching part found</b><span>Try another part number, description, PG group or scan a label with your camera.</span></div>';
+
+                <div class="p-3 sm:p-4 flex flex-col flex-1">
+                  <div class="flex items-center justify-between gap-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                    <span class="truncate">${esc(p.brand || 'OEM')}</span>
+                    <span class="truncate text-brand-blue">${esc(p.hierarchy)}</span>
+                  </div>
+
+                  <h3 class="text-xs sm:text-sm font-bold text-slate-900 mt-1 line-clamp-2 leading-snug">
+                    ${esc(p.name)}
+                  </h3>
+
+                  <div class="mt-2">
+                    <span class="inline-block font-mono text-[11px] font-bold text-brand-orange bg-orange-50 border border-orange-200 px-2 py-0.5 rounded-md">
+                      ${esc(p.partNo)}
+                    </span>
+                  </div>
+
+                  <div class="mt-auto pt-3 border-t border-slate-100 flex items-end justify-between gap-2">
+                    ${priceBlockHtml(p)}
+                    <button type="button" onclick="addToCart('${esc(p.id)}')" class="bg-brand-blue hover:bg-brand-blueDark active:scale-95 text-white font-bold text-xs px-3 py-2 rounded-xl shadow-2xs transition shrink-0 cursor-pointer">
+                      ${inCartQty > 0 ? `In Cart (${inCartQty})` : '+ Add'}
+                    </button>
+                  </div>
+                </div>
+              </article>
+            `;
+          })
+          .join('')
+      : `<div class="col-span-full bg-white rounded-2xl border border-slate-200 p-10 text-center">
+          <p class="text-base font-bold text-slate-800">No matching parts found</p>
+          <p class="text-xs text-slate-500 mt-1">Try searching by another part number, description, or reset filters.</p>
+        </div>`;
   } else {
     gridEl.classList.add('hidden');
-    tableEl.classList.remove('hidden');
+    tableWrap.classList.remove('hidden');
 
-    tableEl.innerHTML = shown.length
-      ? `
-        <table class="mpmsTable">
-          <thead>
-            <tr>
-              <th>Photo</th>
-              <th>Part Number</th>
-              <th>Description</th>
-              <th>PG</th>
-              <th>Hierarchy</th>
-              <th>Brand</th>
-              <th>Commercial</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${shown
-              .map(p => {
-                const fallback = fallbackImageFor(p);
-                return `
-                  <tr>
-                    <td><img class="thumbMini" src="${esc(imageFor(p))}" onerror="this.onerror=null;this.src='${fallback}'" alt=""></td>
-                    <td><span class="code">${esc(p.partNo)}</span></td>
-                    <td><strong>${esc(p.name)}</strong></td>
-                    <td>${esc(p.pg)}</td>
-                    <td>${esc(p.hierarchy)}</td>
-                    <td>${esc(p.brand || 'OEM')}</td>
-                    <td><strong>${formatPriceLabel(p)}</strong></td>
-                    <td><button class="btnPrimary sm" onclick="add('${esc(p.id)}')">ADD +</button></td>
-                  </tr>
-                `;
-              })
-              .join('')}
-          </tbody>
-        </table>
-      `
-      : '<div class="noResults"><b>No matching part found</b><span>Adjust your filters or scan a label.</span></div>';
+    $('#productTableBody').innerHTML = shown.length
+      ? shown
+          .map(p => {
+            const fallback = fallbackImageFor(p);
+            return `
+              <tr class="hover:bg-slate-50">
+                <td class="py-2.5 px-4">
+                  <div class="flex items-center gap-2.5">
+                    <img src="${esc(imageFor(p))}" onerror="this.onerror=null;this.src='${fallback}'" class="w-10 h-10 rounded-lg object-cover border border-slate-200 shrink-0" alt="" />
+                    <span class="font-bold text-slate-900 text-xs sm:text-sm">${esc(p.name)}</span>
+                  </div>
+                </td>
+                <td class="py-2.5 px-4"><span class="font-mono text-xs font-bold text-brand-orange bg-orange-50 border border-orange-200 px-2 py-0.5 rounded">${esc(p.partNo)}</span></td>
+                <td class="py-2.5 px-4 text-xs text-slate-600">${esc(p.pg)} &bull; ${esc(p.hierarchy)}</td>
+                <td class="py-2.5 px-4 text-xs font-semibold text-slate-700">${esc(p.brand || 'OEM')}</td>
+                <td class="py-2.5 px-4">${priceBlockHtml(p)}</td>
+                <td class="py-2.5 px-4 text-right">
+                  <button type="button" onclick="addToCart('${esc(p.id)}')" class="bg-brand-blue hover:bg-brand-blueDark text-white font-bold text-xs px-3 py-1.5 rounded-lg cursor-pointer">+ Add</button>
+                </td>
+              </tr>
+            `;
+          })
+          .join('')
+      : `<tr><td colspan="6" class="py-10 text-center text-slate-500">No matching parts found.</td></tr>`;
   }
 
   $('#pagination').innerHTML =
     pages <= 1
       ? ''
-      : `<button ${page === 1 ? 'disabled' : ''} onclick="goPage(${page - 1})">&larr; PREVIOUS</button>
-         <span>PAGE ${page} OF ${pages}</span>
-         <button ${page === pages ? 'disabled' : ''} onclick="goPage(${page + 1})">NEXT &rarr;</button>`;
+      : `<button ${page === 1 ? 'disabled' : ''} onclick="goPage(${page - 1})" class="px-3.5 py-2 rounded-xl border border-slate-300 bg-white text-xs font-bold text-slate-700 disabled:opacity-40 cursor-pointer">&larr; Prev</button>
+         <span class="text-xs font-semibold text-slate-600">Page ${page} of ${pages}</span>
+         <button ${page === pages ? 'disabled' : ''} onclick="goPage(${page + 1})" class="px-3.5 py-2 rounded-xl border border-slate-300 bg-white text-xs font-bold text-slate-700 disabled:opacity-40 cursor-pointer">Next &rarr;</button>`;
 
   renderSuggestions(false);
 }
 
 function goPage(n) {
   page = n;
-  render();
-  $('#view-catalog').scrollIntoView({ behavior: 'smooth' });
+  renderCatalog();
+  $('#catalogSection').scrollIntoView({ behavior: 'smooth' });
 }
 
 function renderSuggestions(show = true) {
   const box = $('#suggestions');
   const q = $('#searchInput').value.trim().toLowerCase();
+  $('#clearSearchBtn').classList.toggle('hidden', q.length === 0);
+
   if (!show || q.length < 2) {
-    box.classList.remove('show');
+    box.classList.add('hidden');
     return;
   }
+
   const matches = products
     .filter(p => `${p.partNo} ${p.name} ${p.brand || ''}`.toLowerCase().includes(q))
     .slice(0, 8);
 
-  box.innerHTML =
-    matches
-      .map(
-        p =>
-          `<button type="button" data-id="${esc(p.id)}">
-            <b>${esc(p.partNo)}</b>
-            <span>${esc(p.name)}</span>
-            <small>${esc(p.pg)} | ${esc(p.hierarchy)}</small>
-          </button>`
-      )
-      .join('') || '<div class="emptyNote">No matching suggestions</div>';
+  box.innerHTML = matches.length
+    ? matches
+        .map(
+          p => `
+        <button type="button" data-id="${esc(p.id)}" class="w-full text-left px-3.5 py-2.5 hover:bg-blue-50 flex items-center justify-between gap-2 cursor-pointer">
+          <div class="min-w-0">
+            <span class="font-mono text-xs font-bold text-brand-orange mr-2">${esc(p.partNo)}</span>
+            <span class="text-xs sm:text-sm font-semibold text-slate-800">${esc(p.name)}</span>
+          </div>
+          <span class="text-[10px] font-bold text-slate-400 shrink-0">${esc(p.pg)}</span>
+        </button>`
+        )
+        .join('')
+    : `<div class="p-3 text-xs text-slate-500 text-center">No matching parts</div>`;
 
-  box.classList.add('show');
+  box.classList.remove('hidden');
   $$('#suggestions button').forEach(btn => {
     btn.onclick = () => {
       const p = products.find(x => String(x.id) === String(btn.dataset.id));
@@ -374,22 +496,163 @@ function renderSuggestions(show = true) {
       buildPG();
       updateHierarchy();
       $('#hierarchyFilter').value = activeHierarchy;
-      box.classList.remove('show');
-      render();
+      box.classList.add('hidden');
+      renderCatalog();
     };
   });
 }
 
-function clearSearchInput() {
+function clearSearch() {
   $('#searchInput').value = '';
+  $('#clearSearchBtn').classList.add('hidden');
   page = 1;
-  render();
+  renderCatalog();
+}
+
+function resetAllFilters() {
+  activePG = 'ALL';
+  activeHierarchy = 'ALL';
+  $('#searchInput').value = '';
+  $('#clearSearchBtn').classList.add('hidden');
+  $('#kpiPgLabel').textContent = 'PG1–PG6';
+  page = 1;
+  buildPG();
+  updateHierarchy();
+  renderCatalog();
 }
 
 // ---------------------------------------------------------------------------
-// Browser Image Compression (Shrinks 6 MB phone camera photos to ~250 KB)
+// E-Commerce Enquiry Cart
 // ---------------------------------------------------------------------------
-function compressImageFile(file, maxWidth = 1200, quality = 0.8) {
+function addToCart(id) {
+  const key = String(id);
+  cart[key] = (cart[key] || 0) + 1;
+  saveCart();
+  updateCart();
+  renderCatalog();
+  showToast('Added to Enquiry Basket');
+}
+
+function changeQty(id, delta) {
+  const key = String(id);
+  cart[key] = Math.max(0, (cart[key] || 0) + delta);
+  if (!cart[key]) delete cart[key];
+  saveCart();
+  updateCart();
+  renderCatalog();
+}
+
+function removeCartItem(id) {
+  delete cart[String(id)];
+  saveCart();
+  updateCart();
+  renderCatalog();
+}
+
+function saveCart() {
+  localStorage.setItem('sapl_parts_cart', JSON.stringify(cart));
+}
+
+function updateCart() {
+  const entries = Object.entries(cart)
+    .map(([id, qty]) => {
+      const p = products.find(item => String(item.id) === String(id));
+      return p ? { ...p, qty } : null;
+    })
+    .filter(Boolean);
+
+  const totalQty = entries.reduce((sum, x) => sum + x.qty, 0);
+  $('#cartCount').textContent = totalQty;
+  $('#kpiBasketCount').textContent = `${totalQty} NOS`;
+  $('#cartSubtotal').textContent = `${totalQty} NOS (${entries.length} SKUs)`;
+
+  $('#cartItems').innerHTML = entries.length
+    ? entries
+        .map(
+          x => `
+        <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 flex items-start justify-between gap-2">
+          <div class="min-w-0">
+            <span class="font-mono text-[11px] font-bold text-brand-orange">${esc(x.partNo)}</span>
+            <p class="text-xs font-bold text-slate-900 truncate">${esc(x.name)}</p>
+            <span class="text-[11px] text-slate-500">${esc(x.pg)} &bull; ${esc(x.brand || 'OEM')}</span>
+          </div>
+          <div class="flex items-center gap-1.5 shrink-0">
+            <button type="button" onclick="changeQty('${esc(x.id)}', -1)" class="w-7 h-7 rounded-lg bg-white border border-slate-300 font-bold text-slate-700 cursor-pointer">-</button>
+            <span class="w-6 text-center text-xs font-mono font-bold">${x.qty}</span>
+            <button type="button" onclick="changeQty('${esc(x.id)}', 1)" class="w-7 h-7 rounded-lg bg-white border border-slate-300 font-bold text-slate-700 cursor-pointer">+</button>
+            <button type="button" onclick="removeCartItem('${esc(x.id)}')" class="ml-1 text-xs text-rose-600 font-bold cursor-pointer">&times;</button>
+          </div>
+        </div>`
+        )
+        .join('')
+    : `<div class="py-12 text-center text-xs text-slate-500">Your enquiry cart is empty.<br>Tap <strong>+ Add</strong> on any part to request a quote.</div>`;
+}
+
+async function submitEnquiry() {
+  const entries = Object.entries(cart)
+    .map(([id, qty]) => {
+      const p = products.find(item => String(item.id) === String(id));
+      return p
+        ? {
+            partId: p.id,
+            partNo: p.partNo,
+            name: p.name,
+            pg: p.pg,
+            hierarchy: p.hierarchy,
+            qty
+          }
+        : null;
+    })
+    .filter(Boolean);
+
+  if (!entries.length) {
+    alert('Please add at least one part to your enquiry cart.');
+    return;
+  }
+
+  const btn = $('#submitEnquiryBtn');
+  btn.disabled = true;
+  btn.textContent = 'Submitting...';
+
+  const payload = {
+    companyName: $('#enqCompany').value.trim(),
+    contactName: $('#enqName').value.trim(),
+    contactPhone: $('#enqPhone').value.trim(),
+    notes: $('#enqNotes').value.trim(),
+    items: entries
+  };
+
+  try {
+    const headers = { 'Content-Type': 'application/json' };
+    if (authState.token) headers.Authorization = `Bearer ${authState.token}`;
+
+    const res = await fetch(`${API_BASE}/enquiries`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (!res.ok || !data.ok) throw new Error(data.error || 'Submission error');
+
+    showToast(`Enquiry ${data.ref} sent to Somani Auto Raipur!`);
+    cart = {};
+    saveCart();
+    updateCart();
+    renderCatalog();
+    closeAllOverlays();
+    if (authState.token) loadEnquiriesList();
+  } catch (err) {
+    alert(`Could not submit enquiry: ${err.message}`);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Submit Quotation Enquiry';
+  }
+}
+
+// ---------------------------------------------------------------------------
+// ADMIN-ONLY: Camera Capture + Compression + SAS Upload + Vision OCR
+// ---------------------------------------------------------------------------
+function compressImageFile(file, maxWidth = 1200, quality = 0.82) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = ev => {
@@ -404,8 +667,7 @@ function compressImageFile(file, maxWidth = 1200, quality = 0.8) {
         const canvas = document.createElement('canvas');
         canvas.width = w;
         canvas.height = h;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, w, h);
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
 
         const dataUrl = canvas.toDataURL('image/jpeg', quality);
         canvas.toBlob(
@@ -424,114 +686,19 @@ function compressImageFile(file, maxWidth = 1200, quality = 0.8) {
           quality
         );
       };
-      img.onerror = () => reject(new Error('Could not decode selected image'));
+      img.onerror = () => reject(new Error('Invalid image file'));
       img.src = ev.target.result;
     };
-    reader.onerror = () => reject(new Error('Could not read camera file'));
+    reader.onerror = () => reject(new Error('Could not read file'));
     reader.readAsDataURL(file);
   });
 }
 
-// ---------------------------------------------------------------------------
-// Workflow A: Quick Mobile Camera Label Search (Catalogue Bar)
-// ---------------------------------------------------------------------------
-function triggerQuickCamera() {
-  $('#quickCamInput').value = '';
-  $('#quickCamInput').click();
-}
-
-async function handleQuickCameraFile(file) {
-  if (!file) return;
-  const banner = $('#quickOcrBanner');
-  const title = $('#quickOcrTitle');
-  const sub = $('#quickOcrSub');
-  const addBtn = $('#quickOcrUseAdminBtn');
-
-  banner.classList.remove('hidden');
-  addBtn.classList.add('hidden');
-  title.textContent = 'Compressing photo & scanning label with Azure Vision...';
-  sub.textContent = 'Reading part number, brand and MRP...';
-
-  try {
-    const compressed = await compressImageFile(file, 1100, 0.78);
-    const res = await fetch(`${API_BASE}/ocr/scan`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        imageBase64: compressed.dataUrl,
-        createThumbnail: false
-      })
-    });
-    const data = await res.json();
-    if (!res.ok || !data.ok) {
-      throw new Error(data.error || 'Vision OCR failed');
-    }
-
-    const ext = data.extracted || {};
-    lastQuickOcrData = { ...ext, dataUrl: compressed.dataUrl, compressedBlob: compressed.blob };
-
-    const detectedCode = ext.partNo || (ext.lines && ext.lines[0]) || '';
-    title.textContent = detectedCode
-      ? `Detected Part: ${detectedCode} (${ext.brand || 'OEM'})`
-      : 'Label text extracted';
-    sub.textContent = `${ext.name || 'No description line detected'}${
-      ext.mrp ? ` • MRP ₹${ext.mrp}` : ''
-    }`;
-
-    if (detectedCode) {
-      $('#searchInput').value = detectedCode;
-      activePG = 'ALL';
-      activeHierarchy = 'ALL';
-      page = 1;
-      buildPG();
-      updateHierarchy();
-      render();
-    }
-
-    addBtn.classList.remove('hidden');
-  } catch (err) {
-    title.textContent = 'Camera OCR unavailable';
-    sub.textContent = `${err.message}. Ensure Python backend is deployed to func-sapl-parts-api-dev.`;
-  }
-}
-
-function hideQuickOcr() {
-  $('#quickOcrBanner').classList.add('hidden');
-}
-
-function sendQuickOcrToAdmin() {
-  openAdminWorkspace();
-  if (!lastQuickOcrData) return;
-  if (lastQuickOcrData.partNo) $('#fPartNo').value = lastQuickOcrData.partNo;
-  if (lastQuickOcrData.name) $('#fName').value = lastQuickOcrData.name;
-  if (lastQuickOcrData.brand) $('#fBrand').value = lastQuickOcrData.brand;
-  if (lastQuickOcrData.pg) $('#fPG').value = lastQuickOcrData.pg;
-  if (lastQuickOcrData.hierarchy) $('#fHierarchy').value = lastQuickOcrData.hierarchy;
-  if (lastQuickOcrData.mrp) {
-    $('#fMrp').value = lastQuickOcrData.mrp;
-    $('#fDealerPrice').value = lastQuickOcrData.mrp;
-  }
-  if (lastQuickOcrData.rawText) {
-    $('#adminOcrRawWrap').classList.remove('hidden');
-    $('#adminOcrRawText').textContent = lastQuickOcrData.rawText;
-  }
-  if (lastQuickOcrData.dataUrl && lastQuickOcrData.compressedBlob) {
-    pendingAdminBlob = {
-      blob: lastQuickOcrData.compressedBlob,
-      dataUrl: lastQuickOcrData.dataUrl,
-      fileName: 'camera-scan.jpg'
-    };
-    $('#adminPhotoPreview').src = lastQuickOcrData.dataUrl;
-    $('#adminPhotoPreview').classList.remove('hidden');
-    $('#cameraPlaceholder').classList.add('hidden');
-    $('#btnUploadAndOcr').disabled = false;
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Workflow B: Admin Studio — Camera Capture -> SAS Upload -> AI OCR -> DB Save
-// ---------------------------------------------------------------------------
 function triggerAdminCamera() {
+  if (authState.role !== 'admin' || !authState.token) {
+    openLoginModal('admin');
+    return;
+  }
   $('#adminCamInput').value = '';
   $('#adminCamInput').click();
 }
@@ -539,7 +706,7 @@ function triggerAdminCamera() {
 async function handleAdminCameraFile(file) {
   if (!file) return;
   const statusBox = $('#adminOcrStatus');
-  statusBox.className = 'statusBox';
+  statusBox.className = 'rounded-xl px-3.5 py-2.5 text-xs font-medium bg-blue-50 border border-blue-200 text-brand-blue';
   statusBox.classList.remove('hidden');
   statusBox.textContent = 'Compressing photo for fast warehouse upload...';
 
@@ -548,42 +715,37 @@ async function handleAdminCameraFile(file) {
     pendingAdminBlob = {
       blob: comp.blob,
       dataUrl: comp.dataUrl,
-      fileName: file.name || 'part-photo.jpg'
+      fileName: file.name || 'part-label.jpg'
     };
 
     $('#adminPhotoPreview').src = comp.dataUrl;
     $('#adminPhotoPreview').classList.remove('hidden');
     $('#cameraPlaceholder').classList.add('hidden');
 
-    const origKB = Math.round(comp.originalBytes / 1024);
-    const compKB = Math.round(comp.compressedBytes / 1024);
     $('#compressionStats').classList.remove('hidden');
-    $('#compressionStats').textContent = `Ready for upload: ${comp.width}x${comp.height}px JPEG (${origKB} KB -> ${compKB} KB)`;
+    $('#compressionStats').textContent = `Compressed: ${comp.width}x${comp.height}px (${Math.round(
+      comp.originalBytes / 1024
+    )} KB -> ${Math.round(comp.compressedBytes / 1024)} KB)`;
 
     $('#btnUploadAndOcr').disabled = false;
-    statusBox.textContent = 'Photo ready. Click "Upload to Azure & Auto-Fill via AI OCR".';
+    statusBox.textContent = 'Photo ready. Tap "Upload & Scan OCR" to auto-fill details.';
   } catch (err) {
-    statusBox.className = 'statusBox error';
+    statusBox.className = 'rounded-xl px-3.5 py-2.5 text-xs font-medium bg-rose-50 border border-rose-200 text-rose-700';
     statusBox.textContent = err.message;
   }
 }
 
 async function uploadAndScanAdminPhoto() {
-  if (!pendingAdminBlob) return;
-  if (authState.role !== 'admin' || !authState.token) {
-    openLoginModal('admin');
-    return;
-  }
+  if (!pendingAdminBlob || authState.role !== 'admin' || !authState.token) return;
 
   const btn = $('#btnUploadAndOcr');
   const statusBox = $('#adminOcrStatus');
   btn.disabled = true;
-  statusBox.className = 'statusBox';
+  statusBox.className = 'rounded-xl px-3.5 py-2.5 text-xs font-medium bg-blue-50 border border-blue-200 text-brand-blue';
   statusBox.classList.remove('hidden');
 
   try {
-    // 1. Request 10-minute User Delegation SAS ticket from Function App
-    statusBox.textContent = '1/3 Requesting 10-minute upload ticket from Azure...';
+    statusBox.textContent = '1/3 Generating 10-minute Azure Blob upload ticket...';
     const sasRes = await fetch(`${API_BASE}/uploads/sas`, {
       method: 'POST',
       headers: {
@@ -593,11 +755,8 @@ async function uploadAndScanAdminPhoto() {
       body: JSON.stringify({ fileName: pendingAdminBlob.fileName })
     });
     const sasData = await sasRes.json();
-    if (!sasRes.ok || !sasData.ok) {
-      throw new Error(sasData.error || 'Could not obtain upload SAS URL');
-    }
+    if (!sasRes.ok || !sasData.ok) throw new Error(sasData.error || 'SAS ticket failed');
 
-    // 2. Upload compressed photo directly from phone/PC to stgsaplpartsdev
     statusBox.textContent = '2/3 Uploading compressed photo directly to stgsaplpartsdev...';
     const putRes = await fetch(sasData.uploadUrl, {
       method: 'PUT',
@@ -607,27 +766,25 @@ async function uploadAndScanAdminPhoto() {
       },
       body: pendingAdminBlob.blob
     });
-    if (!putRes.ok) {
-      throw new Error(`Blob upload failed (${putRes.status})`);
-    }
+    if (!putRes.ok) throw new Error(`Blob upload error (${putRes.status})`);
 
     $('#fBlobName').value = sasData.blobName;
     $('#fImageUrl').value = sasData.readUrl;
 
-    // 3. Trigger Azure Computer Vision OCR + Thumbnail creation
-    statusBox.textContent = '3/3 Scanning label with Azure Computer Vision OCR...';
+    statusBox.textContent = '3/3 Scanning label via Azure Computer Vision OCR...';
     const ocrRes = await fetch(`${API_BASE}/ocr/scan`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${authState.token}`
+      },
       body: JSON.stringify({
         blobName: sasData.blobName,
         createThumbnail: true
       })
     });
     const ocrData = await ocrRes.json();
-    if (!ocrRes.ok || !ocrData.ok) {
-      throw new Error(ocrData.error || 'Vision OCR failed');
-    }
+    if (!ocrRes.ok || !ocrData.ok) throw new Error(ocrData.error || 'Vision OCR failed');
 
     const ext = ocrData.extracted || {};
     if (ext.thumbnailUrl) $('#fThumbnailUrl').value = ext.thumbnailUrl;
@@ -648,10 +805,10 @@ async function uploadAndScanAdminPhoto() {
       $('#adminOcrRawText').textContent = ext.rawText;
     }
 
-    statusBox.className = 'statusBox success';
-    statusBox.textContent = 'Uploaded & OCR fields auto-filled! Verify details and click "Save Part to Live Catalogue".';
+    statusBox.className = 'rounded-xl px-3.5 py-2.5 text-xs font-medium bg-emerald-50 border border-emerald-200 text-emerald-700';
+    statusBox.textContent = 'Label scanned & fields auto-filled! Verify below and click Save.';
   } catch (err) {
-    statusBox.className = 'statusBox error';
+    statusBox.className = 'rounded-xl px-3.5 py-2.5 text-xs font-medium bg-rose-50 border border-rose-200 text-rose-700';
     statusBox.textContent = err.message;
   } finally {
     btn.disabled = false;
@@ -666,8 +823,8 @@ async function savePartMaster(e) {
   }
 
   const btn = $('#btnSavePart');
-  const statusBox = $('#adminOcrStatus');
   btn.disabled = true;
+  btn.textContent = 'Saving...';
 
   const payload = {
     partNo: $('#fPartNo').value.trim().toUpperCase(),
@@ -695,21 +852,16 @@ async function savePartMaster(e) {
       body: JSON.stringify(payload)
     });
     const data = await res.json();
-    if (!res.ok || !data.ok) {
-      throw new Error(data.error || 'Failed to save part');
-    }
+    if (!res.ok || !data.ok) throw new Error(data.error || 'Save failed');
 
-    statusBox.className = 'statusBox success';
-    statusBox.classList.remove('hidden');
-    statusBox.textContent = `Saved ${payload.partNo} (${payload.name}) to sapl_parts_db!`;
+    showToast(`Saved ${payload.partNo} to live catalogue!`);
     resetAdminForm();
     await loadCatalogueData();
   } catch (err) {
-    statusBox.className = 'statusBox error';
-    statusBox.classList.remove('hidden');
-    statusBox.textContent = err.message;
+    alert(err.message);
   } finally {
     btn.disabled = false;
+    btn.textContent = 'Save Part to Live Catalogue';
   }
 }
 
@@ -723,202 +875,274 @@ function resetAdminForm() {
   $('#cameraPlaceholder').classList.remove('hidden');
   $('#compressionStats').classList.add('hidden');
   $('#adminOcrRawWrap').classList.add('hidden');
+  $('#adminOcrStatus').classList.add('hidden');
   $('#btnUploadAndOcr').disabled = true;
+}
+
+// ---------------------------------------------------------------------------
+// ADMIN-ONLY: Bulk Excel (.xlsx / .xls / .csv) Upload & Sample Template
+// ---------------------------------------------------------------------------
+function downloadExcelTemplate() {
+  if (typeof XLSX === 'undefined') {
+    alert('Excel library still loading, please try again in 2 seconds.');
+    return;
+  }
+  const sampleRows = [
+    {
+      'Part No': '257342100102',
+      'Part Name': 'Front Brake Drum Assembly',
+      'PG': 'PG2',
+      'Hierarchy': 'Brake System',
+      'Brand': 'TATA',
+      'MRP': 4850,
+      'Dealer Price': 4120,
+      'Stock Qty': 12,
+      'UOM': 'NOS'
+    },
+    {
+      'Part No': 'ID15W40-20L',
+      'Part Name': 'Heavy Duty Diesel Engine Oil 15W-40 (20L)',
+      'PG': 'PG6',
+      'Hierarchy': 'Lubricants',
+      'Brand': 'GULF',
+      'MRP': 5400,
+      'Dealer Price': 4650,
+      'Stock Qty': 25,
+      'UOM': 'LTR'
+    }
+  ];
+  const ws = XLSX.utils.json_to_sheet(sampleRows);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Parts_Upload');
+  XLSX.writeFile(wb, 'Somani_Auto_Parts_Template.xlsx');
+}
+
+function triggerExcelPicker() {
+  if (authState.role !== 'admin' || !authState.token) {
+    openLoginModal('admin');
+    return;
+  }
+  $('#excelFileInput').value = '';
+  $('#excelFileInput').click();
+}
+
+function normalizeExcelColumn(row, candidates) {
+  const keys = Object.keys(row);
+  for (const cand of candidates) {
+    const found = keys.find(k => k.trim().toLowerCase().replace(/[^a-z0-9]/g, '') === cand);
+    if (found && row[found] !== undefined && row[found] !== null) {
+      return String(row[found]).trim();
+    }
+  }
+  return '';
+}
+
+function handleExcelFile(file) {
+  if (!file) return;
+  if (typeof XLSX === 'undefined') {
+    alert('Excel parser not loaded yet. Please refresh the page.');
+    return;
+  }
+
+  const banner = $('#excelStatusBanner');
+  banner.className = 'rounded-xl px-4 py-3 text-xs font-semibold bg-blue-50 border border-blue-200 text-brand-blue';
+  banner.classList.remove('hidden');
+  banner.textContent = `Reading ${file.name}...`;
+
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const wb = XLSX.read(new Uint8Array(ev.target.result), { type: 'array' });
+      const firstSheet = wb.Sheets[wb.SheetNames[0]];
+      const rawRows = XLSX.utils.sheet_to_json(firstSheet, { defval: '' });
+
+      parsedExcelParts = [];
+      let skipped = 0;
+
+      rawRows.forEach(r => {
+        const partNo = normalizeExcelColumn(r, ['partno', 'partnumber', 'partcode', 'itemcode', 'sku']).toUpperCase();
+        const name = normalizeExcelColumn(r, ['partname', 'name', 'description', 'partdescription', 'itemname']);
+        if (!partNo || !name) {
+          skipped++;
+          return;
+        }
+        let pg = normalizeExcelColumn(r, ['pg', 'productgroup', 'group']).toUpperCase();
+        if (!['PG1', 'PG2', 'PG3', 'PG4', 'PG5', 'PG6'].includes(pg)) pg = 'PG1';
+
+        const hierarchy = normalizeExcelColumn(r, ['hierarchy', 'producthierarchy', 'category', 'subgroup']) || 'General';
+        const brand = normalizeExcelColumn(r, ['brand', 'oem', 'make']) || 'TATA / OEM';
+        const mrp = parseFloat(normalizeExcelColumn(r, ['mrp', 'listprice', 'price']).replace(/[^\d.]/g, '')) || 0;
+        const dealerPrice =
+          parseFloat(normalizeExcelColumn(r, ['dealerprice', 'netprice', 'rate', 'dlp']).replace(/[^\d.]/g, '')) || mrp;
+        const stockQty = parseInt(normalizeExcelColumn(r, ['stockqty', 'qty', 'stock', 'quantity']).replace(/[^\d]/g, ''), 10) || 0;
+        const uom = (normalizeExcelColumn(r, ['uom', 'unit']) || 'NOS').toUpperCase();
+
+        parsedExcelParts.push({
+          partNo,
+          name,
+          pg,
+          hierarchy,
+          brand,
+          mrp,
+          dealerPrice,
+          stockQty,
+          uom
+        });
+      });
+
+      if (!parsedExcelParts.length) {
+        banner.className = 'rounded-xl px-4 py-3 text-xs font-semibold bg-rose-50 border border-rose-200 text-rose-700';
+        banner.textContent = 'No valid rows found. Make sure your Excel sheet has "Part No" and "Part Name" columns.';
+        $('#excelPreviewSection').classList.add('hidden');
+        return;
+      }
+
+      banner.className = 'rounded-xl px-4 py-3 text-xs font-semibold bg-emerald-50 border border-emerald-200 text-emerald-700';
+      banner.textContent = `Parsed ${parsedExcelParts.length} parts from "${file.name}". Review preview below and click "Import All to Live Database".`;
+
+      $('#excelValidCount').textContent = parsedExcelParts.length;
+      $('#excelSkippedNote').textContent = skipped > 0 ? ` (${skipped} blank/invalid rows skipped)` : '';
+
+      $('#excelPreviewBody').innerHTML = parsedExcelParts
+        .slice(0, 100)
+        .map(
+          (p, i) => `
+          <tr>
+            <td class="py-2 px-3 text-slate-400">${i + 1}</td>
+            <td class="py-2 px-3 font-mono font-bold text-brand-orange">${esc(p.partNo)}</td>
+            <td class="py-2 px-3 font-semibold text-slate-800">${esc(p.name)}</td>
+            <td class="py-2 px-3">${esc(p.pg)}</td>
+            <td class="py-2 px-3 text-slate-600">${esc(p.hierarchy)}</td>
+            <td class="py-2 px-3">${esc(p.brand)}</td>
+            <td class="py-2 px-3 font-mono">${money(p.mrp)}</td>
+            <td class="py-2 px-3 font-mono">${money(p.dealerPrice)}</td>
+            <td class="py-2 px-3 font-mono">${p.stockQty} ${esc(p.uom)}</td>
+          </tr>`
+        )
+        .join('');
+
+      $('#excelPreviewSection').classList.remove('hidden');
+    } catch (err) {
+      banner.className = 'rounded-xl px-4 py-3 text-xs font-semibold bg-rose-50 border border-rose-200 text-rose-700';
+      banner.textContent = `Excel parse error: ${err.message}`;
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function clearExcelPreview() {
+  parsedExcelParts = [];
+  $('#excelPreviewSection').classList.add('hidden');
+  $('#excelStatusBanner').classList.add('hidden');
+}
+
+async function uploadExcelRowsToDb() {
+  if (!parsedExcelParts.length || authState.role !== 'admin' || !authState.token) return;
+
+  const btn = $('#btnConfirmExcelImport');
+  const banner = $('#excelStatusBanner');
+  btn.disabled = true;
+  btn.textContent = 'Importing to PostgreSQL...';
+
+  try {
+    const res = await fetch(`${API_BASE}/parts/bulk`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${authState.token}`
+      },
+      body: JSON.stringify({ parts: parsedExcelParts })
+    });
+    const data = await res.json();
+    if (!res.ok || !data.ok) throw new Error(data.error || 'Bulk import failed');
+
+    banner.className = 'rounded-xl px-4 py-3 text-xs font-semibold bg-emerald-50 border border-emerald-200 text-emerald-700';
+    banner.textContent = `Successfully imported ${data.importedCount} parts into sapl_parts_db!`;
+    showToast(`Imported ${data.importedCount} parts from Excel!`);
+    parsedExcelParts = [];
+    $('#excelPreviewSection').classList.add('hidden');
+    await loadCatalogueData();
+  } catch (err) {
+    banner.className = 'rounded-xl px-4 py-3 text-xs font-semibold bg-rose-50 border border-rose-200 text-rose-700';
+    banner.textContent = err.message;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Import All to Live Database';
+  }
 }
 
 function renderAdminPartsTable() {
   const wrap = $('#adminPartsTableWrap');
   if (!wrap) return;
-  const rows = products.slice(0, 50);
+  const rows = products.slice(0, 40);
   wrap.innerHTML = rows.length
     ? `
-      <table class="mpmsTable">
+      <table class="w-full text-left border-collapse">
         <thead>
-          <tr>
-            <th>Photo</th>
-            <th>Part No</th>
-            <th>Description</th>
-            <th>PG / Hierarchy</th>
-            <th>MRP</th>
-            <th>Source</th>
-            <th>Action</th>
+          <tr class="bg-slate-50 border-b border-slate-200 text-[11px] font-bold uppercase text-slate-500">
+            <th class="py-2.5 px-3">Photo</th>
+            <th class="py-2.5 px-3">Part No</th>
+            <th class="py-2.5 px-3">Description</th>
+            <th class="py-2.5 px-3">PG / Hierarchy</th>
+            <th class="py-2.5 px-3">MRP / Dealer</th>
+            <th class="py-2.5 px-3">Source</th>
+            <th class="py-2.5 px-3 text-right">Action</th>
           </tr>
         </thead>
-        <tbody>
+        <tbody class="divide-y divide-slate-100">
           ${rows
             .map(p => {
               const fallback = fallbackImageFor(p);
               return `
-                <tr>
-                  <td><img class="thumbMini" src="${esc(imageFor(p))}" onerror="this.onerror=null;this.src='${fallback}'" alt=""></td>
-                  <td><span class="code">${esc(p.partNo)}</span></td>
-                  <td><strong>${esc(p.name)}</strong><br><small>${esc(p.brand || 'OEM')}</small></td>
-                  <td>${esc(p.pg)} &bull; ${esc(p.hierarchy)}</td>
-                  <td>${Number(p.mrp) > 0 ? money(p.mrp) : 'On Request'}</td>
-                  <td>${p.isLive ? '<span class="badgeBlue">PostgreSQL DB</span>' : '<span class="kpiTag">JSON Seed</span>'}</td>
-                  <td>
+                <tr class="hover:bg-slate-50">
+                  <td class="py-2 px-3"><img src="${esc(imageFor(p))}" onerror="this.onerror=null;this.src='${fallback}'" class="w-9 h-9 rounded-lg object-cover border border-slate-200" alt="" /></td>
+                  <td class="py-2 px-3 font-mono font-bold text-brand-orange">${esc(p.partNo)}</td>
+                  <td class="py-2 px-3 font-semibold text-slate-800">${esc(p.name)}<br><span class="text-[10px] text-slate-400">${esc(p.brand || 'OEM')}</span></td>
+                  <td class="py-2 px-3 text-slate-600">${esc(p.pg)} &bull; ${esc(p.hierarchy)}</td>
+                  <td class="py-2 px-3 font-mono">${money(p.mrp)} / ${money(p.dealerPrice || p.mrp)}</td>
+                  <td class="py-2 px-3">${
+                    p.isLive
+                      ? '<span class="bg-blue-50 text-brand-blue border border-blue-200 px-2 py-0.5 rounded-full text-[10px] font-bold">Live DB</span>'
+                      : '<span class="bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full text-[10px] font-semibold">Seed</span>'
+                  }</td>
+                  <td class="py-2 px-3 text-right">
                     ${
                       p.isLive
-                        ? `<button class="btnGhost sm" onclick="deleteDbPart(${p.id})">Archive</button>`
-                        : '<small>Seed Item</small>'
+                        ? `<button onclick="deleteDbPart(${p.id})" class="text-rose-600 hover:underline font-semibold cursor-pointer">Archive</button>`
+                        : '<span class="text-slate-400">—</span>'
                     }
                   </td>
-                </tr>
-              `;
+                </tr>`;
             })
             .join('')}
         </tbody>
-      </table>
-    `
-    : '<p class="emptyNote">No parts loaded yet.</p>';
+      </table>`
+    : '<p class="py-6 text-center text-slate-500">No parts loaded yet.</p>';
 }
 
 async function deleteDbPart(id) {
-  if (!confirm('Archive this part from the active catalogue?')) return;
+  if (!confirm('Archive this part from the active store?')) return;
   try {
     const res = await fetch(`${API_BASE}/parts/${id}`, {
       method: 'DELETE',
       headers: { Authorization: `Bearer ${authState.token}` }
     });
-    if (res.ok) await loadCatalogueData();
-  } catch (e) {
-    alert('Could not archive part.');
-  }
+    if (res.ok) {
+      showToast('Part archived');
+      await loadCatalogueData();
+    }
+  } catch (e) {}
 }
 
 // ---------------------------------------------------------------------------
-// Enquiry Cart & Live PostgreSQL Submission
+// Enquiries List (Dealer Own Enquiries vs Admin All Enquiries)
 // ---------------------------------------------------------------------------
-function add(id) {
-  const key = String(id);
-  cart[key] = (cart[key] || 0) + 1;
-  saveCartState();
-  updateCart();
-  openCart();
-}
+async function loadEnquiriesList() {
+  if (!authState.token) return;
+  const target = authState.role === 'admin' ? $('#adminEnquiriesTable') : $('#dealerEnquiriesTable');
+  if (!target) return;
 
-function chg(id, delta) {
-  const key = String(id);
-  cart[key] = Math.max(0, (cart[key] || 0) + delta);
-  if (!cart[key]) delete cart[key];
-  saveCartState();
-  updateCart();
-}
-
-function delItem(id) {
-  delete cart[String(id)];
-  saveCartState();
-  updateCart();
-}
-
-function saveCartState() {
-  localStorage.setItem('sapl_parts_cart', JSON.stringify(cart));
-}
-
-function updateCart() {
-  const entries = Object.entries(cart)
-    .map(([id, qty]) => {
-      const part = products.find(p => String(p.id) === String(id));
-      return part ? { ...part, qty } : null;
-    })
-    .filter(Boolean);
-
-  const totalNos = entries.reduce((sum, x) => sum + x.qty, 0);
-  $('#cartCount').textContent = totalNos;
-  $('#kpiCartItems').textContent = `${totalNos} ${totalNos === 1 ? 'Item' : 'Items'}`;
-  $('#subtotal').textContent = `${totalNos} NOS`;
-
-  $('#cartItems').innerHTML = entries.length
-    ? entries
-        .map(
-          x => `
-          <div class="cartItem">
-            <b>${esc(x.name)}</b>
-            <span>${esc(x.partNo)} &bull; ${esc(x.pg)} &bull; Qty ${x.qty}</span>
-            <div class="qty">
-              <button type="button" onclick="chg('${esc(x.id)}', -1)">-</button>
-              <strong>${x.qty}</strong>
-              <button type="button" onclick="chg('${esc(x.id)}', 1)">+</button>
-              <button type="button" onclick="delItem('${esc(x.id)}')">Remove</button>
-            </div>
-          </div>
-        `
-        )
-        .join('')
-    : '<p class="emptyNote">Your enquiry basket is empty. Add parts from the catalogue.</p>';
-}
-
-async function submitEnquiry() {
-  const entries = Object.entries(cart)
-    .map(([id, qty]) => {
-      const p = products.find(item => String(item.id) === String(id));
-      return p
-        ? {
-            partId: p.id,
-            partNo: p.partNo,
-            name: p.name,
-            pg: p.pg,
-            hierarchy: p.hierarchy,
-            qty
-          }
-        : null;
-    })
-    .filter(Boolean);
-
-  if (!entries.length) {
-    alert('Please add at least one part to your enquiry basket.');
-    return;
-  }
-
-  const btn = $('#submitEnquiryBtn');
-  btn.disabled = true;
-
-  const payload = {
-    companyName: $('#enqCompany').value.trim(),
-    contactName: $('#enqName').value.trim(),
-    contactPhone: $('#enqPhone').value.trim(),
-    notes: $('#enqNotes').value.trim(),
-    items: entries
-  };
-
-  try {
-    const headers = { 'Content-Type': 'application/json' };
-    if (authState.token) headers.Authorization = `Bearer ${authState.token}`;
-
-    const res = await fetch(`${API_BASE}/enquiries`, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify(payload)
-    });
-    const data = await res.json();
-    if (!res.ok || !data.ok) throw new Error(data.error || 'Server error');
-
-    alert(`Enquiry ${data.ref} submitted to Somani Auto Raipur!`);
-    cart = {};
-    saveCartState();
-    updateCart();
-    closeAll();
-  } catch (err) {
-    const fallbackRef = 'ENQ-' + new Date().getFullYear() + '-' + String(Date.now()).slice(-6);
-    localStorage.setItem('sapl_last_enquiry', JSON.stringify({ ref: fallbackRef, ...payload }));
-    alert(`Saved offline reference ${fallbackRef} (Backend API will sync once deployed).`);
-    cart = {};
-    saveCartState();
-    updateCart();
-    closeAll();
-  } finally {
-    btn.disabled = false;
-  }
-}
-
-async function loadEnquiries() {
-  const wrap = $('#enquiriesTableWrap');
-  if (!authState.token) {
-    wrap.innerHTML = '<p class="emptyNote">Please sign in with Dealer or Admin credentials to view enquiries.</p>';
-    return;
-  }
-
-  wrap.innerHTML = '<p class="emptyNote">Loading enquiries from PostgreSQL...</p>';
+  target.innerHTML = '<p class="py-4 text-slate-500">Loading enquiries...</p>';
   try {
     const res = await fetch(`${API_BASE}/enquiries`, {
       headers: { Authorization: `Bearer ${authState.token}` }
@@ -927,80 +1151,92 @@ async function loadEnquiries() {
     if (!res.ok || !data.ok) throw new Error(data.error || 'Could not load enquiries');
 
     const rows = data.enquiries || [];
-    wrap.innerHTML = rows.length
+    target.innerHTML = rows.length
       ? `
-        <table class="mpmsTable">
+        <table class="w-full text-left border-collapse">
           <thead>
-            <tr>
-              <th>Enquiry Ref</th>
-              <th>Dealer / Company</th>
-              <th>Contact</th>
-              <th>Items</th>
-              <th>Status</th>
-              <th>Submitted</th>
+            <tr class="bg-slate-50 border-b border-slate-200 text-[11px] font-bold uppercase text-slate-500">
+              <th class="py-2.5 px-3">Ref</th>
+              <th class="py-2.5 px-3">Company / Dealer</th>
+              <th class="py-2.5 px-3">Contact</th>
+              <th class="py-2.5 px-3">Items</th>
+              <th class="py-2.5 px-3">Status</th>
+              <th class="py-2.5 px-3">Date</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody class="divide-y divide-slate-100">
             ${rows
               .map(
                 r => `
-                <tr>
-                  <td><span class="code">${esc(r.ref)}</span></td>
-                  <td><strong>${esc(r.companyName || r.dealerCode || 'Walk-in')}</strong></td>
-                  <td>${esc(r.contactName || '-')} ${r.contactPhone ? `(${esc(r.contactPhone)})` : ''}</td>
-                  <td>${r.totalItems} NOS (${(r.items || []).length} SKUs)</td>
-                  <td><span class="badgeOrange">${esc(r.status)}</span></td>
-                  <td>${new Date(r.createdAt).toLocaleString('en-IN')}</td>
-                </tr>
-              `
+              <tr>
+                <td class="py-2.5 px-3 font-mono font-bold text-brand-blue">${esc(r.ref)}</td>
+                <td class="py-2.5 px-3 font-semibold text-slate-800">${esc(r.companyName || r.dealerCode || 'Walk-in')}</td>
+                <td class="py-2.5 px-3">${esc(r.contactName || '—')} ${r.contactPhone ? `(${esc(r.contactPhone)})` : ''}</td>
+                <td class="py-2.5 px-3 font-mono">${r.totalItems} NOS (${(r.items || []).length} SKUs)</td>
+                <td class="py-2.5 px-3"><span class="bg-orange-50 text-brand-orange border border-orange-200 px-2 py-0.5 rounded-full font-bold text-[10px]">${esc(r.status)}</span></td>
+                <td class="py-2.5 px-3 text-slate-500">${new Date(r.createdAt).toLocaleString('en-IN')}</td>
+              </tr>`
               )
               .join('')}
           </tbody>
-        </table>
-      `
-      : '<p class="emptyNote">No enquiries recorded yet.</p>';
+        </table>`
+      : '<p class="py-4 text-slate-500">No enquiries submitted yet.</p>';
   } catch (err) {
-    wrap.innerHTML = `<p class="emptyNote">${esc(err.message)}</p>`;
+    target.innerHTML = `<p class="py-4 text-rose-600">${esc(err.message)}</p>`;
   }
 }
 
 // ---------------------------------------------------------------------------
-// Workspace Navigation & Authentication Modals
+// View Navigation & Authentication
 // ---------------------------------------------------------------------------
-function switchView(viewName) {
-  $$('.workspaceView').forEach(v => v.classList.add('hidden'));
-  $(`#view-${viewName}`).classList.remove('hidden');
-  $$('.tabBtn').forEach(b => b.classList.toggle('active', b.dataset.view === viewName));
+function switchView(view) {
+  if (view === 'admin') {
+    if (authState.role !== 'admin' || !authState.token) {
+      openLoginModal('admin');
+      return;
+    }
+    $('#storeView').classList.add('hidden');
+    $('#adminView').classList.remove('hidden');
+    renderAdminPartsTable();
+  } else {
+    $('#adminView').classList.add('hidden');
+    $('#storeView').classList.remove('hidden');
+    if (authState.role === 'dealer' && authState.token) {
+      $('#dealerEnquiriesBox').classList.remove('hidden');
+      loadEnquiriesList();
+    } else {
+      $('#dealerEnquiriesBox').classList.add('hidden');
+    }
+  }
 }
 
-function openAdminWorkspace() {
-  if (authState.role !== 'admin' || !authState.token) {
+function openAdminPortal() {
+  if (authState.role === 'admin' && authState.token) {
+    switchView('admin');
+  } else {
     openLoginModal('admin');
-    return;
   }
-  switchView('admin');
-  renderAdminPartsTable();
 }
 
-function openEnquiriesWorkspace() {
-  if (!authState.token) {
-    openLoginModal('dealer');
-    return;
-  }
-  switchView('enquiries');
-  loadEnquiries();
+function switchAdminTab(tab) {
+  $('#adminPanelSingle').classList.toggle('hidden', tab !== 'single');
+  $('#adminPanelExcel').classList.toggle('hidden', tab !== 'excel');
+  $('#adminPanelEnquiries').classList.toggle('hidden', tab !== 'enquiries');
+
+  const activeCls = 'px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-brand-blue text-white shadow-xs shrink-0 cursor-pointer';
+  const idleCls = 'px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 shrink-0 cursor-pointer';
+
+  $('#adminTabSingle').className = tab === 'single' ? activeCls : idleCls;
+  $('#adminTabExcel').className = tab === 'excel' ? activeCls : idleCls;
+  $('#adminTabEnq').className = tab === 'enquiries' ? activeCls : idleCls;
+
+  if (tab === 'enquiries') loadEnquiriesList();
 }
 
 function openLoginModal(mode) {
   if (authState.token && authState.role === mode) {
     if (confirm(`Signed in as ${authState.user} (${authState.role.toUpperCase()}). Sign out?`)) {
-      authState = { token: '', role: '', user: '', loginMode: 'dealer' };
-      sessionStorage.removeItem('sapl_token');
-      sessionStorage.removeItem('sapl_role');
-      sessionStorage.removeItem('sapl_user');
-      updateAuthButtons();
-      switchView('catalog');
-      render();
+      logoutSession();
     }
     return;
   }
@@ -1010,22 +1246,34 @@ function openLoginModal(mode) {
   $('#authPassword').value = '';
 
   if (mode === 'admin') {
-    $('#authEyebrow').textContent = 'ADMIN CONTROL CENTRE';
+    $('#authEyebrow').textContent = 'ADMIN BACKEND ACCESS';
     $('#authTitle').textContent = 'Admin Studio Sign In';
-    $('#authSubtitle').textContent = 'Sign in to capture part photos, run AI OCR scans and manage the catalogue.';
+    $('#authSubtitle').textContent = 'Manage parts master, capture box labels via camera OCR, or upload bulk Excel sheets.';
     $('#authIdLabel').textContent = 'ADMIN USERNAME';
     $('#authIdentifier').placeholder = 'Enter Admin Username';
   } else {
-    $('#authEyebrow').textContent = 'DEALER ACCESS';
+    $('#authEyebrow').textContent = 'DEALER STORE ACCESS';
     $('#authTitle').textContent = 'Dealer Portal Sign In';
-    $('#authSubtitle').textContent = 'Sign in with your Somani Auto dealer code to access commercial pricing and enquiry history.';
+    $('#authSubtitle').textContent = 'Sign in with your Somani Auto dealer code for net dealer rates and order history.';
     $('#authIdLabel').textContent = 'DEALER CODE';
     $('#authIdentifier').placeholder = 'Enter Dealer Code';
   }
 
-  $('#overlay').classList.add('show');
-  $('#authModal').classList.add('show');
+  $('#overlay').classList.remove('hidden');
+  $('#authModal').classList.remove('hidden');
+  $('#authModal').classList.add('flex');
   setTimeout(() => $('#authIdentifier').focus(), 80);
+}
+
+function logoutSession() {
+  authState = { token: '', role: '', user: '', loginMode: 'dealer' };
+  sessionStorage.removeItem('sapl_token');
+  sessionStorage.removeItem('sapl_role');
+  sessionStorage.removeItem('sapl_user');
+  updateAuthUI();
+  switchView('store');
+  renderCatalog();
+  showToast('Signed out');
 }
 
 async function submitLogin(e) {
@@ -1046,9 +1294,7 @@ async function submitLogin(e) {
       })
     });
     const data = await res.json();
-    if (!res.ok || !data.ok) {
-      throw new Error(data.error || 'Authentication failed');
-    }
+    if (!res.ok || !data.ok) throw new Error(data.error || 'Invalid credentials');
 
     authState.token = data.token;
     authState.role = data.role;
@@ -1058,16 +1304,15 @@ async function submitLogin(e) {
     sessionStorage.setItem('sapl_role', data.role);
     sessionStorage.setItem('sapl_user', data.user);
 
-    updateAuthButtons();
-    closeAll();
-    render();
+    updateAuthUI();
+    closeAllOverlays();
+    renderCatalog();
+    showToast(`Welcome, ${data.user}`);
 
     if (data.role === 'admin') {
       switchView('admin');
-      renderAdminPartsTable();
     } else {
-      switchView('enquiries');
-      loadEnquiries();
+      switchView('store');
     }
   } catch (err) {
     errBox.textContent = err.message;
@@ -1077,37 +1322,44 @@ async function submitLogin(e) {
   }
 }
 
-function updateAuthButtons() {
-  const dealerBtn = $('#dealerAccessBtn');
-  const adminBtn = $('#adminAccessBtn');
+function updateAuthUI() {
+  const dealerBtn = $('#dealerBtn');
+  const adminBtn = $('#adminBtn');
 
   if (authState.role === 'dealer' && authState.token) {
     dealerBtn.textContent = `Dealer: ${authState.user}`;
     adminBtn.textContent = 'Admin';
+    $('#kpiTierLabel').textContent = `Dealer (${authState.user})`;
+    $('#kpiTierSub').textContent = 'Net dealer pricing unlocked';
   } else if (authState.role === 'admin' && authState.token) {
-    adminBtn.textContent = `Admin: ${authState.user}`;
+    adminBtn.textContent = `Admin Studio`;
     dealerBtn.textContent = 'Dealer Login';
+    $('#kpiTierLabel').textContent = 'Admin Mode';
+    $('#kpiTierSub').textContent = 'Backend Studio unlocked';
   } else {
     dealerBtn.textContent = 'Dealer Login';
     adminBtn.textContent = 'Admin';
+    $('#kpiTierLabel').textContent = 'Public Store';
+    $('#kpiTierSub').textContent = 'Sign in as Dealer for net rates';
   }
 }
 
 function openCart() {
-  $('#drawer').classList.add('open');
-  $('#overlay').classList.add('show');
+  $('#overlay').classList.remove('hidden');
+  $('#cartDrawer').style.right = '0px';
 }
 
-function closeAll() {
-  $('#drawer').classList.remove('open');
-  $('#overlay').classList.remove('show');
-  $$('.modal').forEach(m => m.classList.remove('show'));
+function closeAllOverlays() {
+  $('#overlay').classList.add('hidden');
+  $('#cartDrawer').style.right = '-420px';
+  $('#authModal').classList.add('hidden');
+  $('#authModal').classList.remove('flex');
 }
 
 function bindEvents() {
   $('#searchInput').addEventListener('input', () => {
     page = 1;
-    render();
+    renderCatalog();
     renderSuggestions(true);
   });
   $('#searchInput').addEventListener('focus', () => renderSuggestions(true));
@@ -1119,37 +1371,20 @@ function bindEvents() {
         first.click();
       }
     } else if (e.key === 'Escape') {
-      $('#suggestions').classList.remove('show');
+      $('#suggestions').classList.add('hidden');
     }
   });
 
   document.addEventListener('click', e => {
-    if (!e.target.closest('.searchWrap')) {
-      $('#suggestions').classList.remove('show');
+    if (!e.target.closest('#suggestions') && e.target.id !== 'searchInput') {
+      $('#suggestions').classList.add('hidden');
     }
   });
 
   $('#hierarchyFilter').addEventListener('change', e => {
     activeHierarchy = e.target.value;
     page = 1;
-    render();
-  });
-
-  $('#clearFilters').addEventListener('click', () => {
-    activePG = 'ALL';
-    activeHierarchy = 'ALL';
-    $('#searchInput').value = '';
-    page = 1;
-    $('#kpiActivePG').textContent = 'ALL PG';
-    buildPG();
-    updateHierarchy();
-    render();
-  });
-
-  $('#quickCamInput').addEventListener('change', e => {
-    if (e.target.files && e.target.files[0]) {
-      handleQuickCameraFile(e.target.files[0]);
-    }
+    renderCatalog();
   });
 
   $('#adminCamInput').addEventListener('change', e => {
@@ -1157,29 +1392,39 @@ function bindEvents() {
       handleAdminCameraFile(e.target.files[0]);
     }
   });
+
+  $('#excelFileInput').addEventListener('change', e => {
+    if (e.target.files && e.target.files[0]) {
+      handleExcelFile(e.target.files[0]);
+    }
+  });
 }
 
 window.switchView = switchView;
-window.openAdminWorkspace = openAdminWorkspace;
-window.openEnquiriesWorkspace = openEnquiriesWorkspace;
+window.openAdminPortal = openAdminPortal;
+window.switchAdminTab = switchAdminTab;
 window.openLoginModal = openLoginModal;
 window.submitLogin = submitLogin;
-window.setDisplayMode = setDisplayMode;
-window.clearSearchInput = clearSearchInput;
-window.triggerQuickCamera = triggerQuickCamera;
-window.hideQuickOcr = hideQuickOcr;
-window.sendQuickOcrToAdmin = sendQuickOcrToAdmin;
+window.logoutSession = logoutSession;
+window.setHeroSlide = setHeroSlide;
+window.setCatalogLayout = setCatalogLayout;
+window.clearSearch = clearSearch;
+window.resetAllFilters = resetAllFilters;
+window.goPage = goPage;
+window.addToCart = addToCart;
+window.changeQty = changeQty;
+window.removeCartItem = removeCartItem;
+window.openCart = openCart;
+window.closeAllOverlays = closeAllOverlays;
+window.submitEnquiry = submitEnquiry;
 window.triggerAdminCamera = triggerAdminCamera;
 window.uploadAndScanAdminPhoto = uploadAndScanAdminPhoto;
 window.savePartMaster = savePartMaster;
 window.resetAdminForm = resetAdminForm;
+window.downloadExcelTemplate = downloadExcelTemplate;
+window.triggerExcelPicker = triggerExcelPicker;
+window.clearExcelPreview = clearExcelPreview;
+window.uploadExcelRowsToDb = uploadExcelRowsToDb;
 window.deleteDbPart = deleteDbPart;
-window.add = add;
-window.chg = chg;
-window.delItem = delItem;
-window.openCart = openCart;
-window.closeAll = closeAll;
-window.submitEnquiry = submitEnquiry;
-window.loadEnquiries = loadEnquiries;
+window.loadEnquiriesList = loadEnquiriesList;
 window.loadCatalogueData = loadCatalogueData;
-window.goPage = goPage;

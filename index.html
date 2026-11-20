@@ -1,417 +1,603 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#ffffff">
-  <title>Somani Auto Pvt. Ltd. | Parts Management &amp; OCR Portal</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20261120-mpmswhite1">
-</head>
-<body>
-  <!-- Hidden Mobile Rear Camera Inputs -->
-  <input type="file" id="quickCamInput" accept="image/*" capture="environment" hidden>
-  <input type="file" id="adminCamInput" accept="image/*" capture="environment" hidden>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+  <meta name="theme-color" content="#FFFFFF" />
+  <title>Somani Auto Pvt. Ltd. — Commercial Vehicle Parts &amp; Lubricants Store</title>
 
-  <!-- MPMS Top Operational Command Bar -->
-  <header class="mpmsHeader">
-    <div class="headerInner">
-      <a class="brand" href="#top" onclick="switchView('catalog');return false;">
-        <img src="assets/images/somani-logo.png" alt="Somani Auto" onerror="this.style.display='none'">
-        <div class="brandMark" aria-hidden="true">SA</div>
-        <div class="brandText">
-          <div class="brandTitle">SOMANI AUTO PVT. LTD. <span class="badgeOrange">PARTS PORTAL</span></div>
-          <small>Commercial Vehicle Spares &amp; Lubricants &bull; Raipur, CG</small>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS & SheetJS (Excel .xlsx / .csv Import & Export) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              blue: '#1B569E',
+              blueDark: '#14427A',
+              orange: '#F97316',
+              orangeDark: '#EA580C',
+              surface: '#FFFFFF',
+              bg: '#F8FAFC'
+            }
+          },
+          fontFamily: {
+            sans: ['"Inter"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace']
+          }
+        }
+      }
+    };
+  </script>
+  <link rel="stylesheet" href="styles.css?v=20261120-ecomwhite1" />
+</head>
+<body class="min-h-screen font-sans antialiased selection:bg-brand-blue selection:text-white">
+
+  <!-- Hidden Camera & Excel Inputs (Strictly Admin Backend Only) -->
+  <input type="file" id="adminCamInput" accept="image/*" capture="environment" hidden />
+  <input type="file" id="excelFileInput" accept=".xlsx,.xls,.csv" hidden />
+
+  <!-- Toast Notification -->
+  <div id="toastBox" class="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-5 sm:bottom-5 z-[100] hidden items-center justify-center sm:justify-start gap-2.5 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-2xl text-xs sm:text-sm font-medium border border-slate-700">
+    <span class="w-2 h-2 rounded-full bg-brand-orange shrink-0"></span>
+    <span id="toastMsg" class="truncate">Saved successfully</span>
+  </div>
+
+  <!-- ====================================================================== -->
+  <!-- TOP PURE WHITE NAVIGATION BAR (Official Somani Vector Logo + E-Comm)   -->
+  <!-- ====================================================================== -->
+  <header class="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-xs">
+    <div class="max-w-7xl mx-auto px-3 sm:px-6 min-h-[66px] py-2 flex items-center justify-between gap-2 sm:gap-4">
+      <!-- Brand Logo & Title -->
+      <a href="#top" onclick="switchView('store');return false;" class="flex items-center gap-2.5 sm:gap-3.5 min-w-0">
+        <div class="bg-white border border-slate-200 px-2 py-1 rounded-lg shadow-2xs shrink-0 flex items-center justify-center">
+          <svg class="h-8 sm:h-9 w-auto" viewBox="0 0 260 205" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Somani Auto Pvt. Ltd. Logo">
+            <ellipse cx="130" cy="76" rx="64" ry="70" stroke="#1B569E" stroke-width="7.5" fill="#FFFFFF"/>
+            <path d="M142 33 C114 23, 94 38, 102 68 C109 94, 121 114, 103 118 C92 120, 84 114, 79 109 C88 126, 114 132, 127 118 C139 104, 127 80, 120 57 C115 41, 126 33, 142 33 Z" fill="#1B569E"/>
+            <path d="M118 44 C144 34, 163 48, 154 75 C146 97, 136 105, 152 106 C163 106, 173 100, 181 94 C169 112, 143 120, 130 107 C118 95, 131 73, 137 56 C141 45, 130 42, 118 44 Z" fill="#1B569E"/>
+            <rect x="6" y="141" width="88" height="6.5" fill="#1B569E"/>
+            <rect x="166" y="141" width="88" height="6.5" fill="#1B569E"/>
+            <text x="130" y="182" text-anchor="middle" fill="#1B569E" font-family="Inter, Arial, sans-serif" font-weight="800" font-size="37" letter-spacing="8">SOMANI</text>
+            <rect x="6" y="191" width="248" height="6.5" fill="#1B569E"/>
+          </svg>
+        </div>
+
+        <div class="min-w-0">
+          <div class="flex items-center gap-1.5">
+            <h1 class="text-sm sm:text-base font-extrabold text-slate-900 tracking-tight uppercase truncate">
+              Somani Auto Pvt. Ltd.
+            </h1>
+            <span class="hidden md:inline-block text-[10px] font-bold uppercase tracking-wider bg-blue-50 text-brand-blue border border-blue-200 px-2 py-0.5 rounded-full">
+              Parts Store
+            </span>
+          </div>
+          <p class="text-[11px] text-slate-500 truncate">
+            TATA • Eicher • Commercial Vehicle Parts &amp; Lubricants
+          </p>
         </div>
       </a>
 
-      <nav class="mainTabs" aria-label="Primary Workspace">
-        <button class="tabBtn active" data-view="catalog" onclick="switchView('catalog')">
-          Parts Catalogue
-        </button>
-        <button class="tabBtn" data-view="admin" onclick="openAdminWorkspace()">
-          Admin Studio &amp; OCR
-        </button>
-        <button class="tabBtn" data-view="enquiries" onclick="openEnquiriesWorkspace()">
-          Enquiries Log
-        </button>
-      </nav>
+      <!-- Right E-Commerce & Portal Controls -->
+      <div class="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
+        <div id="apiBadge" class="hidden lg:flex items-center gap-1.5 text-xs font-medium bg-slate-100 border border-slate-200 px-3 py-1.5 rounded-full text-slate-600">
+          <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse shrink-0"></span>
+          <span>Connecting...</span>
+        </div>
 
-      <div class="headerActions">
-        <span id="apiStatusPill" class="statusPill checking" title="Azure Function API Status">
-          <i></i><span id="apiStatusText">Connecting API...</span>
-        </span>
-        <button id="dealerAccessBtn" class="btnGhost" onclick="openLoginModal('dealer')">
+        <button id="storeNavBtn" onclick="switchView('store')" class="hidden sm:inline-flex text-xs font-semibold px-3 py-2 rounded-lg bg-slate-100 text-slate-900 hover:bg-slate-200 transition cursor-pointer">
+          Catalogue
+        </button>
+
+        <button id="dealerBtn" onclick="openLoginModal('dealer')" class="text-xs font-semibold px-2.5 sm:px-3.5 py-2 rounded-lg border border-slate-300 bg-white text-slate-700 hover:border-brand-blue hover:text-brand-blue transition cursor-pointer">
           Dealer Login
         </button>
-        <button id="adminAccessBtn" class="btnGhost" onclick="openLoginModal('admin')">
+
+        <button id="adminBtn" onclick="openAdminPortal()" class="text-xs font-semibold px-2.5 sm:px-3.5 py-2 rounded-lg border border-slate-300 bg-slate-50 text-slate-700 hover:border-brand-orange hover:text-brand-orange transition cursor-pointer">
           Admin
         </button>
-        <button id="cartBtn" class="btnPrimary" onclick="openCart()">
-          Enquiry <span id="cartCount" class="pillCount">0</span>
+
+        <button onclick="openCart()" class="bg-brand-orange hover:bg-brand-orangeDark active:scale-[0.99] text-white font-bold text-xs sm:text-sm px-3 sm:px-4 py-2 rounded-full shadow-md shadow-orange-500/20 transition flex items-center gap-1.5 cursor-pointer">
+          <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
+          </svg>
+          <span class="hidden sm:inline">Enquiry</span>
+          <span id="cartCount" class="bg-white text-brand-orange font-mono font-extrabold text-[11px] px-1.5 py-0.2 rounded-full">0</span>
         </button>
       </div>
     </div>
   </header>
 
-  <main id="top" class="pageContainer">
-    <!-- MPMS 4-Card KPI Summary Strip -->
-    <section class="kpiGrid" aria-label="Portal KPIs">
-      <article class="kpiCard">
-        <div class="kpiTop">
-          <span>ACTIVE PARTS CATALOGUE</span>
-          <span class="kpiTag">LIVE SKU</span>
-        </div>
-        <strong id="kpiTotalParts">0</strong>
-        <small id="kpiDataSource">Loading inventory...</small>
-      </article>
+  <!-- ====================================================================== -->
+  <!-- VIEW 1: PUBLIC & DEALER E-COMMERCE STOREFRONT (PURE WHITE THEME)       -->
+  <!-- ====================================================================== -->
+  <div id="storeView">
+    <!-- Edge-to-Edge 4K HD Hero Banner with Clean White Frosted Overlay -->
+    <section id="top" class="relative w-full h-[270px] sm:h-[340px] lg:h-[380px] overflow-hidden border-b border-slate-200 bg-white">
+      <div id="heroBgLayerA" class="bg-4k-layer absolute inset-0 opacity-100 scale-100"></div>
+      <div id="heroBgLayerB" class="bg-4k-layer absolute inset-0 opacity-0 scale-105"></div>
 
-      <article class="kpiCard">
-        <div class="kpiTop">
-          <span>PRODUCT GROUPS</span>
-          <span class="kpiTag">PG1 &ndash; PG6</span>
-        </div>
-        <strong id="kpiActivePG">ALL PG</strong>
-        <small id="kpiHierarchyCount">All hierarchies active</small>
-      </article>
+      <!-- Crisp White-Tinted Gradient Overlay so White Theme & 4K Photos Blend Seamlessly -->
+      <div class="absolute inset-0 bg-gradient-to-b from-white/85 via-white/75 to-[#F8FAFC]"></div>
 
-      <article class="kpiCard">
-        <div class="kpiTop">
-          <span>AI LABEL SCANNER</span>
-          <span class="kpiTag blue">VISION OCR</span>
-        </div>
-        <strong>Ready</strong>
-        <small>Snap TATA / Eicher box labels via mobile camera</small>
-      </article>
+      <div class="relative z-10 h-full max-w-4xl mx-auto px-4 sm:px-6 flex flex-col items-center justify-center text-center">
+        <span id="heroKicker" class="inline-block text-[11px] sm:text-xs font-extrabold tracking-widest text-brand-blue bg-blue-50/90 border border-blue-200 px-3 py-1 rounded-full uppercase mb-2.5">
+          Genuine Commercial Vehicle Spares &amp; Lubricants
+        </span>
 
-      <article class="kpiCard clickable" onclick="openCart()">
-        <div class="kpiTop">
-          <span>ENQUIRY BASKET</span>
-          <span class="kpiTag orange">QUICK QUOTE</span>
-        </div>
-        <strong id="kpiCartItems">0 Items</strong>
-        <small>Click to review &amp; submit enquiry to Raipur desk</small>
-      </article>
-    </section>
+        <h2 class="text-2xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900 tracking-tight leading-tight">
+          Genuine Parts for Every <span class="text-brand-blue">Commercial Fleet</span>
+        </h2>
 
-    <!-- =================================================================== -->
-    <!-- VIEW 1: PARTS CATALOGUE & CAMERA LABEL SEARCH                       -->
-    <!-- =================================================================== -->
-    <section id="view-catalog" class="workspaceView active">
-      <div class="panelCard">
-        <div class="panelHeader">
-          <div>
-            <span class="eyebrow">01 / PARTS MASTER &amp; DISCOVERY</span>
-            <h1>Commercial Vehicle Parts Catalogue</h1>
-            <p>Filter by PG1&ndash;PG6, product hierarchy, part number, or snap a box sticker with your phone camera.</p>
-          </div>
-          <div class="viewSwitchGroup">
-            <button id="gridModeBtn" class="modeBtn active" onclick="setDisplayMode('grid')">Card Grid</button>
-            <button id="tableModeBtn" class="modeBtn" onclick="setDisplayMode('table')">MPMS Table</button>
-          </div>
-        </div>
+        <p class="mt-2.5 text-xs sm:text-base text-slate-600 max-w-2xl leading-relaxed">
+          Browse verified <strong class="text-slate-900">TATA Motors</strong> &amp; <strong class="text-slate-900">Eicher</strong> assemblies, heavy-duty fleet oils, and build instant dealer quotation enquiries for <strong class="text-slate-900">Somani Auto Pvt. Ltd., Raipur</strong>.
+        </p>
 
-        <!-- Search + Mobile Camera Label Scan Bar -->
-        <div class="searchToolbar">
-          <div class="searchWrap">
-            <div class="searchBox">
-              <span class="searchIcon">&#128269;</span>
-              <input
-                id="searchInput"
-                type="search"
-                autocomplete="off"
-                placeholder="Search part number (e.g. 257342100102), description, or brand..."
-                aria-label="Search part number or description"
-              >
-              <button id="clearSearchBtn" class="iconClear" title="Clear search" onclick="clearSearchInput()">&times;</button>
-            </div>
-            <div id="suggestions" class="suggestions"></div>
-          </div>
-
-          <button class="btnCamera" type="button" onclick="triggerQuickCamera()">
-            <span>&#128247;</span> Scan Label (Camera)
+        <div class="mt-5 flex flex-wrap items-center justify-center gap-2.5 sm:gap-3">
+          <a href="#catalogSection" class="bg-brand-blue hover:bg-brand-blueDark text-white font-bold text-xs sm:text-sm px-5 sm:px-6 py-2.5 sm:py-3 rounded-full shadow-lg shadow-blue-900/15 transition">
+            Browse Parts Catalogue
+          </a>
+          <button onclick="openLoginModal('dealer')" class="bg-white hover:bg-slate-50 text-slate-800 border border-slate-300 font-semibold text-xs sm:text-sm px-5 sm:px-6 py-2.5 sm:py-3 rounded-full shadow-xs transition cursor-pointer">
+            Dealer Price Access
           </button>
         </div>
 
-        <!-- Live OCR Quick-Scan Result Banner -->
-        <div id="quickOcrBanner" class="ocrBanner hidden">
-          <div class="ocrBannerLeft">
-            <span class="badgeBlue">AI OCR RESULT</span>
-            <div>
-              <strong id="quickOcrTitle">Scanning label...</strong>
-              <p id="quickOcrSub">Extracting part number, brand and MRP via Azure Vision...</p>
-            </div>
+        <div id="heroDots" class="mt-5 flex items-center gap-2"></div>
+      </div>
+    </section>
+
+    <!-- Main E-Commerce Store Container -->
+    <main id="catalogSection" class="max-w-7xl mx-auto px-3 sm:px-6 py-5 sm:py-7 space-y-5 sm:space-y-6">
+
+      <!-- 4 Clean E-Commerce Highlights / KPI Cards -->
+      <section class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
+        <div class="white-card rounded-xl p-3.5 sm:p-4 shadow-2xs">
+          <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Active Catalogue</p>
+          <p id="kpiTotal" class="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-1 font-mono">-</p>
+          <p id="kpiSourceText" class="text-[11px] text-slate-500 mt-0.5 truncate">Genuine vehicle components</p>
+        </div>
+
+        <div class="white-card rounded-xl p-3.5 sm:p-4 shadow-2xs">
+          <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Product Groups</p>
+          <p id="kpiPgLabel" class="text-2xl sm:text-3xl font-extrabold text-brand-blue mt-1 font-mono">PG1–PG6</p>
+          <p id="kpiHierText" class="text-[11px] text-slate-500 mt-0.5 truncate">Engine, Brake, Axle, Oil &amp; Body</p>
+        </div>
+
+        <div class="white-card rounded-xl p-3.5 sm:p-4 shadow-2xs">
+          <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Account Tier</p>
+          <p id="kpiTierLabel" class="text-xl sm:text-2xl font-extrabold text-slate-900 mt-1.5">Public Store</p>
+          <p id="kpiTierSub" class="text-[11px] text-slate-500 mt-1 truncate">Sign in as Dealer for net rates</p>
+        </div>
+
+        <div onclick="openCart()" class="white-card rounded-xl p-3.5 sm:p-4 shadow-2xs cursor-pointer border-orange-200 bg-orange-50/40">
+          <p class="text-[11px] font-semibold uppercase tracking-wider text-brand-orange">Enquiry Basket</p>
+          <p id="kpiBasketCount" class="text-2xl sm:text-3xl font-extrabold text-brand-orange mt-1 font-mono">0 NOS</p>
+          <p class="text-[11px] text-slate-600 mt-0.5 truncate">Tap to review &amp; send quote request</p>
+        </div>
+      </section>
+
+      <!-- E-Commerce Search & Category Filter Toolbar -->
+      <section class="bg-white rounded-2xl border border-slate-200 p-3.5 sm:p-5 shadow-2xs space-y-3.5">
+        <div class="flex flex-col md:flex-row items-stretch md:items-center gap-2.5 sm:gap-3">
+          <!-- Search Input (16px font on mobile prevents iOS zoom) -->
+          <div class="relative flex-1">
+            <svg class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z"/>
+            </svg>
+            <input
+              id="searchInput"
+              type="search"
+              autocomplete="off"
+              placeholder="Search by Part Number (e.g. 257342100102), Part Name, or Brand..."
+              class="w-full bg-slate-50 border border-slate-300 rounded-xl pl-10 pr-9 py-2.5 text-base sm:text-sm text-slate-900 placeholder-slate-400 focus:bg-white focus:outline-none focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/15 transition"
+            />
+            <button id="clearSearchBtn" onclick="clearSearch()" class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 text-lg font-bold cursor-pointer">&times;</button>
+            <div id="suggestions" class="hidden absolute left-0 right-0 top-[calc(100%+6px)] bg-white border border-slate-200 rounded-xl shadow-xl z-30 max-h-72 overflow-y-auto divide-y divide-slate-100"></div>
           </div>
-          <div class="ocrBannerActions">
-            <button id="quickOcrUseAdminBtn" class="btnOutline sm hidden" onclick="sendQuickOcrToAdmin()">
-              + Add as New Part
+
+          <!-- Product Hierarchy Dropdown & Reset -->
+          <div class="flex items-center gap-2">
+            <select id="hierarchyFilter" class="flex-1 md:w-64 bg-slate-50 border border-slate-300 rounded-xl px-3 py-2.5 text-base sm:text-sm text-slate-800 font-medium focus:bg-white focus:outline-none focus:border-brand-blue">
+              <option value="ALL">All Product Hierarchies</option>
+            </select>
+            <button onclick="resetAllFilters()" class="px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-xs sm:text-sm font-semibold text-slate-700 shrink-0 cursor-pointer">
+              Reset
             </button>
-            <button class="btnGhost sm" onclick="hideQuickOcr()">Dismiss</button>
           </div>
         </div>
 
-        <!-- Step 1 & Step 2 MPMS Filter Controls -->
-        <div class="filterBar">
-          <div class="filterGroup">
-            <label class="filterLabel">1. PRODUCT GROUP (PG)</label>
-            <div id="pgFilters" class="pgFilters"></div>
+        <!-- Horizontal Scrollable PG1–PG6 Category Pills (Super Clean on Mobile) -->
+        <div class="flex items-center justify-between gap-3 pt-1 border-t border-slate-100">
+          <div id="pgFilters" class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1"></div>
+          <span id="catalogSummary" class="hidden sm:inline text-xs font-medium text-slate-500 shrink-0">Loading...</span>
+        </div>
+      </section>
+
+      <!-- Mobile Result Summary + View Toggle -->
+      <div class="flex items-center justify-between px-1">
+        <span id="mobileResultSummary" class="text-xs font-semibold text-slate-600">Loading parts...</span>
+        <div class="inline-flex bg-white border border-slate-200 rounded-lg p-0.5 shadow-2xs">
+          <button id="btnViewGrid" onclick="setCatalogLayout('grid')" class="px-2.5 py-1 rounded-md text-xs font-semibold bg-brand-blue text-white cursor-pointer">Grid</button>
+          <button id="btnViewList" onclick="setCatalogLayout('list')" class="px-2.5 py-1 rounded-md text-xs font-semibold text-slate-600 hover:text-slate-900 cursor-pointer">Table</button>
+        </div>
+      </div>
+
+      <!-- E-Commerce Product Grid (2 Columns on Mobile, 3 on Tablet, 4 on Desktop) -->
+      <section id="productGrid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4"></section>
+
+      <!-- Optional Compact Table View -->
+      <section id="productTableWrap" class="hidden bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-2xs">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-sm">
+            <thead>
+              <tr class="bg-slate-50 border-b border-slate-200 text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                <th class="py-3 px-4">Part</th>
+                <th class="py-3 px-4">Part No</th>
+                <th class="py-3 px-4">Category</th>
+                <th class="py-3 px-4">Brand</th>
+                <th class="py-3 px-4">Price / MRP</th>
+                <th class="py-3 px-4 text-right">Order</th>
+              </tr>
+            </thead>
+            <tbody id="productTableBody" class="divide-y divide-slate-100"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Pagination -->
+      <div id="pagination" class="flex items-center justify-center gap-3 pt-2"></div>
+
+      <!-- Dealer My Enquiries Section (Shown when Dealer is logged in) -->
+      <section id="dealerEnquiriesBox" class="hidden bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-2xs space-y-3">
+        <div class="flex items-center justify-between">
+          <div>
+            <span class="text-[11px] font-bold uppercase tracking-wider text-brand-blue">Dealer Account</span>
+            <h3 class="text-base font-bold text-slate-900">My Submitted Enquiries</h3>
+          </div>
+          <button onclick="loadEnquiriesList()" class="text-xs font-semibold px-3 py-1.5 rounded-lg border border-slate-300 hover:bg-slate-50 cursor-pointer">Refresh</button>
+        </div>
+        <div id="dealerEnquiriesTable" class="overflow-x-auto text-xs"></div>
+      </section>
+    </main>
+  </div>
+
+  <!-- ====================================================================== -->
+  <!-- VIEW 2: DEDICATED ADMIN BACKEND STUDIO (Camera OCR + Excel Upload)     -->
+  <!-- ====================================================================== -->
+  <div id="adminView" class="hidden max-w-7xl mx-auto px-3 sm:px-6 py-5 sm:py-7 space-y-5">
+    <!-- Admin Header Banner -->
+    <div class="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div>
+        <span class="text-[11px] font-extrabold uppercase tracking-wider text-brand-orange">Admin Backend Studio</span>
+        <h2 class="text-lg sm:text-xl font-extrabold text-slate-900">Parts Master, Camera OCR &amp; Bulk Excel Upload</h2>
+        <p class="text-xs text-slate-500 mt-0.5">Add parts via mobile camera label scan or upload an Excel (.xlsx / .csv) price &amp; inventory sheet.</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <button onclick="switchView('store')" class="px-3.5 py-2 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 cursor-pointer">
+          &larr; Back to Storefront
+        </button>
+        <button onclick="logoutSession()" class="px-3.5 py-2 rounded-xl border border-rose-200 bg-rose-50 hover:bg-rose-100 text-xs font-semibold text-rose-700 cursor-pointer">
+          Sign Out
+        </button>
+      </div>
+    </div>
+
+    <!-- Admin Sub-Tabs: 1) Single Part + Camera OCR  |  2) Bulk Excel Upload  |  3) Customer Enquiries -->
+    <div class="flex items-center gap-2 overflow-x-auto no-scrollbar">
+      <button id="adminTabSingle" onclick="switchAdminTab('single')" class="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-brand-blue text-white shadow-xs shrink-0 cursor-pointer">
+        1. Camera OCR &amp; Single Part
+      </button>
+      <button id="adminTabExcel" onclick="switchAdminTab('excel')" class="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 shrink-0 cursor-pointer">
+        2. Bulk Excel Upload (.xlsx / .csv)
+      </button>
+      <button id="adminTabEnq" onclick="switchAdminTab('enquiries')" class="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 shrink-0 cursor-pointer">
+        3. Dealer Enquiries Log
+      </button>
+    </div>
+
+    <!-- ADMIN TAB 1: CAMERA CAPTURE + AZURE VISION OCR + SINGLE PART FORM -->
+    <div id="adminPanelSingle" class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+      <!-- Left 5 Cols: Rear Camera Capture & OCR -->
+      <div class="lg:col-span-5 bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-2xs space-y-3.5">
+        <div>
+          <span class="text-[11px] font-bold uppercase tracking-wider text-brand-blue">Step 1 • Backend Camera Capture</span>
+          <h3 class="text-base font-bold text-slate-900">Capture Part &amp; Box Label</h3>
+          <p class="text-xs text-slate-500">Compresses photo (~250 KB), uploads to Azure Blob Storage, and extracts label details.</p>
+        </div>
+
+        <div onclick="triggerAdminCamera()" class="border-2 border-dashed border-slate-300 hover:border-brand-orange rounded-xl bg-slate-50 hover:bg-orange-50/40 min-h-[220px] flex flex-col items-center justify-center text-center p-4 cursor-pointer transition">
+          <img id="adminPhotoPreview" class="hidden max-h-56 rounded-lg object-contain shadow-xs" alt="Part preview" />
+          <div id="cameraPlaceholder" class="space-y-1.5">
+            <div class="w-12 h-12 rounded-full bg-white border border-slate-200 shadow-2xs flex items-center justify-center mx-auto text-brand-orange">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+              </svg>
+            </div>
+            <p class="text-sm font-bold text-slate-800">Tap to Open Camera or Select Photo</p>
+            <p class="text-xs text-slate-500">Reads TATA, Eicher, Bosch, Fleetguard &amp; Oil stickers</p>
+          </div>
+        </div>
+
+        <div id="compressionStats" class="hidden text-xs bg-slate-100 border border-slate-200 rounded-lg px-3 py-2 text-slate-600 font-mono"></div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <button type="button" onclick="triggerAdminCamera()" class="w-full py-2.5 px-3 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-xs font-bold text-slate-800 cursor-pointer">
+            Capture / Retake
+          </button>
+          <button id="btnUploadAndOcr" type="button" disabled onclick="uploadAndScanAdminPhoto()" class="w-full py-2.5 px-3 rounded-xl bg-brand-blue hover:bg-brand-blueDark disabled:opacity-50 text-white text-xs font-bold cursor-pointer">
+            Upload &amp; Scan OCR
+          </button>
+        </div>
+
+        <div id="adminOcrStatus" class="hidden rounded-xl px-3.5 py-2.5 text-xs font-medium bg-blue-50 border border-blue-200 text-brand-blue"></div>
+
+        <div id="adminOcrRawWrap" class="hidden space-y-1">
+          <label class="text-[11px] font-bold uppercase text-slate-400">Extracted Label Text</label>
+          <pre id="adminOcrRawText" class="bg-slate-50 border border-slate-200 rounded-xl p-3 text-[11px] text-slate-700 whitespace-pre-wrap max-h-36 overflow-y-auto font-mono"></pre>
+        </div>
+      </div>
+
+      <!-- Right 7 Cols: Part Master Form -->
+      <div class="lg:col-span-7 bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-2xs">
+        <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-100">
+          <div>
+            <span class="text-[11px] font-bold uppercase tracking-wider text-brand-orange">Step 2 • Catalogue Entry</span>
+            <h3 class="text-base font-bold text-slate-900">Save Part to Live Database</h3>
+          </div>
+          <button type="button" onclick="resetAdminForm()" class="text-xs font-semibold text-slate-500 hover:text-slate-800 cursor-pointer">Clear Form</button>
+        </div>
+
+        <form id="partMasterForm" onsubmit="savePartMaster(event)" class="space-y-3.5 text-sm">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Part Number *</label>
+              <input id="fPartNo" required placeholder="e.g. 257342100102" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 font-mono text-base sm:text-sm uppercase focus:bg-white focus:outline-none focus:border-brand-blue" />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Brand / OEM</label>
+              <input id="fBrand" value="TATA / OEM" placeholder="TATA, EICHER, BOSCH..." class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-base sm:text-sm focus:bg-white focus:outline-none focus:border-brand-blue" />
+            </div>
           </div>
 
-          <div class="filterRowBottom">
-            <div class="hierarchyControl">
-              <label class="filterLabel" for="hierarchyFilter">2. PRODUCT HIERARCHY</label>
-              <select id="hierarchyFilter">
-                <option value="ALL">All product hierarchies</option>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Part Description *</label>
+            <input id="fName" required placeholder="e.g. Front Brake Drum Assembly" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-base sm:text-sm focus:bg-white focus:outline-none focus:border-brand-blue" />
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Product Group (PG) *</label>
+              <select id="fPG" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-base sm:text-sm focus:bg-white focus:outline-none focus:border-brand-blue">
+                <option value="PG1">PG1 — Engine &amp; Filtration</option>
+                <option value="PG2">PG2 — Brake &amp; Clutch</option>
+                <option value="PG3">PG3 — Axle, Bearing &amp; Suspension</option>
+                <option value="PG4">PG4 — Electrical &amp; Sensors</option>
+                <option value="PG5">PG5 — Body, Cabin &amp; Rubber</option>
+                <option value="PG6">PG6 — Oils, Lubricants &amp; Coolants</option>
               </select>
             </div>
-            <div class="filterMetaActions">
-              <span id="catalogSummary" class="catalogSummary">Loading parts...</span>
-              <button id="clearFilters" class="btnGhost sm">Reset Filters</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Grid or MPMS Table Container -->
-        <div id="grid" class="productGrid"></div>
-        <div id="tableWrap" class="tableWrap hidden"></div>
-        <div id="pagination" class="pagination"></div>
-      </div>
-    </section>
-
-    <!-- =================================================================== -->
-    <!-- VIEW 2: ADMIN PART STUDIO (CAMERA CAPTURE + SAS UPLOAD + AI OCR)    -->
-    <!-- =================================================================== -->
-    <section id="view-admin" class="workspaceView hidden">
-      <div class="adminSplitGrid">
-        <!-- Left Column: Camera Capture & AI OCR Scanner -->
-        <div class="panelCard">
-          <div class="panelHeader compact">
             <div>
-              <span class="eyebrow">STEP 1 / MOBILE CAMERA &amp; OCR</span>
-              <h2>Snap Part &amp; Label Photo</h2>
-              <p>Photos are compressed in-browser (~250 KB) and uploaded directly to Azure Blob Storage.</p>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Product Hierarchy</label>
+              <input id="fHierarchy" placeholder="e.g. Brake System" list="hierarchyDatalist" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-base sm:text-sm focus:bg-white focus:outline-none focus:border-brand-blue" />
+              <datalist id="hierarchyDatalist"></datalist>
             </div>
           </div>
 
-          <div id="cameraDropzone" class="cameraDropzone" onclick="triggerAdminCamera()">
-            <img id="adminPhotoPreview" class="photoPreview hidden" alt="Captured part preview">
-            <div id="cameraPlaceholder" class="cameraPlaceholder">
-              <div class="camCircle">&#128247;</div>
-              <strong>Tap to Open Rear Camera or Choose Photo</strong>
-              <span>Supports TATA, Eicher, Bosch, Fleetguard &amp; Lubricant labels</span>
-            </div>
-          </div>
-
-          <div id="compressionStats" class="infoStrip hidden"></div>
-
-          <div class="stackActions">
-            <button id="btnAdminCam" type="button" class="btnOutline full" onclick="triggerAdminCamera()">
-              &#128247; Capture / Retake Photo
-            </button>
-            <button id="btnUploadAndOcr" type="button" class="btnPrimary full" disabled onclick="uploadAndScanAdminPhoto()">
-              &#9889; Upload to Azure &amp; Auto-Fill via AI OCR
-            </button>
-          </div>
-
-          <div id="adminOcrStatus" class="statusBox hidden"></div>
-
-          <div id="adminOcrRawWrap" class="rawOcrBox hidden">
-            <label>EXTRACTED LABEL TEXT (AZURE VISION)</label>
-            <pre id="adminOcrRawText"></pre>
-          </div>
-        </div>
-
-        <!-- Right Column: MPMS Part Master Form -->
-        <div class="panelCard">
-          <div class="panelHeader compact">
+          <div class="grid grid-cols-3 gap-2.5 sm:gap-3">
             <div>
-              <span class="eyebrow">STEP 2 / PART MASTER RECORD</span>
-              <h2>Save Part to Catalogue Database</h2>
-              <p>Review OCR-extracted fields below and save directly to <code>sapl_parts_db</code>.</p>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">MRP (₹)</label>
+              <input id="fMrp" type="number" step="0.01" min="0" value="0" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2.5 font-mono text-base sm:text-sm focus:bg-white focus:outline-none focus:border-brand-blue" />
             </div>
-            <button type="button" class="btnGhost sm" onclick="resetAdminForm()">Clear Form</button>
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Dealer Price (₹)</label>
+              <input id="fDealerPrice" type="number" step="0.01" min="0" value="0" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2.5 font-mono text-base sm:text-sm focus:bg-white focus:outline-none focus:border-brand-blue" />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Stock Qty</label>
+              <input id="fStockQty" type="number" step="1" min="0" value="1" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2.5 font-mono text-base sm:text-sm focus:bg-white focus:outline-none focus:border-brand-blue" />
+            </div>
           </div>
 
-          <form id="partMasterForm" class="mpmsForm" onsubmit="savePartMaster(event)">
-            <div class="formGrid2">
-              <div class="field">
-                <label for="fPartNo">PART NUMBER *</label>
-                <input id="fPartNo" required placeholder="e.g. 257342100102">
-              </div>
-              <div class="field">
-                <label for="fBrand">BRAND / OEM</label>
-                <input id="fBrand" value="TATA / OEM" placeholder="TATA, EICHER, BOSCH...">
-              </div>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Unit (UOM)</label>
+              <select id="fUom" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-base sm:text-sm focus:bg-white focus:outline-none focus:border-brand-blue">
+                <option value="NOS">NOS</option>
+                <option value="SET">SET</option>
+                <option value="LTR">LTR</option>
+                <option value="KG">KG</option>
+                <option value="PAIR">PAIR</option>
+              </select>
             </div>
-
-            <div class="field">
-              <label for="fName">PART DESCRIPTION *</label>
-              <input id="fName" required placeholder="e.g. Front Brake Drum Assembly">
+            <div class="sm:col-span-2">
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Azure Photo URL (Auto-filled)</label>
+              <input id="fImageUrl" readonly placeholder="Will populate automatically after photo upload" class="w-full bg-slate-100 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-500 font-mono" />
             </div>
-
-            <div class="formGrid2">
-              <div class="field">
-                <label for="fPG">PRODUCT GROUP (PG) *</label>
-                <select id="fPG">
-                  <option value="PG1">PG1 &mdash; Engine &amp; Filtration</option>
-                  <option value="PG2">PG2 &mdash; Brake &amp; Clutch</option>
-                  <option value="PG3">PG3 &mdash; Axle, Bearing &amp; Suspension</option>
-                  <option value="PG4">PG4 &mdash; Electrical &amp; Sensors</option>
-                  <option value="PG5">PG5 &mdash; Body, Cabin &amp; Rubber</option>
-                  <option value="PG6">PG6 &mdash; Oils, Lubricants &amp; Coolants</option>
-                </select>
-              </div>
-              <div class="field">
-                <label for="fHierarchy">PRODUCT HIERARCHY</label>
-                <input id="fHierarchy" placeholder="e.g. Brake System" list="hierarchyDatalist">
-                <datalist id="hierarchyDatalist"></datalist>
-              </div>
-            </div>
-
-            <div class="formGrid3">
-              <div class="field">
-                <label for="fMrp">MRP (INR)</label>
-                <input id="fMrp" type="number" step="0.01" min="0" value="0">
-              </div>
-              <div class="field">
-                <label for="fDealerPrice">DEALER PRICE (INR)</label>
-                <input id="fDealerPrice" type="number" step="0.01" min="0" value="0">
-              </div>
-              <div class="field">
-                <label for="fStockQty">STOCK QTY</label>
-                <input id="fStockQty" type="number" step="1" min="0" value="1">
-              </div>
-            </div>
-
-            <div class="formGrid2">
-              <div class="field">
-                <label for="fUom">UNIT (UOM)</label>
-                <select id="fUom">
-                  <option value="NOS">NOS</option>
-                  <option value="SET">SET</option>
-                  <option value="LTR">LTR</option>
-                  <option value="KG">KG</option>
-                  <option value="PAIR">PAIR</option>
-                </select>
-              </div>
-              <div class="field">
-                <label for="fImageUrl">AZURE PHOTO URL</label>
-                <input id="fImageUrl" readonly placeholder="Auto-filled after Azure upload">
-              </div>
-            </div>
-
-            <input type="hidden" id="fBlobName">
-            <input type="hidden" id="fThumbnailUrl">
-
-            <div class="formSubmitRow">
-              <button id="btnSavePart" type="submit" class="btnPrimary lg full">
-                Save Part to Live Catalogue
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-
-      <!-- Bottom MPMS Recent Database Parts Table -->
-      <div class="panelCard mt16">
-        <div class="panelHeader compact">
-          <div>
-            <span class="eyebrow">DATABASE RECORDS</span>
-            <h2>Live Catalogue Entries</h2>
           </div>
-          <button class="btnOutline sm" onclick="loadCatalogueData()">Refresh List</button>
-        </div>
-        <div id="adminPartsTableWrap" class="tableWrap"></div>
-      </div>
-    </section>
 
-    <!-- =================================================================== -->
-    <!-- VIEW 3: ENQUIRIES & ORDERS LOG (MPMS OPERATIONAL TABLE)             -->
-    <!-- =================================================================== -->
-    <section id="view-enquiries" class="workspaceView hidden">
-      <div class="panelCard">
-        <div class="panelHeader compact">
-          <div>
-            <span class="eyebrow">03 / DEALER &amp; COUNTER ENQUIRIES</span>
-            <h2>Submitted Parts Enquiries</h2>
-            <p>Live enquiries recorded in <code>sapl_parts_db</code> for Somani Auto Raipur sales desk.</p>
+          <input type="hidden" id="fBlobName" />
+          <input type="hidden" id="fThumbnailUrl" />
+
+          <div class="pt-2">
+            <button id="btnSavePart" type="submit" class="w-full py-3 rounded-xl bg-brand-orange hover:bg-brand-orangeDark text-white font-bold text-sm shadow-md shadow-orange-500/20 cursor-pointer">
+              Save Part to Live Catalogue
+            </button>
           </div>
-          <button class="btnOutline sm" onclick="loadEnquiries()">Refresh Enquiries</button>
-        </div>
-        <div id="enquiriesTableWrap" class="tableWrap">
-          <p class="emptyNote">Sign in as Dealer or Admin to load enquiry records.</p>
-        </div>
+        </form>
       </div>
-    </section>
-  </main>
-
-  <footer class="mpmsFooter">
-    <div>
-      <strong>Somani Auto Pvt. Ltd.</strong> &bull; Raipur, Chhattisgarh &mdash; Commercial Vehicle Parts Intelligence
     </div>
-    <div>Azure Cloud Architecture &bull; Central India</div>
+
+    <!-- ADMIN TAB 2: BULK EXCEL (.XLSX / .CSV) UPLOAD -->
+    <div id="adminPanelExcel" class="hidden bg-white rounded-2xl border border-slate-200 p-4 sm:p-6 shadow-2xs space-y-4">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100">
+        <div>
+          <span class="text-[11px] font-bold uppercase tracking-wider text-brand-blue">Bulk Catalogue Importer</span>
+          <h3 class="text-base sm:text-lg font-extrabold text-slate-900">Upload Parts Price &amp; Stock Excel Sheet</h3>
+          <p class="text-xs text-slate-500 mt-0.5">Supports <code>.xlsx</code>, <code>.xls</code>, and <code>.csv</code> files (up to 2,500 rows per upload). Existing part numbers are updated automatically.</p>
+        </div>
+        <button type="button" onclick="downloadExcelTemplate()" class="px-4 py-2.5 rounded-xl border border-brand-blue bg-blue-50 hover:bg-blue-100 text-brand-blue text-xs font-bold shrink-0 cursor-pointer">
+          &#11015; Download Sample Excel (.xlsx)
+        </button>
+      </div>
+
+      <!-- Excel Dropzone -->
+      <div onclick="triggerExcelPicker()" class="border-2 border-dashed border-slate-300 hover:border-brand-blue rounded-2xl bg-slate-50 hover:bg-blue-50/40 p-6 sm:p-8 text-center cursor-pointer transition">
+        <div class="w-12 h-12 rounded-full bg-white border border-slate-200 shadow-2xs flex items-center justify-center mx-auto text-brand-blue mb-2">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+        </div>
+        <p class="text-sm font-bold text-slate-900">Click to Choose Excel (.xlsx / .xls) or CSV File</p>
+        <p class="text-xs text-slate-500 mt-1">Required columns: <strong>Part No</strong>, <strong>Part Name</strong> &bull; Optional: <strong>PG</strong>, <strong>Hierarchy</strong>, <strong>Brand</strong>, <strong>MRP</strong>, <strong>Dealer Price</strong>, <strong>Stock Qty</strong>, <strong>UOM</strong></p>
+      </div>
+
+      <div id="excelStatusBanner" class="hidden rounded-xl px-4 py-3 text-xs font-semibold"></div>
+
+      <!-- Excel Parsed Preview & Import Action -->
+      <div id="excelPreviewSection" class="hidden space-y-3">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-slate-50 border border-slate-200 rounded-xl p-3">
+          <div class="text-xs text-slate-700">
+            Ready to import <strong id="excelValidCount" class="text-brand-blue font-mono text-sm">0</strong> valid parts
+            <span id="excelSkippedNote" class="text-slate-500"></span>
+          </div>
+          <div class="flex items-center gap-2">
+            <button type="button" onclick="clearExcelPreview()" class="px-3 py-2 rounded-lg border border-slate-300 bg-white text-xs font-semibold text-slate-600 cursor-pointer">
+              Clear
+            </button>
+            <button id="btnConfirmExcelImport" type="button" onclick="uploadExcelRowsToDb()" class="px-4 py-2 rounded-lg bg-brand-orange hover:bg-brand-orangeDark text-white text-xs font-bold shadow-xs cursor-pointer">
+              Import All to Live Database
+            </button>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto border border-slate-200 rounded-xl max-h-80">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead class="sticky top-0 bg-slate-100 border-b border-slate-200 text-slate-600 uppercase font-bold">
+              <tr>
+                <th class="py-2.5 px-3">#</th>
+                <th class="py-2.5 px-3">Part No</th>
+                <th class="py-2.5 px-3">Part Description</th>
+                <th class="py-2.5 px-3">PG</th>
+                <th class="py-2.5 px-3">Hierarchy</th>
+                <th class="py-2.5 px-3">Brand</th>
+                <th class="py-2.5 px-3">MRP</th>
+                <th class="py-2.5 px-3">Dealer Price</th>
+                <th class="py-2.5 px-3">Qty</th>
+              </tr>
+            </thead>
+            <tbody id="excelPreviewBody" class="divide-y divide-slate-100"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ADMIN TAB 3: ALL CUSTOMER ENQUIRIES -->
+    <div id="adminPanelEnquiries" class="hidden bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-2xs space-y-3">
+      <div class="flex items-center justify-between">
+        <div>
+          <span class="text-[11px] font-bold uppercase tracking-wider text-brand-orange">Sales Desk</span>
+          <h3 class="text-base font-bold text-slate-900">All Customer &amp; Dealer Enquiries</h3>
+        </div>
+        <button onclick="loadEnquiriesList()" class="px-3 py-1.5 rounded-lg border border-slate-300 text-xs font-semibold hover:bg-slate-50 cursor-pointer">Refresh</button>
+      </div>
+      <div id="adminEnquiriesTable" class="overflow-x-auto text-xs"></div>
+    </div>
+
+    <!-- Bottom Admin Live Database Catalogue Table -->
+    <div class="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-2xs space-y-3">
+      <div class="flex items-center justify-between">
+        <div>
+          <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">PostgreSQL Live Records</span>
+          <h3 class="text-base font-bold text-slate-900">Recently Added / Updated Parts</h3>
+        </div>
+        <button onclick="loadCatalogueData()" class="px-3 py-1.5 rounded-lg border border-slate-300 text-xs font-semibold hover:bg-slate-50 cursor-pointer">Refresh</button>
+      </div>
+      <div id="adminPartsTableWrap" class="overflow-x-auto text-xs"></div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="max-w-7xl mx-auto px-3 sm:px-6 py-6 border-t border-slate-200 mt-8 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-500">
+    <div><strong class="text-slate-800">Somani Auto Pvt. Ltd.</strong> &bull; Raipur, Chhattisgarh</div>
+    <div>TATA &bull; Eicher &bull; Genuine Commercial Vehicle Parts &amp; Lubricants</div>
   </footer>
 
-  <!-- Slide-out Enquiry Cart Drawer -->
-  <aside id="drawer" class="cartDrawer" aria-label="Parts Enquiry Basket">
-    <div class="drawerHead">
+  <!-- ====================================================================== -->
+  <!-- SLIDE-OUT E-COMMERCE ENQUIRY CART DRAWER                               -->
+  <!-- ====================================================================== -->
+  <div id="overlay" onclick="closeAllOverlays()" class="hidden fixed inset-0 bg-slate-900/45 backdrop-blur-[1px] z-40"></div>
+
+  <aside id="cartDrawer" class="fixed top-0 right-[-420px] w-full max-w-[400px] h-screen bg-white border-l border-slate-200 z-50 flex flex-col shadow-2xl transition-all duration-200">
+    <div class="px-5 py-4 border-b border-slate-200 flex items-center justify-between">
       <div>
-        <small>QUOTATION REQUEST</small>
-        <h2>Parts Enquiry Basket</h2>
+        <span class="text-[10px] font-extrabold uppercase tracking-wider text-brand-orange">Quotation Basket</span>
+        <h3 class="text-lg font-extrabold text-slate-900">Parts Enquiry Cart</h3>
       </div>
-      <button id="closeCart" class="closeBtn" onclick="closeAll()">&times;</button>
+      <button onclick="closeAllOverlays()" class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xl flex items-center justify-center cursor-pointer">&times;</button>
     </div>
 
-    <div id="cartItems" class="cartItems"></div>
+    <div id="cartItems" class="flex-1 overflow-y-auto p-4 space-y-2.5"></div>
 
-    <div class="cartFoot">
-      <div class="enquiryContactFields">
-        <input id="enqCompany" placeholder="Dealer / Workshop Name">
-        <div class="formGrid2">
-          <input id="enqName" placeholder="Contact Person">
-          <input id="enqPhone" placeholder="Mobile Number">
+    <div class="p-4 border-t border-slate-200 bg-slate-50 space-y-3">
+      <div class="space-y-2">
+        <input id="enqCompany" placeholder="Dealer / Fleet / Workshop Name" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-base sm:text-xs" />
+        <div class="grid grid-cols-2 gap-2">
+          <input id="enqName" placeholder="Contact Name" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-base sm:text-xs" />
+          <input id="enqPhone" type="tel" placeholder="Mobile Number" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-base sm:text-xs" />
         </div>
-        <input id="enqNotes" placeholder="Vehicle model / urgent remarks (optional)">
+        <input id="enqNotes" placeholder="Vehicle model or urgent remarks (optional)" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-base sm:text-xs" />
       </div>
 
-      <div class="subtotalRow">
-        <span>SELECTED ITEMS</span>
-        <b id="subtotal">0 NOS</b>
+      <div class="flex items-center justify-between text-xs font-bold text-slate-700 pt-1">
+        <span>TOTAL QUANTITY</span>
+        <span id="cartSubtotal" class="text-sm font-mono text-brand-blue">0 NOS</span>
       </div>
 
-      <button id="submitEnquiryBtn" class="btnPrimary lg full" onclick="submitEnquiry()">
-        Submit Parts Enquiry
+      <button id="submitEnquiryBtn" onclick="submitEnquiry()" class="w-full py-3 rounded-xl bg-brand-orange hover:bg-brand-orangeDark text-white font-bold text-sm shadow-md shadow-orange-500/20 cursor-pointer">
+        Submit Quotation Enquiry
       </button>
     </div>
   </aside>
 
-  <div id="overlay" class="overlay" onclick="closeAll()"></div>
+  <!-- ====================================================================== -->
+  <!-- DEALER & ADMIN LOGIN MODAL (Clean White Card, Zero Exposed Passwords)  -->
+  <!-- ====================================================================== -->
+  <div id="authModal" class="hidden fixed inset-0 z-50 items-center justify-center p-4">
+    <div class="modal-animate relative w-full max-w-md bg-white border border-slate-200 rounded-2xl p-6 shadow-2xl space-y-4">
+      <button onclick="closeAllOverlays()" class="absolute top-4 right-4 w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xl flex items-center justify-center cursor-pointer">&times;</button>
 
-  <!-- Dealer / Admin Authentication Modal (Clean, No Exposed Passwords) -->
-  <div id="authModal" class="modal" role="dialog" aria-modal="true">
-    <div class="modalBox">
-      <button class="closeBtn modalClose" onclick="closeAll()">&times;</button>
-      <span id="authEyebrow" class="eyebrow">DEALER ACCESS</span>
-      <h2 id="authTitle">Dealer Portal Sign In</h2>
-      <p id="authSubtitle">Sign in with your Somani Auto credentials to view dealer pricing and track enquiries.</p>
+      <div>
+        <span id="authEyebrow" class="text-[11px] font-extrabold uppercase tracking-wider text-brand-blue">DEALER PORTAL</span>
+        <h3 id="authTitle" class="text-xl font-extrabold text-slate-900 mt-0.5">Dealer Sign In</h3>
+        <p id="authSubtitle" class="text-xs text-slate-500 mt-1">Access net dealer pricing and track your submitted quotation enquiries.</p>
+      </div>
 
-      <form onsubmit="submitLogin(event)">
-        <div class="field">
-          <label id="authIdLabel" for="authIdentifier">DEALER CODE</label>
-          <input id="authIdentifier" required autocomplete="username" placeholder="Enter Dealer Code">
+      <form onsubmit="submitLogin(event)" class="space-y-3.5">
+        <div>
+          <label id="authIdLabel" class="block text-xs font-bold text-slate-700 mb-1">DEALER CODE</label>
+          <input id="authIdentifier" required autocomplete="username" placeholder="Enter Dealer Code" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-base sm:text-sm focus:bg-white focus:outline-none focus:border-brand-blue" />
         </div>
-        <div class="field">
-          <label for="authPassword">PASSWORD</label>
-          <input id="authPassword" type="password" required autocomplete="current-password" placeholder="Enter Password">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">PASSWORD</label>
+          <input id="authPassword" type="password" required autocomplete="current-password" placeholder="Enter Password" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-base sm:text-sm focus:bg-white focus:outline-none focus:border-brand-blue" />
         </div>
-        <div id="authError" class="authError hidden"></div>
-        <button id="authSubmitBtn" type="submit" class="btnPrimary lg full">Sign In</button>
+
+        <div id="authError" class="hidden bg-rose-50 border border-rose-200 text-rose-700 px-3 py-2 rounded-lg text-xs font-medium"></div>
+
+        <button id="authSubmitBtn" type="submit" class="w-full py-3 rounded-xl bg-brand-blue hover:bg-brand-blueDark text-white font-bold text-sm cursor-pointer">
+          Sign In
+        </button>
       </form>
     </div>
   </div>
 
-  <script src="app.js?v=20261120-mpmswhite1"></script>
+  <script src="app.js?v=20261120-ecomwhite1"></script>
 </body>
 </html>
