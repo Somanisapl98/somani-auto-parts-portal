@@ -35,7 +35,7 @@
       }
     };
   </script>
-  <link rel="stylesheet" href="styles.css?v=20261121-mobileux2" />
+  <link rel="stylesheet" href="styles.css?v=20261121-twofinger1" />
 </head>
 <body class="min-h-screen font-sans antialiased selection:bg-brand-blue selection:text-white">
 
@@ -964,47 +964,36 @@
 
   
   <!-- ====================================================================== -->
-  <!-- FULL-SCREEN INTERACTIVE IMAGE ZOOM LIGHTBOX (Dealers + Admin)          -->
+  <!-- FULL-SCREEN INTERACTIVE IMAGE ZOOM LIGHTBOX (2-Finger Drag Zoom + Pan) -->
   <!-- ====================================================================== -->
   <div id="imageZoomLightbox" class="hidden fixed inset-0 z-[90] bg-slate-950/95 backdrop-blur-sm flex-col select-none">
-    <!-- Top Control Bar -->
-    <div class="px-3 sm:px-6 py-3 bg-slate-900/90 border-b border-slate-800 flex items-center justify-between gap-2 text-white shrink-0">
-      <div class="min-w-0">
-        <span id="zoomPartBadge" class="font-mono text-[11px] font-bold text-brand-orange mr-2"></span>
-        <span id="zoomTitleText" class="text-xs sm:text-sm font-bold text-white truncate">Product Inspection</span>
-        <span id="zoomAngleLabel" class="ml-2 text-[11px] text-slate-400"></span>
+    <!-- Minimal Clean Top Bar -->
+    <div class="px-4 py-3 bg-slate-900/85 border-b border-slate-800 flex items-center justify-between gap-2 text-white shrink-0">
+      <div class="flex items-center gap-2">
+        <span id="zoomLevelBadge" class="px-2.5 py-1 rounded-lg bg-slate-800 border border-slate-700 font-mono text-xs font-extrabold text-emerald-400">1.0&times;</span>
+        <button type="button" onclick="resetZoomTransform()" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-bold text-slate-200 cursor-pointer">
+          Reset
+        </button>
       </div>
 
-      <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
-        <button type="button" onclick="adjustZoomLevel(-0.5)" aria-label="Zoom out" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white font-extrabold text-base flex items-center justify-center cursor-pointer">
-          &minus;
-        </button>
-        <span id="zoomLevelBadge" class="w-12 text-center font-mono text-xs font-bold text-emerald-400">2.0&times;</span>
-        <button type="button" onclick="adjustZoomLevel(0.5)" aria-label="Zoom in" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white font-extrabold text-base flex items-center justify-center cursor-pointer">
-          +
-        </button>
-        <button type="button" onclick="resetZoomTransform()" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-[11px] font-bold text-slate-200 cursor-pointer">
-          Fit 1&times;
-        </button>
-        <button type="button" onclick="closeImageZoom()" aria-label="Close zoom" class="ml-1 w-9 h-9 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-extrabold text-xl flex items-center justify-center cursor-pointer">
-          &times;
-        </button>
-      </div>
+      <button type="button" onclick="closeImageZoom()" aria-label="Close zoom" class="w-9 h-9 rounded-full bg-rose-600 hover:bg-rose-500 text-white font-extrabold text-xl flex items-center justify-center shadow-sm cursor-pointer">
+        &times;
+      </button>
     </div>
 
-    <!-- Interactive Pan & Zoom Viewport -->
+    <!-- Interactive 2-Finger Drag Zoom & Pan Viewport -->
     <div id="zoomViewport" class="relative flex-1 overflow-hidden flex items-center justify-center">
-      <img id="zoomImg" src="" alt="Zoomed product preview" class="max-w-[92vw] max-h-[74vh] object-contain rounded-lg shadow-2xl" />
+      <img id="zoomImg" src="" alt="Zoomed product preview" class="max-w-[94vw] max-h-[78vh] object-contain rounded-lg shadow-2xl" />
 
-      <button id="zoomPrevBtn" type="button" onclick="stepZoomAngle(-1)" aria-label="Previous angle" class="hidden absolute left-3 sm:left-5 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-slate-900/85 hover:bg-brand-blue border border-slate-700 text-white text-xl font-bold flex items-center justify-center shadow-lg cursor-pointer">
+      <button id="zoomPrevBtn" type="button" onclick="stepZoomAngle(-1)" aria-label="Previous angle" class="hidden absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-slate-900/80 hover:bg-brand-blue border border-slate-700 text-white text-xl font-bold flex items-center justify-center shadow-lg cursor-pointer">
         &lsaquo;
       </button>
-      <button id="zoomNextBtn" type="button" onclick="stepZoomAngle(1)" aria-label="Next angle" class="hidden absolute right-3 sm:right-5 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-slate-900/85 hover:bg-brand-blue border border-slate-700 text-white text-xl font-bold flex items-center justify-center shadow-lg cursor-pointer">
+      <button id="zoomNextBtn" type="button" onclick="stepZoomAngle(1)" aria-label="Next angle" class="hidden absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-slate-900/80 hover:bg-brand-blue border border-slate-700 text-white text-xl font-bold flex items-center justify-center shadow-lg cursor-pointer">
         &rsaquo;
       </button>
 
-      <div class="pointer-events-none absolute bottom-3 left-1/2 -translate-x-1/2 bg-slate-900/80 border border-slate-800 text-slate-300 text-[10px] sm:text-xs px-3 py-1 rounded-full whitespace-nowrap">
-        Tap image to cycle zoom (2&times; / 3.5&times; / 1&times;) &bull; Drag to pan
+      <div class="pointer-events-none absolute bottom-3.5 left-1/2 -translate-x-1/2 bg-slate-900/85 border border-slate-800 text-slate-200 text-[11px] px-3.5 py-1 rounded-full whitespace-nowrap">
+        Drag with 2 fingers to zoom in / out &bull; 1 finger to pan
       </div>
     </div>
 
@@ -1012,6 +1001,6 @@
     <div id="zoomThumbsBar" class="hidden px-4 py-2.5 bg-slate-900/95 border-t border-slate-800 flex items-center justify-center gap-2 overflow-x-auto no-scrollbar shrink-0"></div>
   </div>
 
-  <script src="app.js?v=20261121-mobileux2"></script>
+  <script src="app.js?v=20261121-twofinger1"></script>
 </body>
 </html>

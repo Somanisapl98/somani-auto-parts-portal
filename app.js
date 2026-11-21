@@ -2540,22 +2540,22 @@ window.loadCatalogueData = loadCatalogueData;
 window.renderAdminPartsTable = renderAdminPartsTable;
 
 // ---------------------------------------------------------------------------
-// INTERACTIVE IMAGE ZOOM LIGHTBOX (Auto-Zoom 2x, Pan, Pinch & Angle Switcher)
+// INTERACTIVE IMAGE ZOOM LIGHTBOX (2-Finger Drag Zoom In/Out + 1-Finger Pan)
 // ---------------------------------------------------------------------------
 let zoomState = {
   angles: [],
   index: 0,
-  title: '',
-  partNo: '',
-  scale: 2.0,
+  scale: 1.0,
   tx: 0,
   ty: 0,
   isDragging: false,
-  dragMoved: false,
   startX: 0,
   startY: 0,
-  pinchStartDist: 0,
-  pinchStartScale: 2.0
+  isTwoFingerZoom: false,
+  twoFingerStartDist: 0,
+  twoFingerStartMidY: 0,
+  twoFingerStartMidX: 0,
+  twoFingerStartScale: 1.0
 };
 
 function buildAnglesForProduct(p) {
@@ -2591,9 +2591,7 @@ function openProductZoomByPartNo(partNoKey) {
   openImageZoomLightbox({
     angles: buildAnglesForProduct(p),
     startIndex: 0,
-    title: p.name,
-    partNo: p.partNo,
-    initialScale: 2.0
+    initialScale: 1.0
   });
 }
 
@@ -2602,9 +2600,7 @@ function openProductDetailZoom() {
   openImageZoomLightbox({
     angles: detailAngles,
     startIndex: detailAngleIndex,
-    title: detailProduct.name,
-    partNo: detailProduct.partNo,
-    initialScale: 2.0
+    initialScale: 1.0
   });
 }
 
@@ -2612,17 +2608,9 @@ function openAdminStep1Zoom() {
   if (!pendingAdminBlob) return;
   const srcUrl = showingEnhancedPreview ? pendingAdminBlob.enhancedDataUrl : pendingAdminBlob.originalDataUrl;
   openImageZoomLightbox({
-    angles: [
-      {
-        url: srcUrl,
-        thumbUrl: srcUrl,
-        label: showingEnhancedPreview ? 'Studio Auto-Enhanced Preview' : 'Original Raw Camera Photo'
-      }
-    ],
+    angles: [{ url: srcUrl, thumbUrl: srcUrl, label: 'Preview' }],
     startIndex: 0,
-    title: $('#fName').value.trim() || pendingAdminBlob.fileName || 'Captured Product Photo',
-    partNo: $('#fPartNo').value.trim().toUpperCase() || 'STEP 1 PREVIEW',
-    initialScale: 2.0
+    initialScale: 1.0
   });
 }
 
@@ -2635,24 +2623,19 @@ function openAdminGalleryZoom(startIndex = 0) {
       label: g.label || (i === 0 ? 'Front / Primary' : `Angle ${i + 1}`)
     })),
     startIndex,
-    title: $('#fName').value.trim() || 'Product Angles Preview',
-    partNo: $('#fPartNo').value.trim().toUpperCase() || 'GALLERY',
-    initialScale: 2.0
+    initialScale: 1.0
   });
 }
 
-function openImageZoomLightbox({ angles, startIndex = 0, title = '', partNo = '', initialScale = 2.0 }) {
+function openImageZoomLightbox({ angles, startIndex = 0, initialScale = 1.0 }) {
   if (!angles || !angles.length) return;
   zoomState.angles = angles;
   zoomState.index = Math.max(0, Math.min(startIndex, angles.length - 1));
-  zoomState.title = title;
-  zoomState.partNo = partNo;
   zoomState.scale = initialScale;
   zoomState.tx = 0;
   zoomState.ty = 0;
-
-  $('#zoomPartBadge').textContent = partNo ? `[${partNo}]` : '';
-  $('#zoomTitleText').textContent = title || 'Product Inspection';
+  zoomState.isDragging = false;
+  zoomState.isTwoFingerZoom = false;
 
   renderZoomAngle();
 
@@ -2676,7 +2659,6 @@ function renderZoomAngle() {
 
   const img = $('#zoomImg');
   img.src = current.url;
-  $('#zoomAngleLabel').textContent = current.label ? `• ${current.label}` : '';
 
   const multi = zoomState.angles.length > 1;
   $('#zoomPrevBtn').classList.toggle('hidden', !multi);
@@ -2705,7 +2687,7 @@ function renderZoomAngle() {
 function selectZoomAngle(idx) {
   if (idx < 0 || idx >= zoomState.angles.length) return;
   zoomState.index = idx;
-  zoomState.scale = 2.0;
+  zoomState.scale = 1.0;
   zoomState.tx = 0;
   zoomState.ty = 0;
   renderZoomAngle();
@@ -2714,7 +2696,7 @@ function selectZoomAngle(idx) {
 function stepZoomAngle(delta) {
   if (zoomState.angles.length <= 1) return;
   zoomState.index = (zoomState.index + delta + zoomState.angles.length) % zoomState.angles.length;
-  zoomState.scale = 2.0;
+  zoomState.scale = 1.0;
   zoomState.tx = 0;
   zoomState.ty = 0;
   renderZoomAngle();
@@ -2723,20 +2705,15 @@ function stepZoomAngle(delta) {
 function applyZoomTransform(animate = false) {
   const img = $('#zoomImg');
   if (!img) return;
-  if (zoomState.scale <= 1.01) {
+  if (zoomState.scale <= 1.02) {
     zoomState.scale = 1.0;
     zoomState.tx = 0;
     zoomState.ty = 0;
   }
-  img.style.transition = animate ? 'transform 0.18s ease-out' : 'none';
+  img.style.transition = animate ? 'transform 0.16s ease-out' : 'none';
   img.style.transform = `translate3d(${zoomState.tx}px, ${zoomState.ty}px, 0) scale(${zoomState.scale})`;
-  img.style.cursor = zoomState.scale > 1 ? (zoomState.isDragging ? 'grabbing' : 'grab') : 'zoom-in';
-  $('#zoomLevelBadge').textContent = `${zoomState.scale.toFixed(1)}×`;
-}
-
-function adjustZoomLevel(delta) {
-  zoomState.scale = Math.max(1.0, Math.min(4.0, Number((zoomState.scale + delta).toFixed(1))));
-  applyZoomTransform(true);
+  const badge = $('#zoomLevelBadge');
+  if (badge) badge.textContent = `${zoomState.scale.toFixed(1)}×`;
 }
 
 function resetZoomTransform() {
@@ -2746,15 +2723,24 @@ function resetZoomTransform() {
   applyZoomTransform(true);
 }
 
+function getTouchPairMetrics(t1, t2) {
+  const dx = t1.clientX - t2.clientX;
+  const dy = t1.clientY - t2.clientY;
+  return {
+    dist: Math.max(10, Math.hypot(dx, dy)),
+    midX: (t1.clientX + t2.clientX) * 0.5,
+    midY: (t1.clientY + t2.clientY) * 0.5
+  };
+}
+
 function initZoomViewportControls() {
   const vp = $('#zoomViewport');
   if (!vp) return;
 
-  // Mouse drag to pan
+  // Desktop mouse drag (pan when zoomed) & wheel zoom
   vp.addEventListener('mousedown', e => {
     if (e.target.closest('button')) return;
     zoomState.isDragging = true;
-    zoomState.dragMoved = false;
     zoomState.startX = e.clientX - zoomState.tx;
     zoomState.startY = e.clientY - zoomState.ty;
     applyZoomTransform(false);
@@ -2762,7 +2748,6 @@ function initZoomViewportControls() {
 
   window.addEventListener('mousemove', e => {
     if (!zoomState.isDragging) return;
-    zoomState.dragMoved = true;
     if (zoomState.scale > 1) {
       zoomState.tx = e.clientX - zoomState.startX;
       zoomState.ty = e.clientY - zoomState.startY;
@@ -2770,54 +2755,39 @@ function initZoomViewportControls() {
     }
   });
 
-  window.addEventListener('mouseup', e => {
-    if (!zoomState.isDragging) return;
-    const wasClick = !zoomState.dragMoved;
+  window.addEventListener('mouseup', () => {
     zoomState.isDragging = false;
-    applyZoomTransform(false);
-
-    if (wasClick && e.target.id === 'zoomImg') {
-      // Cycle zoom levels on click: 2.0x -> 3.5x -> 1.0x -> 2.0x
-      if (zoomState.scale < 1.8) {
-        zoomState.scale = 2.0;
-      } else if (zoomState.scale < 3.2) {
-        zoomState.scale = 3.5;
-      } else {
-        zoomState.scale = 1.0;
-        zoomState.tx = 0;
-        zoomState.ty = 0;
-      }
-      applyZoomTransform(true);
-    }
   });
 
-  // Mouse wheel zoom
   vp.addEventListener(
     'wheel',
     e => {
       e.preventDefault();
-      const delta = e.deltaY < 0 ? 0.35 : -0.35;
-      adjustZoomLevel(delta);
+      const delta = e.deltaY < 0 ? 0.3 : -0.3;
+      zoomState.scale = Math.max(1.0, Math.min(5.0, Number((zoomState.scale + delta).toFixed(2))));
+      applyZoomTransform(false);
     },
     { passive: false }
   );
 
-  // Touch pan & two-finger pinch zoom
+  // Mobile touch: 1 finger pans when zoomed, 2-finger drag (up/down or pinch) zooms IN & OUT smoothly
   vp.addEventListener(
     'touchstart',
     e => {
       if (e.target.closest('button')) return;
       if (e.touches.length === 1) {
+        zoomState.isTwoFingerZoom = false;
         zoomState.isDragging = true;
-        zoomState.dragMoved = false;
         zoomState.startX = e.touches[0].clientX - zoomState.tx;
         zoomState.startY = e.touches[0].clientY - zoomState.ty;
-      } else if (e.touches.length === 2) {
+      } else if (e.touches.length >= 2) {
         zoomState.isDragging = false;
-        const dx = e.touches[0].clientX - e.touches[1].clientX;
-        const dy = e.touches[0].clientY - e.touches[1].clientY;
-        zoomState.pinchStartDist = Math.hypot(dx, dy);
-        zoomState.pinchStartScale = zoomState.scale;
+        zoomState.isTwoFingerZoom = true;
+        const m = getTouchPairMetrics(e.touches[0], e.touches[1]);
+        zoomState.twoFingerStartDist = m.dist;
+        zoomState.twoFingerStartMidX = m.midX;
+        zoomState.twoFingerStartMidY = m.midY;
+        zoomState.twoFingerStartScale = zoomState.scale;
       }
     },
     { passive: true }
@@ -2826,43 +2796,36 @@ function initZoomViewportControls() {
   vp.addEventListener(
     'touchmove',
     e => {
-      if (e.touches.length === 1 && zoomState.isDragging) {
-        zoomState.dragMoved = true;
+      if (e.touches.length >= 2) {
+        e.preventDefault();
+        const m = getTouchPairMetrics(e.touches[0], e.touches[1]);
+        const pinchRatio = m.dist / Math.max(10, zoomState.twoFingerStartDist);
+        // Two-finger vertical/horizontal drag delta: dragging UP (negative deltaY) or RIGHT zooms IN; DOWN or LEFT zooms OUT
+        const dragZoomDelta = ((zoomState.twoFingerStartMidY - m.midY) + (m.midX - zoomState.twoFingerStartMidX)) / 140;
+        const nextScale = zoomState.twoFingerStartScale * pinchRatio + dragZoomDelta;
+        zoomState.scale = Math.max(1.0, Math.min(5.0, Number(nextScale.toFixed(2))));
+        applyZoomTransform(false);
+      } else if (e.touches.length === 1 && zoomState.isDragging && !zoomState.isTwoFingerZoom) {
         if (zoomState.scale > 1) {
+          e.preventDefault();
           zoomState.tx = e.touches[0].clientX - zoomState.startX;
           zoomState.ty = e.touches[0].clientY - zoomState.startY;
           applyZoomTransform(false);
         }
-      } else if (e.touches.length === 2 && zoomState.pinchStartDist > 0) {
-        const dx = e.touches[0].clientX - e.touches[1].clientX;
-        const dy = e.touches[0].clientY - e.touches[1].clientY;
-        const dist = Math.hypot(dx, dy);
-        const ratio = dist / zoomState.pinchStartDist;
-        zoomState.scale = Math.max(1.0, Math.min(4.0, Number((zoomState.pinchStartScale * ratio).toFixed(2))));
-        applyZoomTransform(false);
       }
     },
-    { passive: true }
+    { passive: false }
   );
 
   vp.addEventListener('touchend', e => {
-    if (zoomState.isDragging && !zoomState.dragMoved && e.target.id === 'zoomImg') {
-      if (zoomState.scale < 1.8) {
-        zoomState.scale = 2.0;
-      } else if (zoomState.scale < 3.2) {
-        zoomState.scale = 3.5;
-      } else {
-        zoomState.scale = 1.0;
-        zoomState.tx = 0;
-        zoomState.ty = 0;
-      }
-      applyZoomTransform(true);
+    if (e.touches.length < 2) {
+      zoomState.isTwoFingerZoom = false;
     }
-    zoomState.isDragging = false;
-    zoomState.pinchStartDist = 0;
+    if (e.touches.length === 0) {
+      zoomState.isDragging = false;
+    }
   });
 
-  // Escape key closes Zoom Lightbox
   document.addEventListener('keydown', e => {
     const lb = $('#imageZoomLightbox');
     if (!lb || lb.classList.contains('hidden')) return;
@@ -2881,7 +2844,6 @@ window.openAdminGalleryZoom = openAdminGalleryZoom;
 window.closeImageZoom = closeImageZoom;
 window.selectZoomAngle = selectZoomAngle;
 window.stepZoomAngle = stepZoomAngle;
-window.adjustZoomLevel = adjustZoomLevel;
 window.resetZoomTransform = resetZoomTransform;
 
 // ---------------------------------------------------------------------------
