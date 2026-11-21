@@ -31,7 +31,8 @@ let authState = {
   token: sessionStorage.getItem('sapl_token') || '',
   role: sessionStorage.getItem('sapl_role') || '',
   user: sessionStorage.getItem('sapl_user') || '',
-  loginMode: 'dealer'
+  businessName: sessionStorage.getItem('sapl_bname') || '',
+  dealerLoginMode: 'password'
 };
 
 let pendingAdminBlob = null;
@@ -63,7 +64,7 @@ function showToast(msg) {
   setTimeout(() => {
     box.classList.add('hidden');
     box.classList.remove('flex');
-  }, 3400);
+  }, 3600);
 }
 
 // ---------------------------------------------------------------------------
@@ -160,9 +161,7 @@ async function loadCatalogueData() {
         apiParts = data.parts;
       }
     }
-  } catch (err) {
-    console.warn('API /parts fallback:', err);
-  }
+  } catch (err) {}
 
   try {
     const [pRes, hRes] = await Promise.all([
@@ -522,6 +521,461 @@ function resetAllFilters() {
 }
 
 // ---------------------------------------------------------------------------
+// OTP Request, Dealer Self-Registration, Password Reset & Login Flows
+// ---------------------------------------------------------------------------
+function openDealerAuth(tab = 'login') {
+  if (authState.token && authState.role === 'dealer') {
+    if (confirm(`Signed in as Dealer ${authState.user}. Sign out?`)) {
+      logoutSession();
+    }
+    return;
+  }
+  $('#overlay').classList.remove('hidden');
+  $('#dealerModal').classList.remove('hidden');
+  $('#dealerModal').classList.add('flex');
+  switchDealerTab(tab);
+}
+
+function switchDealerTab(tab) {
+  $('#dealerOtpBanner').classList.add('hidden');
+  $('#dealerError').classList.add('hidden');
+
+  $('#dealerFormLogin').classList.toggle('hidden', tab !== 'login');
+  $('#dealerFormRegister').classList.toggle('hidden', tab !== 'register');
+  if (tab === 'register') {
+    $('#dealerRegInputForm').classList.remove('hidden');
+    $('#dealerGeneratedCard').classList.add('hidden');
+  }
+  $('#dealerFormReset').classList.toggle('hidden', tab !== 'reset');
+
+  const active = 'py-2 rounded-lg bg-white text-brand-blue shadow-2xs cursor-pointer';
+  const idle = 'py-2 rounded-lg text-slate-600 hover:text-slate-900 cursor-pointer';
+  $('#dTabLogin').className = tab === 'login' ? active : idle;
+  $('#dTabRegister').className = tab === 'register' ? active : idle;
+  $('#dTabReset').className = tab === 'reset' ? active : idle;
+}
+
+function setDealerLoginMode(mode) {
+  authState.dealerLoginMode = mode;
+  $('#dModePass').className =
+    mode === 'password'
+      ? 'px-2.5 py-1 rounded-md bg-white text-slate-900 shadow-2xs cursor-pointer'
+      : 'px-2.5 py-1 rounded-md text-slate-600 cursor-pointer';
+  $('#dModeOtp').className =
+    mode === 'otp'
+      ? 'px-2.5 py-1 rounded-md bg-white text-slate-900 shadow-2xs cursor-pointer'
+      : 'px-2.5 py-1 rounded-md text-slate-600 cursor-pointer';
+
+  $('#dLoginPassWrap').classList.toggle('hidden', mode !== 'password');
+  $('#dLoginOtpWrap').classList.toggle('hidden', mode !== 'otp');
+  $('#dLoginSendOtpBtn').classList.toggle('hidden', mode !== 'otp');
+}
+
+function openAdminPortal() {
+  if (authState.role === 'admin' && authState.token) {
+    switchView('admin');
+    return;
+  }
+  $('#overlay').classList.remove('hidden');
+  $('#adminModal').classList.remove('hidden');
+  $('#adminModal').classList.add('flex');
+  switchAdminAuthTab('login');
+}
+
+function switchAdminAuthTab(tab) {
+  $('#adminOtpBanner').classList.add('hidden');
+  $('#adminAuthError').classList.add('hidden');
+
+  $('#adminFormLogin').classList.toggle('hidden', tab !== 'login');
+  $('#adminFormReset').classList.toggle('hidden', tab !== 'reset');
+
+  const active = 'py-2 rounded-lg bg-white text-slate-900 shadow-2xs cursor-pointer';
+  const idle = 'py-2 rounded-lg text-slate-600 hover:text-slate-900 cursor-pointer';
+  $('#aTabLogin').className = tab === 'login' ? active : idle;
+  $('#aTabReset').className = tab === 'reset' ? active : idle;
+}
+
+async function requestOtpFlow(purpose, inputSelector, bannerId, errorId) {
+  const contact = $(inputSelector).value.trim();
+  const banner = $(`#${bannerId}`);
+  const errBox = $(`#${errorId}`);
+  banner.classList.add('hidden');
+  errBox.classList.add('hidden');
+
+  if (!contact) {
+    errBox.textContent = 'Please enter your Email address or User ID first.';
+    errBox.classList.remove('hidden');
+    return;
+  }
+
+  banner.textContent = 'Generating 6-digit OTP...';
+  banner.classList.remove('hidden');
+
+  try {
+    const res = await fetch(`${API_BASE}/auth/otp/request`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ purpose, contact })
+    });
+    const data = await res.json();
+    if (!res.ok || !data.ok) {
+      throw new Error(data.error || 'Could not send OTP');
+    }
+
+    if (data.devOtp) {
+      banner.innerHTML = `OTP sent to <strong>${esc(data.maskedEmail)}</strong> (valid 10 mins).<br><span class="font-mono font-bold text-brand-orange">Email OTP (Preview): ${esc(data.devOtp)}</span>`;
+    } else {
+      banner.innerHTML = `6-digit OTP sent to <strong>${esc(data.maskedEmail)}</strong> via ${esc((data.channels || []).join(', '))}. Valid for 10 minutes.`;
+    }
+  } catch (err) {
+    banner.classList.add('hidden');
+    errBox.textContent = err.message;
+    errBox.classList.remove('hidden');
+  }
+}
+
+let lastGeneratedCreds = { id: '', pass: '' };
+
+async function submitDealerRegister(e) {
+  e.preventDefault();
+  const errBox = $('#dealerError');
+  const btn = $('#dRegSubmitBtn');
+  errBox.classList.add('hidden');
+  btn.disabled = true;
+  btn.textContent = 'Creating Account...';
+
+  try {
+    const res = await fetch(`${API_BASE}/auth/dealer/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: $('#dRegContact').value.trim(),
+        otp: $('#dRegOtp').value.trim(),
+        mobile: $('#dRegMobile').value.trim(),
+        businessName: $('#dRegBusiness').value.trim(),
+        mpmsCode: $('#dRegMpms').value.trim().toUpperCase()
+      })
+    });
+    const data = await res.json();
+    if (!res.ok || !data.ok) throw new Error(data.error || 'Account creation failed');
+
+    saveSession(data.token, 'dealer', data.user, data.businessName || data.user);
+    renderCatalog();
+    switchView('store');
+
+    lastGeneratedCreds = {
+      id: data.generatedUserId || data.user,
+      pass: data.generatedPassword || ''
+    };
+    $('#genDealerIdVal').textContent = lastGeneratedCreds.id;
+    $('#genDealerPassVal').textContent = lastGeneratedCreds.pass;
+    $('#dealerGenEmailNote').textContent = data.emailedCredentials
+      ? `Credentials have also been emailed to ${data.email}.`
+      : `Please save or copy your auto-generated User ID and Password below:`;
+
+    $('#dealerRegInputForm').classList.add('hidden');
+    $('#dealerOtpBanner').classList.add('hidden');
+    $('#dealerGeneratedCard').classList.remove('hidden');
+    showToast(`Created Dealer ID ${lastGeneratedCreds.id}!`);
+  } catch (err) {
+    errBox.textContent = err.message;
+    errBox.classList.remove('hidden');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Verify OTP & Auto-Create Account';
+  }
+}
+
+async function copyGeneratedCredentials() {
+  if (!lastGeneratedCreds.id) return;
+  const text = `Somani Auto Parts Portal\nDealer ID: ${lastGeneratedCreds.id}\nPassword: ${lastGeneratedCreds.pass}`;
+  try {
+    await navigator.clipboard.writeText(text);
+    showToast('Dealer ID & Password copied!');
+  } catch (e) {
+    alert(text);
+  }
+}
+
+async function submitPasswordReset(e, role) {
+  e.preventDefault();
+  const isAdmin = role === 'admin';
+  const errBox = $(isAdmin ? '#adminAuthError' : '#dealerError');
+  const banner = $(isAdmin ? '#adminOtpBanner' : '#dealerOtpBanner');
+  const btn = $(isAdmin ? '#aResetSubmitBtn' : '#dResetSubmitBtn');
+
+  errBox.classList.add('hidden');
+  btn.disabled = true;
+
+  try {
+    const payload = isAdmin
+      ? {
+          role: 'admin',
+          email: $('#aResetContact').value.trim(),
+          otp: $('#aResetOtp').value.trim(),
+          newPassword: $('#aResetNewPass').value
+        }
+      : {
+          role: 'dealer',
+          email: $('#dResetContact').value.trim(),
+          otp: $('#dResetOtp').value.trim(),
+          newUserId: $('#dResetNewId').value.trim().toUpperCase(),
+          newPassword: $('#dResetNewPass').value
+        };
+
+    const res = await fetch(`${API_BASE}/auth/password/reset`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (!res.ok || !data.ok) throw new Error(data.error || 'Password reset failed');
+
+    if (isAdmin) {
+      switchAdminAuthTab('login');
+      $('#adminOtpBanner').textContent = 'Admin password updated! Sign in with your new password below.';
+      $('#adminOtpBanner').classList.remove('hidden');
+      $('#aLoginUser').value = data.user || 'admin';
+    } else {
+      switchDealerTab('login');
+      banner.textContent = `Updated! Sign in with Dealer ID ${data.user} and your new password.`;
+      banner.classList.remove('hidden');
+      $('#dLoginId').value = data.user;
+    }
+    showToast('Password updated via OTP!');
+  } catch (err) {
+    errBox.textContent = err.message;
+    errBox.classList.remove('hidden');
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+async function submitDealerLogin(e) {
+  e.preventDefault();
+  const errBox = $('#dealerError');
+  const btn = $('#dLoginSubmitBtn');
+  errBox.classList.add('hidden');
+  btn.disabled = true;
+
+  try {
+    const payload = {
+      mode: 'dealer',
+      loginType: authState.dealerLoginMode,
+      username: $('#dLoginId').value.trim(),
+      password: $('#dLoginPass').value,
+      otp: $('#dLoginOtp').value.trim()
+    };
+
+    const res = await fetch(`${API_BASE}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (!res.ok || !data.ok) throw new Error(data.error || 'Sign in failed');
+
+    saveSession(data.token, 'dealer', data.user, data.businessName || data.user);
+    closeAllOverlays();
+    renderCatalog();
+    switchView('store');
+    showToast(`Welcome, ${data.businessName || data.user}`);
+  } catch (err) {
+    errBox.textContent = err.message;
+    errBox.classList.remove('hidden');
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+async function submitAdminLogin(e) {
+  e.preventDefault();
+  const errBox = $('#adminAuthError');
+  const btn = $('#aLoginSubmitBtn');
+  errBox.classList.add('hidden');
+  btn.disabled = true;
+
+  try {
+    const res = await fetch(`${API_BASE}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        mode: 'admin',
+        loginType: 'password',
+        username: $('#aLoginUser').value.trim(),
+        password: $('#aLoginPass').value
+      })
+    });
+    const data = await res.json();
+    if (!res.ok || !data.ok) throw new Error(data.error || 'Invalid Admin credentials');
+
+    saveSession(data.token, 'admin', data.user, 'System Administrator');
+    closeAllOverlays();
+    switchView('admin');
+    showToast(`Signed in as Admin (${data.user})`);
+  } catch (err) {
+    errBox.textContent = err.message;
+    errBox.classList.remove('hidden');
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function saveSession(token, role, user, businessName) {
+  authState.token = token;
+  authState.role = role;
+  authState.user = user;
+  authState.businessName = businessName;
+  sessionStorage.setItem('sapl_token', token);
+  sessionStorage.setItem('sapl_role', role);
+  sessionStorage.setItem('sapl_user', user);
+  sessionStorage.setItem('sapl_bname', businessName);
+  updateAuthUI();
+}
+
+function logoutSession() {
+  authState = { token: '', role: '', user: '', businessName: '', dealerLoginMode: 'password' };
+  sessionStorage.removeItem('sapl_token');
+  sessionStorage.removeItem('sapl_role');
+  sessionStorage.removeItem('sapl_user');
+  sessionStorage.removeItem('sapl_bname');
+  updateAuthUI();
+  switchView('store');
+  renderCatalog();
+  showToast('Signed out');
+}
+
+function updateAuthUI() {
+  const dealerBtn = $('#dealerBtn');
+  const adminBtn = $('#adminBtn');
+
+  if (authState.role === 'dealer' && authState.token) {
+    dealerBtn.textContent = `Dealer: ${authState.user}`;
+    adminBtn.textContent = 'Admin';
+    $('#kpiTierLabel').textContent = authState.user;
+    $('#kpiTierSub').textContent = `${authState.businessName || 'Dealer'} • Net rates active`;
+  } else if (authState.role === 'admin' && authState.token) {
+    adminBtn.textContent = 'Admin Studio';
+    dealerBtn.textContent = 'Dealer Login';
+    $('#kpiTierLabel').textContent = 'Admin Mode';
+    $('#kpiTierSub').textContent = 'Backend Studio unlocked';
+  } else {
+    dealerBtn.textContent = 'Dealer Login';
+    adminBtn.textContent = 'Admin';
+    $('#kpiTierLabel').textContent = 'Public Store';
+    $('#kpiTierSub').textContent = 'Sign in or register via OTP for net rates';
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Admin Users & Recovery Contact Management
+// ---------------------------------------------------------------------------
+async function loadAdminUsers() {
+  if (authState.role !== 'admin' || !authState.token) return;
+  const wrap = $('#adminUsersTableWrap');
+  if (!wrap) return;
+
+  wrap.innerHTML = '<p class="py-4 text-slate-500">Loading accounts...</p>';
+  try {
+    const res = await fetch(`${API_BASE}/admin/users`, {
+      headers: { Authorization: `Bearer ${authState.token}` }
+    });
+    const data = await res.json();
+    if (!res.ok || !data.ok) throw new Error(data.error || 'Could not load users');
+
+    const users = data.users || [];
+    const adminRec = users.find(u => u.role === 'admin');
+    if (adminRec) {
+      if (adminRec.email) $('#adminRecEmail').value = adminRec.email;
+      if (adminRec.mobile) $('#adminRecMobile').value = adminRec.mobile;
+    }
+
+    wrap.innerHTML = users.length
+      ? `
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="bg-slate-50 border-b border-slate-200 text-[11px] font-bold uppercase text-slate-500">
+              <th class="py-2.5 px-3">Role</th>
+              <th class="py-2.5 px-3">User ID</th>
+              <th class="py-2.5 px-3">Business / MPMS</th>
+              <th class="py-2.5 px-3">Verified Contact</th>
+              <th class="py-2.5 px-3">Status</th>
+              <th class="py-2.5 px-3 text-right">Action</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            ${users
+              .map(
+                u => `
+              <tr>
+                <td class="py-2.5 px-3"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
+                  u.role === 'admin' ? 'bg-orange-50 text-brand-orange border border-orange-200' : 'bg-blue-50 text-brand-blue border border-blue-200'
+                }">${esc(u.role)}</span></td>
+                <td class="py-2.5 px-3 font-mono font-bold text-slate-900">${esc(u.userId)}</td>
+                <td class="py-2.5 px-3">${esc(u.businessName || '—')} ${u.mpmsCode ? `<span class="font-mono text-[10px] text-slate-500">(${esc(u.mpmsCode)})</span>` : ''}</td>
+                <td class="py-2.5 px-3 text-slate-600">${esc(u.email || u.mobile || 'Env Default')}</td>
+                <td class="py-2.5 px-3">${
+                  u.isActive
+                    ? '<span class="text-emerald-700 font-bold">Active</span>'
+                    : '<span class="text-rose-600 font-bold">Suspended</span>'
+                }</td>
+                <td class="py-2.5 px-3 text-right">
+                  ${
+                    u.role === 'dealer'
+                      ? `<button onclick="toggleDealerAccount(${u.id})" class="text-brand-blue hover:underline font-semibold cursor-pointer">${
+                          u.isActive ? 'Suspend' : 'Activate'
+                        }</button>`
+                      : '<span class="text-slate-400">Primary Admin</span>'
+                  }
+                </td>
+              </tr>`
+              )
+              .join('')}
+          </tbody>
+        </table>`
+      : '<p class="py-4 text-slate-500">No accounts found.</p>';
+  } catch (err) {
+    wrap.innerHTML = `<p class="py-4 text-rose-600">${esc(err.message)}</p>`;
+  }
+}
+
+async function toggleDealerAccount(id) {
+  try {
+    const res = await fetch(`${API_BASE}/admin/users/${id}/toggle`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${authState.token}` }
+    });
+    if (res.ok) {
+      showToast('Dealer account status updated');
+      loadAdminUsers();
+    }
+  } catch (e) {}
+}
+
+async function saveAdminRecoveryProfile(e) {
+  e.preventDefault();
+  try {
+    const res = await fetch(`${API_BASE}/admin/profile`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${authState.token}`
+      },
+      body: JSON.stringify({
+        email: $('#adminRecEmail').value.trim(),
+        mobile: $('#adminRecMobile').value.trim()
+      })
+    });
+    const data = await res.json();
+    if (!res.ok || !data.ok) throw new Error(data.error || 'Could not update profile');
+    showToast('Admin OTP recovery contact saved!');
+    loadAdminUsers();
+  } catch (err) {
+    alert(err.message);
+  }
+}
+
+// ---------------------------------------------------------------------------
 // E-Commerce Enquiry Cart
 // ---------------------------------------------------------------------------
 function addToCart(id) {
@@ -615,7 +1069,7 @@ async function submitEnquiry() {
   btn.textContent = 'Submitting...';
 
   const payload = {
-    companyName: $('#enqCompany').value.trim(),
+    companyName: $('#enqCompany').value.trim() || authState.businessName,
     contactName: $('#enqName').value.trim(),
     contactPhone: $('#enqPhone').value.trim(),
     notes: $('#enqNotes').value.trim(),
@@ -696,7 +1150,7 @@ function compressImageFile(file, maxWidth = 1200, quality = 0.82) {
 
 function triggerAdminCamera() {
   if (authState.role !== 'admin' || !authState.token) {
-    openLoginModal('admin');
+    openAdminPortal();
     return;
   }
   $('#adminCamInput').value = '';
@@ -745,7 +1199,7 @@ async function uploadAndScanAdminPhoto() {
   statusBox.classList.remove('hidden');
 
   try {
-    statusBox.textContent = '1/3 Generating 10-minute Azure Blob upload ticket...';
+    statusBox.textContent = '1/3 Generating Azure Blob upload ticket...';
     const sasRes = await fetch(`${API_BASE}/uploads/sas`, {
       method: 'POST',
       headers: {
@@ -817,10 +1271,7 @@ async function uploadAndScanAdminPhoto() {
 
 async function savePartMaster(e) {
   e.preventDefault();
-  if (authState.role !== 'admin' || !authState.token) {
-    openLoginModal('admin');
-    return;
-  }
+  if (authState.role !== 'admin' || !authState.token) return;
 
   const btn = $('#btnSavePart');
   btn.disabled = true;
@@ -880,35 +1331,21 @@ function resetAdminForm() {
 }
 
 // ---------------------------------------------------------------------------
-// ADMIN-ONLY: Bulk Excel (.xlsx / .xls / .csv) Upload & Sample Template
+// ADMIN-ONLY: Bulk Excel Upload
 // ---------------------------------------------------------------------------
 function downloadExcelTemplate() {
-  if (typeof XLSX === 'undefined') {
-    alert('Excel library still loading, please try again in 2 seconds.');
-    return;
-  }
+  if (typeof XLSX === 'undefined') return;
   const sampleRows = [
     {
-      'Part No': '257342100102',
-      'Part Name': 'Front Brake Drum Assembly',
-      'PG': 'PG2',
-      'Hierarchy': 'Brake System',
+      'Part No': '278613995301',
+      'Part Name': 'Gasket Acc Drive Cover',
+      'PG': 'PG1',
+      'Hierarchy': 'Gasket & Seals',
       'Brand': 'TATA',
-      'MRP': 4850,
-      'Dealer Price': 4120,
-      'Stock Qty': 12,
+      'MRP': 684,
+      'Dealer Price': 580,
+      'Stock Qty': 24,
       'UOM': 'NOS'
-    },
-    {
-      'Part No': 'ID15W40-20L',
-      'Part Name': 'Heavy Duty Diesel Engine Oil 15W-40 (20L)',
-      'PG': 'PG6',
-      'Hierarchy': 'Lubricants',
-      'Brand': 'GULF',
-      'MRP': 5400,
-      'Dealer Price': 4650,
-      'Stock Qty': 25,
-      'UOM': 'LTR'
     }
   ];
   const ws = XLSX.utils.json_to_sheet(sampleRows);
@@ -918,10 +1355,7 @@ function downloadExcelTemplate() {
 }
 
 function triggerExcelPicker() {
-  if (authState.role !== 'admin' || !authState.token) {
-    openLoginModal('admin');
-    return;
-  }
+  if (authState.role !== 'admin' || !authState.token) return;
   $('#excelFileInput').value = '';
   $('#excelFileInput').click();
 }
@@ -938,12 +1372,7 @@ function normalizeExcelColumn(row, candidates) {
 }
 
 function handleExcelFile(file) {
-  if (!file) return;
-  if (typeof XLSX === 'undefined') {
-    alert('Excel parser not loaded yet. Please refresh the page.');
-    return;
-  }
-
+  if (!file || typeof XLSX === 'undefined') return;
   const banner = $('#excelStatusBanner');
   banner.className = 'rounded-xl px-4 py-3 text-xs font-semibold bg-blue-50 border border-blue-200 text-brand-blue';
   banner.classList.remove('hidden');
@@ -977,31 +1406,20 @@ function handleExcelFile(file) {
         const stockQty = parseInt(normalizeExcelColumn(r, ['stockqty', 'qty', 'stock', 'quantity']).replace(/[^\d]/g, ''), 10) || 0;
         const uom = (normalizeExcelColumn(r, ['uom', 'unit']) || 'NOS').toUpperCase();
 
-        parsedExcelParts.push({
-          partNo,
-          name,
-          pg,
-          hierarchy,
-          brand,
-          mrp,
-          dealerPrice,
-          stockQty,
-          uom
-        });
+        parsedExcelParts.push({ partNo, name, pg, hierarchy, brand, mrp, dealerPrice, stockQty, uom });
       });
 
       if (!parsedExcelParts.length) {
         banner.className = 'rounded-xl px-4 py-3 text-xs font-semibold bg-rose-50 border border-rose-200 text-rose-700';
-        banner.textContent = 'No valid rows found. Make sure your Excel sheet has "Part No" and "Part Name" columns.';
+        banner.textContent = 'No valid rows found. Ensure columns "Part No" and "Part Name" exist.';
         $('#excelPreviewSection').classList.add('hidden');
         return;
       }
 
       banner.className = 'rounded-xl px-4 py-3 text-xs font-semibold bg-emerald-50 border border-emerald-200 text-emerald-700';
-      banner.textContent = `Parsed ${parsedExcelParts.length} parts from "${file.name}". Review preview below and click "Import All to Live Database".`;
-
+      banner.textContent = `Parsed ${parsedExcelParts.length} parts from "${file.name}".`;
       $('#excelValidCount').textContent = parsedExcelParts.length;
-      $('#excelSkippedNote').textContent = skipped > 0 ? ` (${skipped} blank/invalid rows skipped)` : '';
+      $('#excelSkippedNote').textContent = skipped > 0 ? ` (${skipped} blank rows skipped)` : '';
 
       $('#excelPreviewBody').innerHTML = parsedExcelParts
         .slice(0, 100)
@@ -1012,11 +1430,9 @@ function handleExcelFile(file) {
             <td class="py-2 px-3 font-mono font-bold text-brand-orange">${esc(p.partNo)}</td>
             <td class="py-2 px-3 font-semibold text-slate-800">${esc(p.name)}</td>
             <td class="py-2 px-3">${esc(p.pg)}</td>
-            <td class="py-2 px-3 text-slate-600">${esc(p.hierarchy)}</td>
             <td class="py-2 px-3">${esc(p.brand)}</td>
             <td class="py-2 px-3 font-mono">${money(p.mrp)}</td>
             <td class="py-2 px-3 font-mono">${money(p.dealerPrice)}</td>
-            <td class="py-2 px-3 font-mono">${p.stockQty} ${esc(p.uom)}</td>
           </tr>`
         )
         .join('');
@@ -1024,7 +1440,7 @@ function handleExcelFile(file) {
       $('#excelPreviewSection').classList.remove('hidden');
     } catch (err) {
       banner.className = 'rounded-xl px-4 py-3 text-xs font-semibold bg-rose-50 border border-rose-200 text-rose-700';
-      banner.textContent = `Excel parse error: ${err.message}`;
+      banner.textContent = `Excel error: ${err.message}`;
     }
   };
   reader.readAsArrayBuffer(file);
@@ -1038,11 +1454,10 @@ function clearExcelPreview() {
 
 async function uploadExcelRowsToDb() {
   if (!parsedExcelParts.length || authState.role !== 'admin' || !authState.token) return;
-
   const btn = $('#btnConfirmExcelImport');
   const banner = $('#excelStatusBanner');
   btn.disabled = true;
-  btn.textContent = 'Importing to PostgreSQL...';
+  btn.textContent = 'Importing...';
 
   try {
     const res = await fetch(`${API_BASE}/parts/bulk`, {
@@ -1054,11 +1469,11 @@ async function uploadExcelRowsToDb() {
       body: JSON.stringify({ parts: parsedExcelParts })
     });
     const data = await res.json();
-    if (!res.ok || !data.ok) throw new Error(data.error || 'Bulk import failed');
+    if (!res.ok || !data.ok) throw new Error(data.error || 'Import failed');
 
     banner.className = 'rounded-xl px-4 py-3 text-xs font-semibold bg-emerald-50 border border-emerald-200 text-emerald-700';
-    banner.textContent = `Successfully imported ${data.importedCount} parts into sapl_parts_db!`;
-    showToast(`Imported ${data.importedCount} parts from Excel!`);
+    banner.textContent = `Imported ${data.importedCount} parts into sapl_parts_db!`;
+    showToast(`Imported ${data.importedCount} parts!`);
     parsedExcelParts = [];
     $('#excelPreviewSection').classList.add('hidden');
     await loadCatalogueData();
@@ -1135,7 +1550,7 @@ async function deleteDbPart(id) {
 }
 
 // ---------------------------------------------------------------------------
-// Enquiries List (Dealer Own Enquiries vs Admin All Enquiries)
+// Enquiries List & Navigation
 // ---------------------------------------------------------------------------
 async function loadEnquiriesList() {
   if (!authState.token) return;
@@ -1186,18 +1601,16 @@ async function loadEnquiriesList() {
   }
 }
 
-// ---------------------------------------------------------------------------
-// View Navigation & Authentication
-// ---------------------------------------------------------------------------
 function switchView(view) {
   if (view === 'admin') {
     if (authState.role !== 'admin' || !authState.token) {
-      openLoginModal('admin');
+      openAdminPortal();
       return;
     }
     $('#storeView').classList.add('hidden');
     $('#adminView').classList.remove('hidden');
     renderAdminPartsTable();
+    loadAdminUsers();
   } else {
     $('#adminView').classList.add('hidden');
     $('#storeView').classList.remove('hidden');
@@ -1210,18 +1623,11 @@ function switchView(view) {
   }
 }
 
-function openAdminPortal() {
-  if (authState.role === 'admin' && authState.token) {
-    switchView('admin');
-  } else {
-    openLoginModal('admin');
-  }
-}
-
 function switchAdminTab(tab) {
   $('#adminPanelSingle').classList.toggle('hidden', tab !== 'single');
   $('#adminPanelExcel').classList.toggle('hidden', tab !== 'excel');
   $('#adminPanelEnquiries').classList.toggle('hidden', tab !== 'enquiries');
+  $('#adminPanelUsers').classList.toggle('hidden', tab !== 'users');
 
   const activeCls = 'px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-brand-blue text-white shadow-xs shrink-0 cursor-pointer';
   const idleCls = 'px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 shrink-0 cursor-pointer';
@@ -1229,119 +1635,10 @@ function switchAdminTab(tab) {
   $('#adminTabSingle').className = tab === 'single' ? activeCls : idleCls;
   $('#adminTabExcel').className = tab === 'excel' ? activeCls : idleCls;
   $('#adminTabEnq').className = tab === 'enquiries' ? activeCls : idleCls;
+  $('#adminTabUsers').className = tab === 'users' ? activeCls : idleCls;
 
   if (tab === 'enquiries') loadEnquiriesList();
-}
-
-function openLoginModal(mode) {
-  if (authState.token && authState.role === mode) {
-    if (confirm(`Signed in as ${authState.user} (${authState.role.toUpperCase()}). Sign out?`)) {
-      logoutSession();
-    }
-    return;
-  }
-
-  authState.loginMode = mode;
-  $('#authError').classList.add('hidden');
-  $('#authPassword').value = '';
-
-  if (mode === 'admin') {
-    $('#authEyebrow').textContent = 'ADMIN BACKEND ACCESS';
-    $('#authTitle').textContent = 'Admin Studio Sign In';
-    $('#authSubtitle').textContent = 'Manage parts master, capture box labels via camera OCR, or upload bulk Excel sheets.';
-    $('#authIdLabel').textContent = 'ADMIN USERNAME';
-    $('#authIdentifier').placeholder = 'Enter Admin Username';
-  } else {
-    $('#authEyebrow').textContent = 'DEALER STORE ACCESS';
-    $('#authTitle').textContent = 'Dealer Portal Sign In';
-    $('#authSubtitle').textContent = 'Sign in with your Somani Auto dealer code for net dealer rates and order history.';
-    $('#authIdLabel').textContent = 'DEALER CODE';
-    $('#authIdentifier').placeholder = 'Enter Dealer Code';
-  }
-
-  $('#overlay').classList.remove('hidden');
-  $('#authModal').classList.remove('hidden');
-  $('#authModal').classList.add('flex');
-  setTimeout(() => $('#authIdentifier').focus(), 80);
-}
-
-function logoutSession() {
-  authState = { token: '', role: '', user: '', loginMode: 'dealer' };
-  sessionStorage.removeItem('sapl_token');
-  sessionStorage.removeItem('sapl_role');
-  sessionStorage.removeItem('sapl_user');
-  updateAuthUI();
-  switchView('store');
-  renderCatalog();
-  showToast('Signed out');
-}
-
-async function submitLogin(e) {
-  e.preventDefault();
-  const errBox = $('#authError');
-  const btn = $('#authSubmitBtn');
-  errBox.classList.add('hidden');
-  btn.disabled = true;
-
-  try {
-    const res = await fetch(`${API_BASE}/auth/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        mode: authState.loginMode,
-        username: $('#authIdentifier').value.trim(),
-        password: $('#authPassword').value
-      })
-    });
-    const data = await res.json();
-    if (!res.ok || !data.ok) throw new Error(data.error || 'Invalid credentials');
-
-    authState.token = data.token;
-    authState.role = data.role;
-    authState.user = data.user;
-
-    sessionStorage.setItem('sapl_token', data.token);
-    sessionStorage.setItem('sapl_role', data.role);
-    sessionStorage.setItem('sapl_user', data.user);
-
-    updateAuthUI();
-    closeAllOverlays();
-    renderCatalog();
-    showToast(`Welcome, ${data.user}`);
-
-    if (data.role === 'admin') {
-      switchView('admin');
-    } else {
-      switchView('store');
-    }
-  } catch (err) {
-    errBox.textContent = err.message;
-    errBox.classList.remove('hidden');
-  } finally {
-    btn.disabled = false;
-  }
-}
-
-function updateAuthUI() {
-  const dealerBtn = $('#dealerBtn');
-  const adminBtn = $('#adminBtn');
-
-  if (authState.role === 'dealer' && authState.token) {
-    dealerBtn.textContent = `Dealer: ${authState.user}`;
-    adminBtn.textContent = 'Admin';
-    $('#kpiTierLabel').textContent = `Dealer (${authState.user})`;
-    $('#kpiTierSub').textContent = 'Net dealer pricing unlocked';
-  } else if (authState.role === 'admin' && authState.token) {
-    adminBtn.textContent = `Admin Studio`;
-    dealerBtn.textContent = 'Dealer Login';
-    $('#kpiTierLabel').textContent = 'Admin Mode';
-    $('#kpiTierSub').textContent = 'Backend Studio unlocked';
-  } else {
-    dealerBtn.textContent = 'Dealer Login';
-    adminBtn.textContent = 'Admin';
-    $('#kpiTierLabel').textContent = 'Public Store';
-    $('#kpiTierSub').textContent = 'Sign in as Dealer for net rates';
-  }
+  if (tab === 'users') loadAdminUsers();
 }
 
 function openCart() {
@@ -1352,8 +1649,10 @@ function openCart() {
 function closeAllOverlays() {
   $('#overlay').classList.add('hidden');
   $('#cartDrawer').style.right = '-420px';
-  $('#authModal').classList.add('hidden');
-  $('#authModal').classList.remove('flex');
+  $('#dealerModal').classList.add('hidden');
+  $('#dealerModal').classList.remove('flex');
+  $('#adminModal').classList.add('hidden');
+  $('#adminModal').classList.remove('flex');
 }
 
 function bindEvents() {
@@ -1403,9 +1702,20 @@ function bindEvents() {
 window.switchView = switchView;
 window.openAdminPortal = openAdminPortal;
 window.switchAdminTab = switchAdminTab;
-window.openLoginModal = openLoginModal;
-window.submitLogin = submitLogin;
+window.openDealerAuth = openDealerAuth;
+window.switchDealerTab = switchDealerTab;
+window.setDealerLoginMode = setDealerLoginMode;
+window.switchAdminAuthTab = switchAdminAuthTab;
+window.requestOtpFlow = requestOtpFlow;
+window.submitDealerRegister = submitDealerRegister;
+window.copyGeneratedCredentials = copyGeneratedCredentials;
+window.submitPasswordReset = submitPasswordReset;
+window.submitDealerLogin = submitDealerLogin;
+window.submitAdminLogin = submitAdminLogin;
 window.logoutSession = logoutSession;
+window.loadAdminUsers = loadAdminUsers;
+window.toggleDealerAccount = toggleDealerAccount;
+window.saveAdminRecoveryProfile = saveAdminRecoveryProfile;
 window.setHeroSlide = setHeroSlide;
 window.setCatalogLayout = setCatalogLayout;
 window.clearSearch = clearSearch;

@@ -10,7 +10,6 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet" />
 
-  <!-- Tailwind CSS & SheetJS (Excel .xlsx / .csv Import & Export) -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
@@ -36,7 +35,7 @@
       }
     };
   </script>
-  <link rel="stylesheet" href="styles.css?v=20261120-ecomwhite1" />
+  <link rel="stylesheet" href="styles.css?v=20261121-otpwhite1" />
 </head>
 <body class="min-h-screen font-sans antialiased selection:bg-brand-blue selection:text-white">
 
@@ -51,11 +50,10 @@
   </div>
 
   <!-- ====================================================================== -->
-  <!-- TOP PURE WHITE NAVIGATION BAR (Official Somani Vector Logo + E-Comm)   -->
+  <!-- TOP PURE WHITE NAVIGATION BAR                                          -->
   <!-- ====================================================================== -->
   <header class="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-xs">
     <div class="max-w-7xl mx-auto px-3 sm:px-6 min-h-[66px] py-2 flex items-center justify-between gap-2 sm:gap-4">
-      <!-- Brand Logo & Title -->
       <a href="#top" onclick="switchView('store');return false;" class="flex items-center gap-2.5 sm:gap-3.5 min-w-0">
         <div class="bg-white border border-slate-200 px-2 py-1 rounded-lg shadow-2xs shrink-0 flex items-center justify-center">
           <svg class="h-8 sm:h-9 w-auto" viewBox="0 0 260 205" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Somani Auto Pvt. Ltd. Logo">
@@ -84,7 +82,6 @@
         </div>
       </a>
 
-      <!-- Right E-Commerce & Portal Controls -->
       <div class="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
         <div id="apiBadge" class="hidden lg:flex items-center gap-1.5 text-xs font-medium bg-slate-100 border border-slate-200 px-3 py-1.5 rounded-full text-slate-600">
           <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse shrink-0"></span>
@@ -95,7 +92,7 @@
           Catalogue
         </button>
 
-        <button id="dealerBtn" onclick="openLoginModal('dealer')" class="text-xs font-semibold px-2.5 sm:px-3.5 py-2 rounded-lg border border-slate-300 bg-white text-slate-700 hover:border-brand-blue hover:text-brand-blue transition cursor-pointer">
+        <button id="dealerBtn" onclick="openDealerAuth('login')" class="text-xs font-semibold px-2.5 sm:px-3.5 py-2 rounded-lg border border-slate-300 bg-white text-slate-700 hover:border-brand-blue hover:text-brand-blue transition cursor-pointer">
           Dealer Login
         </button>
 
@@ -118,12 +115,9 @@
   <!-- VIEW 1: PUBLIC & DEALER E-COMMERCE STOREFRONT (PURE WHITE THEME)       -->
   <!-- ====================================================================== -->
   <div id="storeView">
-    <!-- Edge-to-Edge 4K HD Hero Banner with Clean White Frosted Overlay -->
     <section id="top" class="relative w-full h-[270px] sm:h-[340px] lg:h-[380px] overflow-hidden border-b border-slate-200 bg-white">
       <div id="heroBgLayerA" class="bg-4k-layer absolute inset-0 opacity-100 scale-100"></div>
       <div id="heroBgLayerB" class="bg-4k-layer absolute inset-0 opacity-0 scale-105"></div>
-
-      <!-- Crisp White-Tinted Gradient Overlay so White Theme & 4K Photos Blend Seamlessly -->
       <div class="absolute inset-0 bg-gradient-to-b from-white/85 via-white/75 to-[#F8FAFC]"></div>
 
       <div class="relative z-10 h-full max-w-4xl mx-auto px-4 sm:px-6 flex flex-col items-center justify-center text-center">
@@ -136,15 +130,15 @@
         </h2>
 
         <p class="mt-2.5 text-xs sm:text-base text-slate-600 max-w-2xl leading-relaxed">
-          Browse verified <strong class="text-slate-900">TATA Motors</strong> &amp; <strong class="text-slate-900">Eicher</strong> assemblies, heavy-duty fleet oils, and build instant dealer quotation enquiries for <strong class="text-slate-900">Somani Auto Pvt. Ltd., Raipur</strong>.
+          Browse verified <strong class="text-slate-900">TATA Motors</strong> &amp; <strong class="text-slate-900">Eicher</strong> assemblies, register your own Dealer ID via OTP for net dealer rates, and submit instant enquiries to <strong class="text-slate-900">Somani Auto Pvt. Ltd., Raipur</strong>.
         </p>
 
         <div class="mt-5 flex flex-wrap items-center justify-center gap-2.5 sm:gap-3">
           <a href="#catalogSection" class="bg-brand-blue hover:bg-brand-blueDark text-white font-bold text-xs sm:text-sm px-5 sm:px-6 py-2.5 sm:py-3 rounded-full shadow-lg shadow-blue-900/15 transition">
             Browse Parts Catalogue
           </a>
-          <button onclick="openLoginModal('dealer')" class="bg-white hover:bg-slate-50 text-slate-800 border border-slate-300 font-semibold text-xs sm:text-sm px-5 sm:px-6 py-2.5 sm:py-3 rounded-full shadow-xs transition cursor-pointer">
-            Dealer Price Access
+          <button onclick="openDealerAuth('register')" class="bg-white hover:bg-slate-50 text-slate-800 border border-slate-300 font-semibold text-xs sm:text-sm px-5 sm:px-6 py-2.5 sm:py-3 rounded-full shadow-xs transition cursor-pointer">
+            Create Dealer Account (OTP)
           </button>
         </div>
 
@@ -152,10 +146,7 @@
       </div>
     </section>
 
-    <!-- Main E-Commerce Store Container -->
     <main id="catalogSection" class="max-w-7xl mx-auto px-3 sm:px-6 py-5 sm:py-7 space-y-5 sm:space-y-6">
-
-      <!-- 4 Clean E-Commerce Highlights / KPI Cards -->
       <section class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
         <div class="white-card rounded-xl p-3.5 sm:p-4 shadow-2xs">
           <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Active Catalogue</p>
@@ -169,10 +160,10 @@
           <p id="kpiHierText" class="text-[11px] text-slate-500 mt-0.5 truncate">Engine, Brake, Axle, Oil &amp; Body</p>
         </div>
 
-        <div class="white-card rounded-xl p-3.5 sm:p-4 shadow-2xs">
+        <div onclick="openDealerAuth('login')" class="white-card rounded-xl p-3.5 sm:p-4 shadow-2xs cursor-pointer">
           <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Account Tier</p>
           <p id="kpiTierLabel" class="text-xl sm:text-2xl font-extrabold text-slate-900 mt-1.5">Public Store</p>
-          <p id="kpiTierSub" class="text-[11px] text-slate-500 mt-1 truncate">Sign in as Dealer for net rates</p>
+          <p id="kpiTierSub" class="text-[11px] text-brand-blue font-medium mt-1 truncate">Sign in or register via OTP for net rates</p>
         </div>
 
         <div onclick="openCart()" class="white-card rounded-xl p-3.5 sm:p-4 shadow-2xs cursor-pointer border-orange-200 bg-orange-50/40">
@@ -182,10 +173,8 @@
         </div>
       </section>
 
-      <!-- E-Commerce Search & Category Filter Toolbar -->
       <section class="bg-white rounded-2xl border border-slate-200 p-3.5 sm:p-5 shadow-2xs space-y-3.5">
         <div class="flex flex-col md:flex-row items-stretch md:items-center gap-2.5 sm:gap-3">
-          <!-- Search Input (16px font on mobile prevents iOS zoom) -->
           <div class="relative flex-1">
             <svg class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z"/>
@@ -194,14 +183,13 @@
               id="searchInput"
               type="search"
               autocomplete="off"
-              placeholder="Search by Part Number (e.g. 257342100102), Part Name, or Brand..."
+              placeholder="Search by Part Number (e.g. 278613995301), Part Name, or Brand..."
               class="w-full bg-slate-50 border border-slate-300 rounded-xl pl-10 pr-9 py-2.5 text-base sm:text-sm text-slate-900 placeholder-slate-400 focus:bg-white focus:outline-none focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/15 transition"
             />
             <button id="clearSearchBtn" onclick="clearSearch()" class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 text-lg font-bold cursor-pointer">&times;</button>
             <div id="suggestions" class="hidden absolute left-0 right-0 top-[calc(100%+6px)] bg-white border border-slate-200 rounded-xl shadow-xl z-30 max-h-72 overflow-y-auto divide-y divide-slate-100"></div>
           </div>
 
-          <!-- Product Hierarchy Dropdown & Reset -->
           <div class="flex items-center gap-2">
             <select id="hierarchyFilter" class="flex-1 md:w-64 bg-slate-50 border border-slate-300 rounded-xl px-3 py-2.5 text-base sm:text-sm text-slate-800 font-medium focus:bg-white focus:outline-none focus:border-brand-blue">
               <option value="ALL">All Product Hierarchies</option>
@@ -212,14 +200,12 @@
           </div>
         </div>
 
-        <!-- Horizontal Scrollable PG1–PG6 Category Pills (Super Clean on Mobile) -->
         <div class="flex items-center justify-between gap-3 pt-1 border-t border-slate-100">
           <div id="pgFilters" class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1"></div>
           <span id="catalogSummary" class="hidden sm:inline text-xs font-medium text-slate-500 shrink-0">Loading...</span>
         </div>
       </section>
 
-      <!-- Mobile Result Summary + View Toggle -->
       <div class="flex items-center justify-between px-1">
         <span id="mobileResultSummary" class="text-xs font-semibold text-slate-600">Loading parts...</span>
         <div class="inline-flex bg-white border border-slate-200 rounded-lg p-0.5 shadow-2xs">
@@ -228,10 +214,8 @@
         </div>
       </div>
 
-      <!-- E-Commerce Product Grid (2 Columns on Mobile, 3 on Tablet, 4 on Desktop) -->
       <section id="productGrid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4"></section>
 
-      <!-- Optional Compact Table View -->
       <section id="productTableWrap" class="hidden bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-2xs">
         <div class="overflow-x-auto">
           <table class="w-full text-left border-collapse text-sm">
@@ -250,10 +234,9 @@
         </div>
       </section>
 
-      <!-- Pagination -->
       <div id="pagination" class="flex items-center justify-center gap-3 pt-2"></div>
 
-      <!-- Dealer My Enquiries Section (Shown when Dealer is logged in) -->
+      <!-- Dealer My Enquiries Section -->
       <section id="dealerEnquiriesBox" class="hidden bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-2xs space-y-3">
         <div class="flex items-center justify-between">
           <div>
@@ -268,15 +251,14 @@
   </div>
 
   <!-- ====================================================================== -->
-  <!-- VIEW 2: DEDICATED ADMIN BACKEND STUDIO (Camera OCR + Excel Upload)     -->
+  <!-- VIEW 2: DEDICATED ADMIN BACKEND STUDIO                                 -->
   <!-- ====================================================================== -->
   <div id="adminView" class="hidden max-w-7xl mx-auto px-3 sm:px-6 py-5 sm:py-7 space-y-5">
-    <!-- Admin Header Banner -->
     <div class="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
       <div>
         <span class="text-[11px] font-extrabold uppercase tracking-wider text-brand-orange">Admin Backend Studio</span>
-        <h2 class="text-lg sm:text-xl font-extrabold text-slate-900">Parts Master, Camera OCR &amp; Bulk Excel Upload</h2>
-        <p class="text-xs text-slate-500 mt-0.5">Add parts via mobile camera label scan or upload an Excel (.xlsx / .csv) price &amp; inventory sheet.</p>
+        <h2 class="text-lg sm:text-xl font-extrabold text-slate-900">Parts Master, Camera OCR, Excel Upload &amp; Dealer Accounts</h2>
+        <p class="text-xs text-slate-500 mt-0.5">Manage catalogue items, bulk Excel sheets, dealer OTP accounts, and admin recovery settings.</p>
       </div>
       <div class="flex items-center gap-2">
         <button onclick="switchView('store')" class="px-3.5 py-2 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 cursor-pointer">
@@ -288,22 +270,24 @@
       </div>
     </div>
 
-    <!-- Admin Sub-Tabs: 1) Single Part + Camera OCR  |  2) Bulk Excel Upload  |  3) Customer Enquiries -->
+    <!-- Admin Sub-Tabs -->
     <div class="flex items-center gap-2 overflow-x-auto no-scrollbar">
       <button id="adminTabSingle" onclick="switchAdminTab('single')" class="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-brand-blue text-white shadow-xs shrink-0 cursor-pointer">
         1. Camera OCR &amp; Single Part
       </button>
       <button id="adminTabExcel" onclick="switchAdminTab('excel')" class="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 shrink-0 cursor-pointer">
-        2. Bulk Excel Upload (.xlsx / .csv)
+        2. Bulk Excel Upload
       </button>
       <button id="adminTabEnq" onclick="switchAdminTab('enquiries')" class="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 shrink-0 cursor-pointer">
-        3. Dealer Enquiries Log
+        3. Dealer Enquiries
+      </button>
+      <button id="adminTabUsers" onclick="switchAdminTab('users')" class="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 shrink-0 cursor-pointer">
+        4. Dealers &amp; Admin Email OTP
       </button>
     </div>
 
-    <!-- ADMIN TAB 1: CAMERA CAPTURE + AZURE VISION OCR + SINGLE PART FORM -->
+    <!-- ADMIN TAB 1: CAMERA OCR & SINGLE PART -->
     <div id="adminPanelSingle" class="grid grid-cols-1 lg:grid-cols-12 gap-5">
-      <!-- Left 5 Cols: Rear Camera Capture & OCR -->
       <div class="lg:col-span-5 bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-2xs space-y-3.5">
         <div>
           <span class="text-[11px] font-bold uppercase tracking-wider text-brand-blue">Step 1 • Backend Camera Capture</span>
@@ -344,7 +328,6 @@
         </div>
       </div>
 
-      <!-- Right 7 Cols: Part Master Form -->
       <div class="lg:col-span-7 bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-2xs">
         <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-100">
           <div>
@@ -358,7 +341,7 @@
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label class="block text-xs font-semibold text-slate-700 mb-1">Part Number *</label>
-              <input id="fPartNo" required placeholder="e.g. 257342100102" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 font-mono text-base sm:text-sm uppercase focus:bg-white focus:outline-none focus:border-brand-blue" />
+              <input id="fPartNo" required placeholder="e.g. 278613995301" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 font-mono text-base sm:text-sm uppercase focus:bg-white focus:outline-none focus:border-brand-blue" />
             </div>
             <div>
               <label class="block text-xs font-semibold text-slate-700 mb-1">Brand / OEM</label>
@@ -368,7 +351,7 @@
 
           <div>
             <label class="block text-xs font-semibold text-slate-700 mb-1">Part Description *</label>
-            <input id="fName" required placeholder="e.g. Front Brake Drum Assembly" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-base sm:text-sm focus:bg-white focus:outline-none focus:border-brand-blue" />
+            <input id="fName" required placeholder="e.g. Gasket Acc Drive Cover" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-base sm:text-sm focus:bg-white focus:outline-none focus:border-brand-blue" />
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -385,7 +368,7 @@
             </div>
             <div>
               <label class="block text-xs font-semibold text-slate-700 mb-1">Product Hierarchy</label>
-              <input id="fHierarchy" placeholder="e.g. Brake System" list="hierarchyDatalist" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-base sm:text-sm focus:bg-white focus:outline-none focus:border-brand-blue" />
+              <input id="fHierarchy" placeholder="e.g. Gasket & Seals" list="hierarchyDatalist" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-base sm:text-sm focus:bg-white focus:outline-none focus:border-brand-blue" />
               <datalist id="hierarchyDatalist"></datalist>
             </div>
           </div>
@@ -434,33 +417,26 @@
       </div>
     </div>
 
-    <!-- ADMIN TAB 2: BULK EXCEL (.XLSX / .CSV) UPLOAD -->
+    <!-- ADMIN TAB 2: BULK EXCEL UPLOAD -->
     <div id="adminPanelExcel" class="hidden bg-white rounded-2xl border border-slate-200 p-4 sm:p-6 shadow-2xs space-y-4">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100">
         <div>
           <span class="text-[11px] font-bold uppercase tracking-wider text-brand-blue">Bulk Catalogue Importer</span>
           <h3 class="text-base sm:text-lg font-extrabold text-slate-900">Upload Parts Price &amp; Stock Excel Sheet</h3>
-          <p class="text-xs text-slate-500 mt-0.5">Supports <code>.xlsx</code>, <code>.xls</code>, and <code>.csv</code> files (up to 2,500 rows per upload). Existing part numbers are updated automatically.</p>
+          <p class="text-xs text-slate-500 mt-0.5">Supports <code>.xlsx</code>, <code>.xls</code>, and <code>.csv</code> files (up to 2,500 rows per upload).</p>
         </div>
         <button type="button" onclick="downloadExcelTemplate()" class="px-4 py-2.5 rounded-xl border border-brand-blue bg-blue-50 hover:bg-blue-100 text-brand-blue text-xs font-bold shrink-0 cursor-pointer">
           &#11015; Download Sample Excel (.xlsx)
         </button>
       </div>
 
-      <!-- Excel Dropzone -->
       <div onclick="triggerExcelPicker()" class="border-2 border-dashed border-slate-300 hover:border-brand-blue rounded-2xl bg-slate-50 hover:bg-blue-50/40 p-6 sm:p-8 text-center cursor-pointer transition">
-        <div class="w-12 h-12 rounded-full bg-white border border-slate-200 shadow-2xs flex items-center justify-center mx-auto text-brand-blue mb-2">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-          </svg>
-        </div>
         <p class="text-sm font-bold text-slate-900">Click to Choose Excel (.xlsx / .xls) or CSV File</p>
         <p class="text-xs text-slate-500 mt-1">Required columns: <strong>Part No</strong>, <strong>Part Name</strong> &bull; Optional: <strong>PG</strong>, <strong>Hierarchy</strong>, <strong>Brand</strong>, <strong>MRP</strong>, <strong>Dealer Price</strong>, <strong>Stock Qty</strong>, <strong>UOM</strong></p>
       </div>
 
       <div id="excelStatusBanner" class="hidden rounded-xl px-4 py-3 text-xs font-semibold"></div>
 
-      <!-- Excel Parsed Preview & Import Action -->
       <div id="excelPreviewSection" class="hidden space-y-3">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-slate-50 border border-slate-200 rounded-xl p-3">
           <div class="text-xs text-slate-700">
@@ -468,9 +444,7 @@
             <span id="excelSkippedNote" class="text-slate-500"></span>
           </div>
           <div class="flex items-center gap-2">
-            <button type="button" onclick="clearExcelPreview()" class="px-3 py-2 rounded-lg border border-slate-300 bg-white text-xs font-semibold text-slate-600 cursor-pointer">
-              Clear
-            </button>
+            <button type="button" onclick="clearExcelPreview()" class="px-3 py-2 rounded-lg border border-slate-300 bg-white text-xs font-semibold text-slate-600 cursor-pointer">Clear</button>
             <button id="btnConfirmExcelImport" type="button" onclick="uploadExcelRowsToDb()" class="px-4 py-2 rounded-lg bg-brand-orange hover:bg-brand-orangeDark text-white text-xs font-bold shadow-xs cursor-pointer">
               Import All to Live Database
             </button>
@@ -485,11 +459,9 @@
                 <th class="py-2.5 px-3">Part No</th>
                 <th class="py-2.5 px-3">Part Description</th>
                 <th class="py-2.5 px-3">PG</th>
-                <th class="py-2.5 px-3">Hierarchy</th>
                 <th class="py-2.5 px-3">Brand</th>
                 <th class="py-2.5 px-3">MRP</th>
                 <th class="py-2.5 px-3">Dealer Price</th>
-                <th class="py-2.5 px-3">Qty</th>
               </tr>
             </thead>
             <tbody id="excelPreviewBody" class="divide-y divide-slate-100"></tbody>
@@ -498,7 +470,7 @@
       </div>
     </div>
 
-    <!-- ADMIN TAB 3: ALL CUSTOMER ENQUIRIES -->
+    <!-- ADMIN TAB 3: ENQUIRIES -->
     <div id="adminPanelEnquiries" class="hidden bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-2xs space-y-3">
       <div class="flex items-center justify-between">
         <div>
@@ -508,6 +480,43 @@
         <button onclick="loadEnquiriesList()" class="px-3 py-1.5 rounded-lg border border-slate-300 text-xs font-semibold hover:bg-slate-50 cursor-pointer">Refresh</button>
       </div>
       <div id="adminEnquiriesTable" class="overflow-x-auto text-xs"></div>
+    </div>
+
+    <!-- ADMIN TAB 4: DEALER ACCOUNTS & ADMIN OTP RECOVERY SETTINGS -->
+    <div id="adminPanelUsers" class="hidden space-y-5">
+      <!-- Admin Recovery Contact Setup -->
+      <div class="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-2xs">
+        <div class="pb-3 mb-3 border-b border-slate-100">
+          <span class="text-[11px] font-bold uppercase tracking-wider text-brand-orange">Admin Security</span>
+          <h3 class="text-base font-bold text-slate-900">Admin Email OTP Recovery</h3>
+          <p class="text-xs text-slate-500">Set the Email address where Admin 6-digit password reset OTPs are sent (₹0 cost).</p>
+        </div>
+        <form onsubmit="saveAdminRecoveryProfile(event)" class="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Admin Recovery Email</label>
+            <input id="adminRecEmail" type="email" placeholder="analytics.sapl@somanigrp.com" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-base sm:text-sm" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Admin Recovery Mobile (10-digit)</label>
+            <input id="adminRecMobile" type="tel" placeholder="9826100000" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-base sm:text-sm" />
+          </div>
+          <button type="submit" class="py-2.5 px-4 rounded-xl bg-brand-blue hover:bg-brand-blueDark text-white text-xs sm:text-sm font-bold cursor-pointer">
+            Update Admin OTP Contact
+          </button>
+        </form>
+      </div>
+
+      <!-- Registered Dealers Table -->
+      <div class="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-2xs space-y-3">
+        <div class="flex items-center justify-between">
+          <div>
+            <span class="text-[11px] font-bold uppercase tracking-wider text-brand-blue">OTP Self-Service Accounts</span>
+            <h3 class="text-base font-bold text-slate-900">Registered Dealers &amp; Admins</h3>
+          </div>
+          <button onclick="loadAdminUsers()" class="px-3 py-1.5 rounded-lg border border-slate-300 text-xs font-semibold hover:bg-slate-50 cursor-pointer">Refresh</button>
+        </div>
+        <div id="adminUsersTableWrap" class="overflow-x-auto text-xs"></div>
+      </div>
     </div>
 
     <!-- Bottom Admin Live Database Catalogue Table -->
@@ -567,37 +576,249 @@
   </aside>
 
   <!-- ====================================================================== -->
-  <!-- DEALER & ADMIN LOGIN MODAL (Clean White Card, Zero Exposed Passwords)  -->
+  <!-- DEALER AUTH MODAL: 1) Sign In  |  2) Create Account (Auto ID & Password via OTP)  |  3) Forgot Password -->
   <!-- ====================================================================== -->
-  <div id="authModal" class="hidden fixed inset-0 z-50 items-center justify-center p-4">
-    <div class="modal-animate relative w-full max-w-md bg-white border border-slate-200 rounded-2xl p-6 shadow-2xl space-y-4">
+  <div id="dealerModal" class="hidden fixed inset-0 z-50 items-center justify-center p-3 sm:p-4 overflow-y-auto">
+    <div class="modal-animate relative w-full max-w-md bg-white border border-slate-200 rounded-2xl p-5 sm:p-6 shadow-2xl space-y-4 my-auto">
       <button onclick="closeAllOverlays()" class="absolute top-4 right-4 w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xl flex items-center justify-center cursor-pointer">&times;</button>
 
       <div>
-        <span id="authEyebrow" class="text-[11px] font-extrabold uppercase tracking-wider text-brand-blue">DEALER PORTAL</span>
-        <h3 id="authTitle" class="text-xl font-extrabold text-slate-900 mt-0.5">Dealer Sign In</h3>
-        <p id="authSubtitle" class="text-xs text-slate-500 mt-1">Access net dealer pricing and track your submitted quotation enquiries.</p>
+        <span class="text-[11px] font-extrabold uppercase tracking-wider text-brand-blue">DEALER SELF-SERVICE PORTAL</span>
+        <h3 class="text-xl font-extrabold text-slate-900 mt-0.5">Dealer Account Access</h3>
       </div>
 
-      <form onsubmit="submitLogin(event)" class="space-y-3.5">
-        <div>
-          <label id="authIdLabel" class="block text-xs font-bold text-slate-700 mb-1">DEALER CODE</label>
-          <input id="authIdentifier" required autocomplete="username" placeholder="Enter Dealer Code" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-base sm:text-sm focus:bg-white focus:outline-none focus:border-brand-blue" />
-        </div>
-        <div>
-          <label class="block text-xs font-bold text-slate-700 mb-1">PASSWORD</label>
-          <input id="authPassword" type="password" required autocomplete="current-password" placeholder="Enter Password" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-base sm:text-sm focus:bg-white focus:outline-none focus:border-brand-blue" />
+      <!-- 3 Dealer Tabs -->
+      <div class="grid grid-cols-3 gap-1 bg-slate-100 p-1 rounded-xl text-xs font-bold">
+        <button type="button" id="dTabLogin" onclick="switchDealerTab('login')" class="py-2 rounded-lg bg-white text-brand-blue shadow-2xs cursor-pointer">Sign In</button>
+        <button type="button" id="dTabRegister" onclick="switchDealerTab('register')" class="py-2 rounded-lg text-slate-600 hover:text-slate-900 cursor-pointer">Create Account</button>
+        <button type="button" id="dTabReset" onclick="switchDealerTab('reset')" class="py-2 rounded-lg text-slate-600 hover:text-slate-900 cursor-pointer">Forgot Password</button>
+      </div>
+
+      <div id="dealerOtpBanner" class="hidden rounded-xl px-3.5 py-2.5 text-xs font-medium bg-blue-50 border border-blue-200 text-brand-blue"></div>
+      <div id="dealerError" class="hidden rounded-xl px-3.5 py-2.5 text-xs font-medium bg-rose-50 border border-rose-200 text-rose-700"></div>
+
+      <!-- TAB A: DEALER SIGN IN (Password or OTP + Forgot Password Link) -->
+      <form id="dealerFormLogin" onsubmit="submitDealerLogin(event)" class="space-y-3">
+        <div class="flex items-center justify-between text-xs">
+          <span class="text-slate-500">Login Method:</span>
+          <div class="inline-flex bg-slate-100 rounded-lg p-0.5 font-semibold">
+            <button type="button" id="dModePass" onclick="setDealerLoginMode('password')" class="px-2.5 py-1 rounded-md bg-white text-slate-900 shadow-2xs cursor-pointer">Password</button>
+            <button type="button" id="dModeOtp" onclick="setDealerLoginMode('otp')" class="px-2.5 py-1 rounded-md text-slate-600 cursor-pointer">6-Digit OTP</button>
+          </div>
         </div>
 
-        <div id="authError" class="hidden bg-rose-50 border border-rose-200 text-rose-700 px-3 py-2 rounded-lg text-xs font-medium"></div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">DEALER ID OR REGISTERED EMAIL</label>
+          <div class="flex gap-2">
+            <input id="dLoginId" required placeholder="e.g. SAPL-D-1001 or dealer@company.com" class="flex-1 bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-base sm:text-sm focus:bg-white focus:outline-none focus:border-brand-blue" />
+            <button type="button" id="dLoginSendOtpBtn" onclick="requestOtpFlow('otp_login', '#dLoginId', 'dealerOtpBanner', 'dealerError')" class="hidden px-3 py-2 rounded-xl bg-blue-50 border border-brand-blue text-brand-blue text-xs font-bold shrink-0 cursor-pointer">
+              Send OTP
+            </button>
+          </div>
+        </div>
 
-        <button id="authSubmitBtn" type="submit" class="w-full py-3 rounded-xl bg-brand-blue hover:bg-brand-blueDark text-white font-bold text-sm cursor-pointer">
-          Sign In
+        <div id="dLoginPassWrap">
+          <div class="flex items-center justify-between mb-1">
+            <label class="block text-xs font-bold text-slate-700">PASSWORD</label>
+            <button type="button" onclick="switchDealerTab('reset')" class="text-[11px] font-bold text-brand-blue hover:underline cursor-pointer">
+              Forgot Password?
+            </button>
+          </div>
+          <input id="dLoginPass" type="password" placeholder="Enter your password" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-base sm:text-sm focus:bg-white focus:outline-none focus:border-brand-blue" />
+        </div>
+
+        <div id="dLoginOtpWrap" class="hidden">
+          <label class="block text-xs font-bold text-slate-700 mb-1">ENTER 6-DIGIT OTP</label>
+          <input id="dLoginOtp" maxlength="6" inputmode="numeric" placeholder="6-digit OTP" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 font-mono text-base sm:text-sm tracking-widest focus:bg-white focus:outline-none focus:border-brand-blue" />
+        </div>
+
+        <button type="submit" id="dLoginSubmitBtn" class="w-full py-3 rounded-xl bg-brand-blue hover:bg-brand-blueDark text-white font-bold text-sm cursor-pointer">
+          Sign In to Dealer Store
+        </button>
+
+        <p class="text-center text-xs text-slate-500 pt-1">
+          New dealer?
+          <button type="button" onclick="switchDealerTab('register')" class="font-bold text-brand-orange hover:underline cursor-pointer">
+            Create Account via Email OTP &rarr;
+          </button>
+        </p>
+      </form>
+
+      <!-- TAB B: CREATE DEALER ACCOUNT (OTP -> Auto-Generates User ID & Password) -->
+      <div id="dealerFormRegister" class="hidden space-y-3">
+        <form id="dealerRegInputForm" onsubmit="submitDealerRegister(event)" class="space-y-3">
+          <div class="bg-blue-50/70 border border-blue-200 rounded-xl p-3 text-xs text-slate-700">
+            Verify your email via 6-digit OTP. Your unique <strong>Dealer User ID</strong> and <strong>Password</strong> will be created automatically and sent to your email.
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">1. DEALER EMAIL ADDRESS *</label>
+            <div class="flex gap-2">
+              <input id="dRegContact" type="email" required placeholder="dealer@company.com" class="flex-1 bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-base sm:text-sm focus:bg-white focus:outline-none focus:border-brand-blue" />
+              <button type="button" onclick="requestOtpFlow('dealer_register', '#dRegContact', 'dealerOtpBanner', 'dealerError')" class="px-3.5 py-2 rounded-xl bg-brand-orange hover:bg-brand-orangeDark text-white text-xs font-bold shrink-0 cursor-pointer">
+                Send OTP
+              </button>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2.5">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">2. 6-DIGIT EMAIL OTP *</label>
+              <input id="dRegOtp" required maxlength="6" inputmode="numeric" placeholder="123456" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 font-mono text-base sm:text-sm tracking-widest focus:bg-white focus:outline-none focus:border-brand-blue" />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">MOBILE (OPTIONAL)</label>
+              <input id="dRegMobile" type="tel" maxlength="10" inputmode="numeric" placeholder="9826100002" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-base sm:text-sm focus:bg-white focus:outline-none focus:border-brand-blue" />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+            <div class="sm:col-span-2">
+              <label class="block text-xs font-bold text-slate-700 mb-1">3. WORKSHOP / FIRM NAME *</label>
+              <input id="dRegBusiness" required placeholder="Balaji Auto Spares" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-base sm:text-sm focus:bg-white focus:outline-none focus:border-brand-blue" />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">MPMS CODE</label>
+              <input id="dRegMpms" placeholder="D-A-1001" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 font-mono uppercase text-base sm:text-sm focus:bg-white focus:outline-none focus:border-brand-blue" />
+            </div>
+          </div>
+
+          <button type="submit" id="dRegSubmitBtn" class="w-full py-3 rounded-xl bg-brand-blue hover:bg-brand-blueDark text-white font-bold text-sm cursor-pointer">
+            Verify OTP &amp; Auto-Create Account
+          </button>
+        </form>
+
+        <!-- Auto-Generated Credentials Card (Shown immediately after creation) -->
+        <div id="dealerGeneratedCard" class="hidden space-y-3 bg-emerald-50 border border-emerald-200 rounded-2xl p-4">
+          <div class="flex items-center gap-2 text-emerald-800 font-extrabold text-sm">
+            <span>&#10003; Account Created &amp; Signed In!</span>
+          </div>
+          <p id="dealerGenEmailNote" class="text-xs text-emerald-700"></p>
+          <div class="bg-white border border-emerald-200 rounded-xl p-3 space-y-1.5 font-mono text-xs">
+            <div class="flex justify-between">
+              <span class="text-slate-500">Auto Dealer ID:</span>
+              <strong id="genDealerIdVal" class="text-brand-blue font-extrabold text-sm"></strong>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-slate-500">Auto Password:</span>
+              <strong id="genDealerPassVal" class="text-brand-orange font-extrabold text-sm"></strong>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <button type="button" onclick="copyGeneratedCredentials()" class="py-2.5 px-3 rounded-xl border border-emerald-300 bg-white hover:bg-emerald-100 text-emerald-800 text-xs font-bold cursor-pointer">
+              Copy ID &amp; Password
+            </button>
+            <button type="button" onclick="closeAllOverlays()" class="py-2.5 px-3 rounded-xl bg-brand-blue hover:bg-brand-blueDark text-white text-xs font-bold cursor-pointer">
+              Continue to Store &rarr;
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB C: FORGOT PASSWORD (DEALER RESET VIA EMAIL OTP) -->
+      <form id="dealerFormReset" onsubmit="submitPasswordReset(event, 'dealer')" class="hidden space-y-3">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">REGISTERED EMAIL OR DEALER ID *</label>
+          <div class="flex gap-2">
+            <input id="dResetContact" required placeholder="Enter registered Email or Dealer ID" class="flex-1 bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-base sm:text-sm focus:bg-white focus:outline-none focus:border-brand-blue" />
+            <button type="button" onclick="requestOtpFlow('dealer_reset', '#dResetContact', 'dealerOtpBanner', 'dealerError')" class="px-3.5 py-2 rounded-xl bg-brand-orange hover:bg-brand-orangeDark text-white text-xs font-bold shrink-0 cursor-pointer">
+              Send OTP
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2.5">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">6-DIGIT EMAIL OTP *</label>
+            <input id="dResetOtp" required maxlength="6" inputmode="numeric" placeholder="123456" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 font-mono text-base sm:text-sm tracking-widest focus:bg-white focus:outline-none focus:border-brand-blue" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">NEW USER ID (OPTIONAL)</label>
+            <input id="dResetNewId" maxlength="30" placeholder="Keep existing ID" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 font-mono uppercase text-base sm:text-sm focus:bg-white focus:outline-none focus:border-brand-blue" />
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">NEW PASSWORD (MIN 6 CHARS) *</label>
+          <input id="dResetNewPass" type="password" required minlength="6" placeholder="Enter new password" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-base sm:text-sm focus:bg-white focus:outline-none focus:border-brand-blue" />
+        </div>
+
+        <button type="submit" id="dResetSubmitBtn" class="w-full py-3 rounded-xl bg-brand-blue hover:bg-brand-blueDark text-white font-bold text-sm cursor-pointer">
+          Verify OTP &amp; Reset Password
         </button>
       </form>
     </div>
   </div>
 
-  <script src="app.js?v=20261120-ecomwhite1"></script>
+  <!-- ====================================================================== -->
+  <!-- ADMIN AUTH MODAL: 1) Sign In  |  2) Forgot Password (OTP to analytics.sapl@somanigrp.com) -->
+  <!-- ====================================================================== -->
+  <div id="adminModal" class="hidden fixed inset-0 z-50 items-center justify-center p-3 sm:p-4">
+    <div class="modal-animate relative w-full max-w-md bg-white border border-slate-200 rounded-2xl p-5 sm:p-6 shadow-2xl space-y-4">
+      <button onclick="closeAllOverlays()" class="absolute top-4 right-4 w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xl flex items-center justify-center cursor-pointer">&times;</button>
+
+      <div>
+        <span class="text-[11px] font-extrabold uppercase tracking-wider text-brand-orange">ADMIN BACKEND ACCESS</span>
+        <h3 class="text-xl font-extrabold text-slate-900 mt-0.5">Admin Studio Security</h3>
+      </div>
+
+      <div class="grid grid-cols-2 gap-1 bg-slate-100 p-1 rounded-xl text-xs font-bold">
+        <button type="button" id="aTabLogin" onclick="switchAdminAuthTab('login')" class="py-2 rounded-lg bg-white text-slate-900 shadow-2xs cursor-pointer">Admin Sign In</button>
+        <button type="button" id="aTabReset" onclick="switchAdminAuthTab('reset')" class="py-2 rounded-lg text-slate-600 hover:text-slate-900 cursor-pointer">Forgot Password (OTP)</button>
+      </div>
+
+      <div id="adminOtpBanner" class="hidden rounded-xl px-3.5 py-2.5 text-xs font-medium bg-blue-50 border border-blue-200 text-brand-blue"></div>
+      <div id="adminAuthError" class="hidden rounded-xl px-3.5 py-2.5 text-xs font-medium bg-rose-50 border border-rose-200 text-rose-700"></div>
+
+      <!-- ADMIN SIGN IN -->
+      <form id="adminFormLogin" onsubmit="submitAdminLogin(event)" class="space-y-3.5">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">ADMIN USERNAME</label>
+          <input id="aLoginUser" required autocomplete="username" placeholder="Enter Admin Username" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-base sm:text-sm focus:bg-white focus:outline-none focus:border-brand-orange" />
+        </div>
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <label class="block text-xs font-bold text-slate-700">PASSWORD</label>
+            <button type="button" onclick="switchAdminAuthTab('reset')" class="text-[11px] font-bold text-brand-orange hover:underline cursor-pointer">
+              Forgot Password?
+            </button>
+          </div>
+          <input id="aLoginPass" type="password" required autocomplete="current-password" placeholder="Enter Admin Password" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-base sm:text-sm focus:bg-white focus:outline-none focus:border-brand-orange" />
+        </div>
+        <button type="submit" id="aLoginSubmitBtn" class="w-full py-3 rounded-xl bg-brand-orange hover:bg-brand-orangeDark text-white font-bold text-sm cursor-pointer">
+          Sign In to Admin Studio
+        </button>
+      </form>
+
+      <!-- ADMIN FORGOT PASSWORD VIA OTP (analytics.sapl@somanigrp.com) -->
+      <form id="adminFormReset" onsubmit="submitPasswordReset(event, 'admin')" class="hidden space-y-3.5">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">ADMIN RECOVERY EMAIL</label>
+          <div class="flex gap-2">
+            <input id="aResetContact" required value="analytics.sapl@somanigrp.com" placeholder="analytics.sapl@somanigrp.com" class="flex-1 bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-base sm:text-sm focus:bg-white focus:outline-none focus:border-brand-orange" />
+            <button type="button" onclick="requestOtpFlow('admin_reset', '#aResetContact', 'adminOtpBanner', 'adminAuthError')" class="px-3.5 py-2 rounded-xl bg-brand-blue hover:bg-brand-blueDark text-white text-xs font-bold shrink-0 cursor-pointer">
+              Send OTP
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">6-DIGIT EMAIL OTP</label>
+          <input id="aResetOtp" required maxlength="6" inputmode="numeric" placeholder="Enter 6-digit OTP" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 font-mono text-base sm:text-sm tracking-widest focus:bg-white focus:outline-none focus:border-brand-orange" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">NEW ADMIN PASSWORD (MIN 6 CHARS)</label>
+          <input id="aResetNewPass" type="password" required minlength="6" placeholder="Enter new Admin password" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-base sm:text-sm focus:bg-white focus:outline-none focus:border-brand-orange" />
+        </div>
+
+        <button type="submit" id="aResetSubmitBtn" class="w-full py-3 rounded-xl bg-brand-orange hover:bg-brand-orangeDark text-white font-bold text-sm cursor-pointer">
+          Verify OTP &amp; Update Admin Password
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <script src="app.js?v=20261121-otpwhite2"></script>
 </body>
 </html>
