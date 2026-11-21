@@ -20,7 +20,22 @@ let activeHeroLayer = 'A';
 
 let products = [];
 let hierarchy = {};
-let cart = JSON.parse(localStorage.getItem('sapl_parts_cart') || '{}');
+let cart = (() => {
+  try {
+    const raw = JSON.parse(localStorage.getItem('sapl_parts_cart') || '{}');
+    const clean = {};
+    Object.entries(raw || {}).forEach(([k, v]) => {
+      const key = String(k || '').trim().toUpperCase();
+      const qty = parseInt(v, 10) || 0;
+      if (key && key !== 'UNDEFINED' && key !== 'NULL' && qty > 0) {
+        clean[key] = qty;
+      }
+    });
+    return clean;
+  } catch (e) {
+    return {};
+  }
+})();
 let activePG = 'ALL';
 let activeHierarchy = 'ALL';
 let catalogLayout = 'grid';
@@ -394,46 +409,68 @@ function renderCatalog() {
             const fallback = fallbackImageFor(p);
             const galleryCount = Array.isArray(p.gallery) ? p.gallery.length : 0;
             const hasPhoto = Boolean(p.thumbnailUrl || p.imageUrl || galleryCount > 0);
-            const inCartQty = cart[String(p.id)] || 0;
-            const safeKey = esc(p.partNo);
+            const partKey = String(p.partNo || '').trim().toUpperCase();
+            const safeKey = esc(partKey);
+            const inCartQty = cart[partKey] || 0;
             return `
-              <article class="white-card rounded-2xl overflow-hidden flex flex-col shadow-2xs group">
+              <article class="white-card rounded-2xl overflow-hidden flex flex-col shadow-2xs">
                 <div onclick="openProductDetail('${safeKey}')" class="relative aspect-[4/3] bg-slate-100 border-b border-slate-100 overflow-hidden cursor-pointer">
-                  <img loading="lazy" src="${esc(imageFor(p))}" onerror="this.onerror=null;this.src='${fallback}'" alt="${esc(p.name)}" class="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-300" />
+                  <img loading="lazy" src="${esc(imageFor(p))}" onerror="this.onerror=null;this.src='${fallback}'" alt="${esc(p.name)}" class="w-full h-full object-cover" />
                   <span class="absolute top-2 left-2 bg-slate-900/85 text-white text-[10px] font-bold px-2 py-0.5 rounded-md">${esc(p.pg)}</span>
                   ${
                     galleryCount > 1
-                      ? `<span class="absolute top-2 right-2 bg-brand-blue/95 text-white text-[9px] font-bold px-2 py-0.5 rounded-md shadow-2xs">${galleryCount} ANGLES</span>`
+                      ? `<span class="absolute top-2 right-2 bg-brand-blue/95 text-white text-[9px] font-bold px-2 py-0.5 rounded-md shadow-2xs">${galleryCount} VIEWS</span>`
                       : hasPhoto
                       ? '<span class="absolute top-2 right-2 bg-emerald-600 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-md">ENHANCED</span>'
                       : ''
                   }
-                  <span class="absolute bottom-2 right-2 bg-white/90 text-slate-800 text-[10px] font-bold px-2 py-0.5 rounded-md border border-slate-200 opacity-95 group-hover:bg-brand-blue group-hover:text-white group-hover:border-brand-blue transition">
-                    View Details
-                  </span>
                 </div>
 
-                <div class="p-3 sm:p-4 flex flex-col flex-1">
+                <div class="p-2.5 sm:p-4 flex flex-col flex-1">
                   <div class="flex items-center justify-between gap-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                    <span class="truncate">${esc(p.brand || 'OEM')}</span>
-                    <span class="truncate text-brand-blue">${esc(p.hierarchy)}</span>
+                    <span class="truncate max-w-[45%]">${esc(p.brand || 'OEM')}</span>
+                    <span class="truncate text-brand-blue text-right">${esc(p.hierarchy)}</span>
                   </div>
 
                   <h3 onclick="openProductDetail('${safeKey}')" class="text-xs sm:text-sm font-bold text-slate-900 hover:text-brand-blue mt-1 line-clamp-2 leading-snug cursor-pointer">
                     ${esc(p.name)}
                   </h3>
 
-                  <div class="mt-2 flex items-center justify-between gap-1">
-                    <span class="inline-block font-mono text-[11px] font-bold text-brand-orange bg-orange-50 border border-orange-200 px-2 py-0.5 rounded-md">
-                      ${esc(p.partNo)}
+                  <div class="mt-2">
+                    <span class="inline-block font-mono text-[10px] sm:text-[11px] font-bold text-brand-orange bg-orange-50 border border-orange-200 px-2 py-0.5 rounded-md max-w-full truncate">
+                      ${safeKey}
                     </span>
                   </div>
 
-                  <div class="mt-auto pt-3 border-t border-slate-100 flex items-end justify-between gap-2">
-                    ${priceBlockHtml(p)}
-                    <button type="button" onclick="addToCart('${esc(p.id)}')" class="bg-brand-blue hover:bg-brand-blueDark active:scale-95 text-white font-bold text-xs px-3 py-2 rounded-xl shadow-2xs transition shrink-0 cursor-pointer">
-                      ${inCartQty > 0 ? `In Cart (${inCartQty})` : '+ Add'}
-                    </button>
+                  <div class="mt-auto pt-2.5 border-t border-slate-100 space-y-2">
+                    <div class="flex items-center justify-between gap-1">
+                      ${priceBlockHtml(p)}
+                      ${
+                        inCartQty > 0
+                          ? `<span class="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded-md shrink-0">Added</span>`
+                          : ''
+                      }
+                    </div>
+
+                    <div class="flex items-center justify-between gap-1.5">
+                      <button type="button" onclick="event.stopPropagation();openProductDetail('${safeKey}')" class="flex-1 min-w-0 py-1.5 px-2 rounded-lg border border-brand-blue/30 bg-blue-50/70 hover:bg-brand-blue text-brand-blue hover:text-white font-bold text-[11px] transition truncate cursor-pointer">
+                        View Details
+                      </button>
+
+                      <div onclick="event.stopPropagation()" class="inline-flex items-center border ${
+                        inCartQty > 0 ? 'border-brand-orange bg-orange-50/60' : 'border-slate-300 bg-slate-50'
+                      } rounded-lg overflow-hidden shrink-0">
+                        <button type="button" aria-label="Decrease quantity" onclick="event.stopPropagation();changeQty('${safeKey}', -1)" class="w-7 h-7 flex items-center justify-center font-extrabold text-sm text-slate-700 hover:bg-slate-200 active:bg-slate-300 transition cursor-pointer">
+                          &minus;
+                        </button>
+                        <span class="w-6 text-center font-mono text-xs font-extrabold ${
+                          inCartQty > 0 ? 'text-brand-orange' : 'text-slate-700'
+                        }">${inCartQty}</span>
+                        <button type="button" aria-label="Increase quantity" onclick="event.stopPropagation();changeQty('${safeKey}', 1)" class="w-7 h-7 flex items-center justify-center font-extrabold text-sm bg-brand-blue text-white hover:bg-brand-blueDark active:scale-95 transition cursor-pointer">
+                          +
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </article>
@@ -452,7 +489,9 @@ function renderCatalog() {
       ? shown
           .map(p => {
             const fallback = fallbackImageFor(p);
-            const safeKey = esc(p.partNo);
+            const partKey = String(p.partNo || '').trim().toUpperCase();
+            const safeKey = esc(partKey);
+            const inCartQty = cart[partKey] || 0;
             return `
               <tr class="hover:bg-slate-50">
                 <td onclick="openProductDetail('${safeKey}')" class="py-2.5 px-4 cursor-pointer">
@@ -460,16 +499,25 @@ function renderCatalog() {
                     <img src="${esc(imageFor(p))}" onerror="this.onerror=null;this.src='${fallback}'" class="w-10 h-10 rounded-lg object-cover border border-slate-200 shrink-0" alt="" />
                     <div>
                       <span class="font-bold text-slate-900 hover:text-brand-blue text-xs sm:text-sm block">${esc(p.name)}</span>
-                      <span class="text-[10px] text-brand-blue font-semibold">Click to view photos &amp; specs</span>
+                      <span class="text-[10px] text-brand-blue font-semibold">View Details</span>
                     </div>
                   </div>
                 </td>
-                <td class="py-2.5 px-4"><span class="font-mono text-xs font-bold text-brand-orange bg-orange-50 border border-orange-200 px-2 py-0.5 rounded">${esc(p.partNo)}</span></td>
+                <td class="py-2.5 px-4"><span class="font-mono text-xs font-bold text-brand-orange bg-orange-50 border border-orange-200 px-2 py-0.5 rounded">${safeKey}</span></td>
                 <td class="py-2.5 px-4 text-xs text-slate-600">${esc(p.pg)} &bull; ${esc(p.hierarchy)}</td>
                 <td class="py-2.5 px-4 text-xs font-semibold text-slate-700">${esc(p.brand || 'OEM')}</td>
                 <td class="py-2.5 px-4">${priceBlockHtml(p)}</td>
-                <td class="py-2.5 px-4 text-right">
-                  <button type="button" onclick="addToCart('${esc(p.id)}')" class="bg-brand-blue hover:bg-brand-blueDark text-white font-bold text-xs px-3 py-1.5 rounded-lg cursor-pointer">+ Add</button>
+                <td class="py-2.5 px-4 text-right whitespace-nowrap">
+                  <div class="inline-flex items-center gap-2">
+                    <button type="button" onclick="openProductDetail('${safeKey}')" class="px-2.5 py-1.5 rounded-lg border border-brand-blue/30 bg-blue-50 text-brand-blue hover:bg-brand-blue hover:text-white font-bold text-xs cursor-pointer">
+                      View Details
+                    </button>
+                    <div class="inline-flex items-center border border-slate-300 rounded-lg bg-slate-50 overflow-hidden">
+                      <button type="button" onclick="changeQty('${safeKey}', -1)" class="w-7 h-7 font-extrabold text-slate-700 hover:bg-slate-200 cursor-pointer">&minus;</button>
+                      <span class="w-6 text-center font-mono text-xs font-bold">${inCartQty}</span>
+                      <button type="button" onclick="changeQty('${safeKey}', 1)" class="w-7 h-7 font-extrabold bg-brand-blue text-white hover:bg-brand-blueDark cursor-pointer">+</button>
+                    </div>
+                  </div>
                 </td>
               </tr>
             `;
@@ -663,13 +711,14 @@ function adjustProductDetailQty(delta) {
 
 function addProductDetailToCart() {
   if (!detailProduct) return;
-  const key = String(detailProduct.id);
+  const key = String(detailProduct.partNo || '').trim().toUpperCase();
+  if (!key) return;
   cart[key] = (cart[key] || 0) + detailQty;
   saveCart();
   updateCart();
   renderCatalog();
   closeAllOverlays();
-  showToast(`Added ${detailQty} × ${detailProduct.partNo} to Enquiry Basket`);
+  showToast(`Added ${detailQty} × ${key} to Enquiry Basket`);
 }
 
 function editFromProductDetail() {
@@ -1069,24 +1118,28 @@ function logoutSession() {
 }
 
 function updateAuthUI() {
-  const dealerBtn = $('#dealerBtn');
+  const mobLabel = $('#dealerBtnMobile');
+  const deskLabel = $('#dealerBtnDesktop');
   const adminBtn = $('#adminBtn');
 
   if (authState.role === 'dealer' && authState.token) {
-    dealerBtn.textContent = `Dealer: ${authState.user}`;
+    if (mobLabel) mobLabel.textContent = authState.user;
+    if (deskLabel) deskLabel.textContent = `Dealer: ${authState.user}`;
     adminBtn.textContent = 'Admin';
     $('#kpiTierLabel').textContent = authState.user;
     $('#kpiTierSub').textContent = `${authState.businessName || 'Dealer'} • Net rates active`;
   } else if (authState.role === 'admin' && authState.token) {
     adminBtn.textContent = 'Admin Studio';
-    dealerBtn.textContent = 'Dealer Login';
+    if (mobLabel) mobLabel.textContent = 'Dealer';
+    if (deskLabel) deskLabel.textContent = 'Dealer Login';
     $('#kpiTierLabel').textContent = 'Admin Mode';
     $('#kpiTierSub').textContent = 'Backend Studio unlocked';
   } else {
-    dealerBtn.textContent = 'Dealer Login';
+    if (mobLabel) mobLabel.textContent = 'Dealer';
+    if (deskLabel) deskLabel.textContent = 'Dealer Login';
     adminBtn.textContent = 'Admin';
     $('#kpiTierLabel').textContent = 'Public Store';
-    $('#kpiTierSub').textContent = 'Sign in or register via OTP for net rates';
+    $('#kpiTierSub').textContent = 'Tap for Dealer Net Pricing';
   }
 }
 
@@ -1199,28 +1252,39 @@ async function saveAdminRecoveryProfile(e) {
 }
 
 // ---------------------------------------------------------------------------
-// E-Commerce Enquiry Cart
+// E-Commerce Enquiry Cart (Strictly Keyed by Unique Part Number)
 // ---------------------------------------------------------------------------
-function addToCart(id) {
-  const key = String(id);
+function addToCart(partNoKey) {
+  const key = String(partNoKey || '').trim().toUpperCase();
+  if (!key) return;
   cart[key] = (cart[key] || 0) + 1;
   saveCart();
   updateCart();
   renderCatalog();
-  showToast('Added to Enquiry Basket');
+  showToast(`Added ${key} to Enquiry Basket`);
 }
 
-function changeQty(id, delta) {
-  const key = String(id);
-  cart[key] = Math.max(0, (cart[key] || 0) + delta);
-  if (!cart[key]) delete cart[key];
+function changeQty(partNoKey, delta) {
+  const key = String(partNoKey || '').trim().toUpperCase();
+  if (!key) return;
+  const prev = cart[key] || 0;
+  const next = Math.max(0, prev + delta);
+  if (next === 0) {
+    delete cart[key];
+  } else {
+    cart[key] = next;
+  }
   saveCart();
   updateCart();
   renderCatalog();
+  if (delta > 0) {
+    showToast(`${key}: ${next} in basket`);
+  }
 }
 
-function removeCartItem(id) {
-  delete cart[String(id)];
+function removeCartItem(partNoKey) {
+  const key = String(partNoKey || '').trim().toUpperCase();
+  delete cart[key];
   saveCart();
   updateCart();
   renderCatalog();
@@ -1232,9 +1296,9 @@ function saveCart() {
 
 function updateCart() {
   const entries = Object.entries(cart)
-    .map(([id, qty]) => {
-      const p = products.find(item => String(item.id) === String(id));
-      return p ? { ...p, qty } : null;
+    .map(([partKey, qty]) => {
+      const p = products.find(item => String(item.partNo || '').trim().toUpperCase() === String(partKey).toUpperCase());
+      return p ? { ...p, partKey: String(p.partNo).trim().toUpperCase(), qty } : null;
     })
     .filter(Boolean);
 
@@ -1249,29 +1313,29 @@ function updateCart() {
           x => `
         <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 flex items-start justify-between gap-2">
           <div class="min-w-0">
-            <span class="font-mono text-[11px] font-bold text-brand-orange">${esc(x.partNo)}</span>
+            <span class="font-mono text-[11px] font-bold text-brand-orange">${esc(x.partKey)}</span>
             <p class="text-xs font-bold text-slate-900 truncate">${esc(x.name)}</p>
             <span class="text-[11px] text-slate-500">${esc(x.pg)} &bull; ${esc(x.brand || 'OEM')}</span>
           </div>
           <div class="flex items-center gap-1.5 shrink-0">
-            <button type="button" onclick="changeQty('${esc(x.id)}', -1)" class="w-7 h-7 rounded-lg bg-white border border-slate-300 font-bold text-slate-700 cursor-pointer">-</button>
+            <button type="button" onclick="changeQty('${esc(x.partKey)}', -1)" class="w-7 h-7 rounded-lg bg-white border border-slate-300 font-bold text-slate-700 cursor-pointer">&minus;</button>
             <span class="w-6 text-center text-xs font-mono font-bold">${x.qty}</span>
-            <button type="button" onclick="changeQty('${esc(x.id)}', 1)" class="w-7 h-7 rounded-lg bg-white border border-slate-300 font-bold text-slate-700 cursor-pointer">+</button>
-            <button type="button" onclick="removeCartItem('${esc(x.id)}')" class="ml-1 text-xs text-rose-600 font-bold cursor-pointer">&times;</button>
+            <button type="button" onclick="changeQty('${esc(x.partKey)}', 1)" class="w-7 h-7 rounded-lg bg-white border border-slate-300 font-bold text-slate-700 cursor-pointer">+</button>
+            <button type="button" onclick="removeCartItem('${esc(x.partKey)}')" class="ml-1 text-xs text-rose-600 font-bold cursor-pointer">&times;</button>
           </div>
         </div>`
         )
         .join('')
-    : `<div class="py-12 text-center text-xs text-slate-500">Your enquiry cart is empty.<br>Tap <strong>+ Add</strong> on any part to request a quote.</div>`;
+    : `<div class="py-12 text-center text-xs text-slate-500">Your enquiry cart is empty.<br>Use <strong>+</strong> on any part card to build your enquiry.</div>`;
 }
 
 async function submitEnquiry() {
   const entries = Object.entries(cart)
-    .map(([id, qty]) => {
-      const p = products.find(item => String(item.id) === String(id));
+    .map(([partKey, qty]) => {
+      const p = products.find(item => String(item.partNo || '').trim().toUpperCase() === String(partKey).toUpperCase());
       return p
         ? {
-            partId: p.id,
+            partId: p.id || 0,
             partNo: p.partNo,
             name: p.name,
             pg: p.pg,
@@ -1283,7 +1347,7 @@ async function submitEnquiry() {
     .filter(Boolean);
 
   if (!entries.length) {
-    alert('Please add at least one part to your enquiry cart.');
+    alert('Please select at least one part before submitting your enquiry.');
     return;
   }
 
