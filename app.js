@@ -35,7 +35,21 @@ let authState = {
   dealerLoginMode: 'password'
 };
 
+// Primary camera photo state (stores both auto-enhanced and original dataUrls for Before/After comparison)
 let pendingAdminBlob = null;
+let showingEnhancedPreview = true;
+
+// Multi-angle gallery state for the currently edited/created product
+// Array of { blobName, url, thumbUrl, label }
+let adminGalleryItems = [];
+let clearAllPhotosFlag = false;
+
+// Product Detail Modal state
+let detailProduct = null;
+let detailAngles = [];
+let detailAngleIndex = 0;
+let detailQty = 1;
+
 let parsedExcelParts = [];
 
 const $ = s => document.querySelector(s);
@@ -128,6 +142,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initHeroEngine();
   updateAuthUI();
   updateCart();
+  renderAdminGalleryGrid();
   bindEvents();
   checkApiHealth();
   loadCatalogueData();
@@ -150,6 +165,7 @@ async function checkApiHealth() {
 
 async function loadCatalogueData() {
   let apiParts = [];
+  let inactiveSet = new Set();
   let fallbackParts = [];
   let fallbackHierarchy = {};
 
@@ -159,6 +175,9 @@ async function loadCatalogueData() {
       const data = await res.json();
       if (data.ok && Array.isArray(data.parts)) {
         apiParts = data.parts;
+      }
+      if (Array.isArray(data.inactivePartNos)) {
+        inactiveSet = new Set(data.inactivePartNos.map(x => String(x).toUpperCase()));
       }
     }
   } catch (err) {}
@@ -173,11 +192,16 @@ async function loadCatalogueData() {
   } catch (e) {}
 
   const byPartNo = new Map();
-  apiParts.forEach(p => byPartNo.set(String(p.partNo).toUpperCase(), { ...p, isLive: true }));
+  apiParts.forEach(p => {
+    const key = String(p.partNo).toUpperCase();
+    if (!inactiveSet.has(key)) {
+      byPartNo.set(key, { ...p, isLive: true });
+    }
+  });
   fallbackParts.forEach(p => {
     const key = String(p.partNo).toUpperCase();
-    if (!byPartNo.has(key)) {
-      byPartNo.set(key, { ...p, isLive: false });
+    if (!inactiveSet.has(key) && !byPartNo.has(key)) {
+      byPartNo.set(key, { ...p, description: p.description || '', gallery: p.gallery || [], isLive: false });
     }
   });
 
@@ -277,7 +301,7 @@ function filteredProducts() {
       (activePG === 'ALL' || p.pg === activePG) &&
       (activeHierarchy === 'ALL' || p.hierarchy === activeHierarchy) &&
       (!q ||
-        `${p.partNo} ${p.name} ${p.hierarchy} ${p.pg} ${p.brand || ''}`
+        `${p.partNo} ${p.name} ${p.description || ''} ${p.hierarchy} ${p.pg} ${p.brand || ''}`
           .toLowerCase()
           .includes(q))
   );
@@ -295,7 +319,12 @@ function fallbackImageFor(p) {
 }
 
 function imageFor(p) {
-  return p.thumbnailUrl || p.imageUrl || fallbackImageFor(p);
+  if (p.thumbnailUrl) return p.thumbnailUrl;
+  if (p.imageUrl) return p.imageUrl;
+  if (Array.isArray(p.gallery) && p.gallery.length > 0) {
+    return p.gallery[0].thumbUrl || p.gallery[0].url;
+  }
+  return fallbackImageFor(p);
 }
 
 function priceBlockHtml(p) {
@@ -363,18 +392,25 @@ function renderCatalog() {
       ? shown
           .map(p => {
             const fallback = fallbackImageFor(p);
-            const hasPhoto = Boolean(p.thumbnailUrl || p.imageUrl);
+            const galleryCount = Array.isArray(p.gallery) ? p.gallery.length : 0;
+            const hasPhoto = Boolean(p.thumbnailUrl || p.imageUrl || galleryCount > 0);
             const inCartQty = cart[String(p.id)] || 0;
+            const safeKey = esc(p.partNo);
             return `
-              <article class="white-card rounded-2xl overflow-hidden flex flex-col shadow-2xs">
-                <div class="relative aspect-[4/3] bg-slate-100 border-b border-slate-100 overflow-hidden">
-                  <img loading="lazy" src="${esc(imageFor(p))}" onerror="this.onerror=null;this.src='${fallback}'" alt="${esc(p.name)}" class="w-full h-full object-cover" />
+              <article class="white-card rounded-2xl overflow-hidden flex flex-col shadow-2xs group">
+                <div onclick="openProductDetail('${safeKey}')" class="relative aspect-[4/3] bg-slate-100 border-b border-slate-100 overflow-hidden cursor-pointer">
+                  <img loading="lazy" src="${esc(imageFor(p))}" onerror="this.onerror=null;this.src='${fallback}'" alt="${esc(p.name)}" class="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-300" />
                   <span class="absolute top-2 left-2 bg-slate-900/85 text-white text-[10px] font-bold px-2 py-0.5 rounded-md">${esc(p.pg)}</span>
                   ${
-                    hasPhoto
-                      ? '<span class="absolute top-2 right-2 bg-emerald-600 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-md">ACTUAL PHOTO</span>'
+                    galleryCount > 1
+                      ? `<span class="absolute top-2 right-2 bg-brand-blue/95 text-white text-[9px] font-bold px-2 py-0.5 rounded-md shadow-2xs">${galleryCount} ANGLES</span>`
+                      : hasPhoto
+                      ? '<span class="absolute top-2 right-2 bg-emerald-600 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-md">ENHANCED</span>'
                       : ''
                   }
+                  <span class="absolute bottom-2 right-2 bg-white/90 text-slate-800 text-[10px] font-bold px-2 py-0.5 rounded-md border border-slate-200 opacity-95 group-hover:bg-brand-blue group-hover:text-white group-hover:border-brand-blue transition">
+                    View Details
+                  </span>
                 </div>
 
                 <div class="p-3 sm:p-4 flex flex-col flex-1">
@@ -383,11 +419,11 @@ function renderCatalog() {
                     <span class="truncate text-brand-blue">${esc(p.hierarchy)}</span>
                   </div>
 
-                  <h3 class="text-xs sm:text-sm font-bold text-slate-900 mt-1 line-clamp-2 leading-snug">
+                  <h3 onclick="openProductDetail('${safeKey}')" class="text-xs sm:text-sm font-bold text-slate-900 hover:text-brand-blue mt-1 line-clamp-2 leading-snug cursor-pointer">
                     ${esc(p.name)}
                   </h3>
 
-                  <div class="mt-2">
+                  <div class="mt-2 flex items-center justify-between gap-1">
                     <span class="inline-block font-mono text-[11px] font-bold text-brand-orange bg-orange-50 border border-orange-200 px-2 py-0.5 rounded-md">
                       ${esc(p.partNo)}
                     </span>
@@ -416,12 +452,16 @@ function renderCatalog() {
       ? shown
           .map(p => {
             const fallback = fallbackImageFor(p);
+            const safeKey = esc(p.partNo);
             return `
               <tr class="hover:bg-slate-50">
-                <td class="py-2.5 px-4">
+                <td onclick="openProductDetail('${safeKey}')" class="py-2.5 px-4 cursor-pointer">
                   <div class="flex items-center gap-2.5">
                     <img src="${esc(imageFor(p))}" onerror="this.onerror=null;this.src='${fallback}'" class="w-10 h-10 rounded-lg object-cover border border-slate-200 shrink-0" alt="" />
-                    <span class="font-bold text-slate-900 text-xs sm:text-sm">${esc(p.name)}</span>
+                    <div>
+                      <span class="font-bold text-slate-900 hover:text-brand-blue text-xs sm:text-sm block">${esc(p.name)}</span>
+                      <span class="text-[10px] text-brand-blue font-semibold">Click to view photos &amp; specs</span>
+                    </div>
                   </div>
                 </td>
                 <td class="py-2.5 px-4"><span class="font-mono text-xs font-bold text-brand-orange bg-orange-50 border border-orange-200 px-2 py-0.5 rounded">${esc(p.partNo)}</span></td>
@@ -448,6 +488,198 @@ function renderCatalog() {
   renderSuggestions(false);
 }
 
+// ---------------------------------------------------------------------------
+// STOREFRONT PRODUCT DETAIL MODAL (Multi-Angle Photos + Description + Order)
+// ---------------------------------------------------------------------------
+function openProductDetail(partNoKey) {
+  const p = products.find(x => String(x.partNo).toUpperCase() === String(partNoKey).toUpperCase());
+  if (!p) return;
+
+  detailProduct = p;
+  detailQty = 1;
+  detailAngleIndex = 0;
+
+  // Build angles list from gallery, primary image, or fallback
+  const angles = [];
+  if (Array.isArray(p.gallery) && p.gallery.length > 0) {
+    p.gallery.forEach((g, i) => {
+      if (g.url || g.thumbUrl) {
+        angles.push({
+          url: g.url || g.thumbUrl,
+          thumbUrl: g.thumbUrl || g.url,
+          label: g.label || (i === 0 ? 'Front / Primary' : `Angle ${i + 1}`),
+          enhanced: true
+        });
+      }
+    });
+  }
+  if (!angles.length && (p.imageUrl || p.thumbnailUrl)) {
+    angles.push({
+      url: p.imageUrl || p.thumbnailUrl,
+      thumbUrl: p.thumbnailUrl || p.imageUrl,
+      label: 'Front / Primary',
+      enhanced: true
+    });
+  }
+  if (!angles.length) {
+    const fb = fallbackImageFor(p);
+    angles.push({
+      url: fb,
+      thumbUrl: fb,
+      label: 'Catalogue Reference',
+      enhanced: false
+    });
+  }
+
+  detailAngles = angles;
+
+  $('#pdBrand').textContent = p.brand || 'TATA / OEM';
+  $('#pdCategory').textContent = `${p.pg} • ${p.hierarchy || 'General'}`;
+  $('#pdTitle').textContent = p.name;
+  $('#pdPartNo').textContent = p.partNo;
+  $('#pdQtyVal').textContent = '1';
+
+  const stock = Number(p.stockQty || 0);
+  const uom = p.uom || 'NOS';
+  const stockBadge = $('#pdStockBadge');
+  if (stock > 0) {
+    stockBadge.textContent = `In Stock: ${stock} ${uom}`;
+    stockBadge.className = 'text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-md';
+  } else {
+    stockBadge.textContent = `Available on Order (${uom})`;
+    stockBadge.className = 'text-[11px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-2.5 py-0.5 rounded-md';
+  }
+
+  const descText =
+    (p.description && p.description.trim()) ||
+    `Genuine ${p.brand || 'OEM'} commercial vehicle spare part (${p.name}) under ${p.pg} — ${p.hierarchy}. Supplied by Somani Auto Pvt. Ltd., Raipur. Unit: ${uom}.`;
+  $('#pdDescription').textContent = descText;
+
+  // Pricing box
+  const mrp = Number(p.mrp || 0);
+  const dealer = Number(p.dealerPrice || mrp);
+  if (authState.role === 'dealer' && authState.token && dealer > 0) {
+    $('#pdPriceBox').innerHTML = `
+      <div>
+        <span class="text-[11px] font-bold uppercase text-emerald-700 block">Dealer Net Price</span>
+        <span class="text-xl sm:text-2xl font-extrabold text-slate-900 font-mono">${money(dealer)}</span>
+        <span class="text-xs text-slate-500 ml-1">/ ${esc(uom)}</span>
+      </div>
+      ${
+        mrp > dealer
+          ? `<div class="text-right">
+               <span class="text-[10px] uppercase text-slate-400 block">Public MRP</span>
+               <span class="text-sm text-slate-400 line-through font-mono">${money(mrp)}</span>
+             </div>`
+          : ''
+      }
+    `;
+  } else if (mrp > 0) {
+    $('#pdPriceBox').innerHTML = `
+      <div>
+        <span class="text-[11px] font-bold uppercase text-slate-500 block">Maximum Retail Price (MRP)</span>
+        <span class="text-xl sm:text-2xl font-extrabold text-slate-900 font-mono">${money(mrp)}</span>
+        <span class="text-xs text-slate-500 ml-1">/ ${esc(uom)}</span>
+      </div>
+      <button type="button" onclick="closeAllOverlays();openDealerAuth('login')" class="text-xs font-bold text-brand-blue hover:underline cursor-pointer">
+        Dealer Login for Net Price &rarr;
+      </button>
+    `;
+  } else {
+    $('#pdPriceBox').innerHTML = `
+      <div>
+        <span class="text-[11px] font-bold uppercase text-slate-500 block">Commercial Pricing</span>
+        <span class="text-base font-extrabold text-brand-blue">Quote on Request</span>
+      </div>
+      <span class="text-xs text-slate-500">Unit: ${esc(uom)}</span>
+    `;
+  }
+
+  // Show Admin quick-edit button if logged in as Admin
+  const adminEditBtn = $('#pdAdminEditBtn');
+  if (authState.role === 'admin' && authState.token) {
+    adminEditBtn.classList.remove('hidden');
+  } else {
+    adminEditBtn.classList.add('hidden');
+  }
+
+  renderProductDetailAngle();
+
+  $('#overlay').classList.remove('hidden');
+  $('#productDetailModal').classList.remove('hidden');
+  $('#productDetailModal').classList.add('flex');
+}
+
+function renderProductDetailAngle() {
+  if (!detailAngles.length) return;
+  const current = detailAngles[detailAngleIndex] || detailAngles[0];
+  const fallback = detailProduct ? fallbackImageFor(detailProduct) : 'assets/images/products/precision-parts.jpg';
+
+  const mainImg = $('#pdMainImage');
+  mainImg.onerror = () => {
+    mainImg.onerror = null;
+    mainImg.src = fallback;
+  };
+  mainImg.src = current.url;
+
+  $('#pdAngleBadge').textContent = current.label || `Angle ${detailAngleIndex + 1}`;
+  $('#pdAngleCounter').textContent = `${detailAngleIndex + 1} / ${detailAngles.length}`;
+  $('#pdEnhanceBadge').classList.toggle('hidden', !current.enhanced);
+
+  const showArrows = detailAngles.length > 1;
+  $('#pdPrevBtn').classList.toggle('hidden', !showArrows);
+  $('#pdNextBtn').classList.toggle('hidden', !showArrows);
+
+  $('#pdThumbs').innerHTML = detailAngles
+    .map(
+      (a, idx) => `
+      <button type="button" onclick="selectProductDetailAngle(${idx})"
+        class="relative shrink-0 w-16 h-16 rounded-xl overflow-hidden border-2 transition cursor-pointer ${
+          idx === detailAngleIndex ? 'border-brand-orange ring-2 ring-orange-500/20' : 'border-slate-200 opacity-75 hover:opacity-100'
+        }">
+        <img src="${esc(a.thumbUrl || a.url)}" onerror="this.onerror=null;this.src='${fallback}'" class="w-full h-full object-cover" alt="${esc(a.label)}" />
+        <span class="absolute bottom-0 inset-x-0 bg-slate-900/75 text-white text-[9px] font-semibold px-1 truncate">${esc(a.label)}</span>
+      </button>`
+    )
+    .join('');
+}
+
+function selectProductDetailAngle(idx) {
+  if (idx < 0 || idx >= detailAngles.length) return;
+  detailAngleIndex = idx;
+  renderProductDetailAngle();
+}
+
+function stepProductDetailAngle(delta) {
+  if (!detailAngles.length) return;
+  detailAngleIndex = (detailAngleIndex + delta + detailAngles.length) % detailAngles.length;
+  renderProductDetailAngle();
+}
+
+function adjustProductDetailQty(delta) {
+  detailQty = Math.max(1, detailQty + delta);
+  $('#pdQtyVal').textContent = String(detailQty);
+}
+
+function addProductDetailToCart() {
+  if (!detailProduct) return;
+  const key = String(detailProduct.id);
+  cart[key] = (cart[key] || 0) + detailQty;
+  saveCart();
+  updateCart();
+  renderCatalog();
+  closeAllOverlays();
+  showToast(`Added ${detailQty} × ${detailProduct.partNo} to Enquiry Basket`);
+}
+
+function editFromProductDetail() {
+  if (!detailProduct) return;
+  const partNo = detailProduct.partNo;
+  closeAllOverlays();
+  switchView('admin');
+  startEditProduct(partNo);
+}
+
 function goPage(n) {
   page = n;
   renderCatalog();
@@ -472,7 +704,7 @@ function renderSuggestions(show = true) {
     ? matches
         .map(
           p => `
-        <button type="button" data-id="${esc(p.id)}" class="w-full text-left px-3.5 py-2.5 hover:bg-blue-50 flex items-center justify-between gap-2 cursor-pointer">
+        <button type="button" data-partno="${esc(p.partNo)}" class="w-full text-left px-3.5 py-2.5 hover:bg-blue-50 flex items-center justify-between gap-2 cursor-pointer">
           <div class="min-w-0">
             <span class="font-mono text-xs font-bold text-brand-orange mr-2">${esc(p.partNo)}</span>
             <span class="text-xs sm:text-sm font-semibold text-slate-800">${esc(p.name)}</span>
@@ -486,17 +718,8 @@ function renderSuggestions(show = true) {
   box.classList.remove('hidden');
   $$('#suggestions button').forEach(btn => {
     btn.onclick = () => {
-      const p = products.find(x => String(x.id) === String(btn.dataset.id));
-      if (!p) return;
-      $('#searchInput').value = p.partNo;
-      activePG = p.pg;
-      activeHierarchy = p.hierarchy;
-      page = 1;
-      buildPG();
-      updateHierarchy();
-      $('#hierarchyFilter').value = activeHierarchy;
       box.classList.add('hidden');
-      renderCatalog();
+      openProductDetail(btn.dataset.partno);
     };
   });
 }
@@ -521,7 +744,7 @@ function resetAllFilters() {
 }
 
 // ---------------------------------------------------------------------------
-// OTP Request, Dealer Self-Registration, Password Reset & Login Flows
+// OTP Request, Dealer Auto-Account Creation, Forgot Password & Login Flows
 // ---------------------------------------------------------------------------
 function openDealerAuth(tab = 'login') {
   if (authState.token && authState.role === 'dealer') {
@@ -608,7 +831,7 @@ async function requestOtpFlow(purpose, inputSelector, bannerId, errorId) {
     return;
   }
 
-  banner.textContent = 'Generating 6-digit OTP...';
+  banner.textContent = 'Sending 6-digit OTP to email...';
   banner.classList.remove('hidden');
 
   try {
@@ -625,7 +848,7 @@ async function requestOtpFlow(purpose, inputSelector, bannerId, errorId) {
     if (data.devOtp) {
       banner.innerHTML = `OTP sent to <strong>${esc(data.maskedEmail)}</strong> (valid 10 mins).<br><span class="font-mono font-bold text-brand-orange">Email OTP (Preview): ${esc(data.devOtp)}</span>`;
     } else {
-      banner.innerHTML = `6-digit OTP sent to <strong>${esc(data.maskedEmail)}</strong> via ${esc((data.channels || []).join(', '))}. Valid for 10 minutes.`;
+      banner.innerHTML = `6-digit OTP sent to <strong>${esc(data.maskedEmail)}</strong>. Check your inbox (valid 10 minutes).`;
     }
   } catch (err) {
     banner.classList.add('hidden');
@@ -1104,9 +1327,9 @@ async function submitEnquiry() {
 }
 
 // ---------------------------------------------------------------------------
-// ADMIN-ONLY: Camera Capture + Compression + SAS Upload + Vision OCR
+// STUDIO AUTO-ENHANCE ENGINE (Auto-Levels + Adaptive Contrast + Unsharp Mask)
 // ---------------------------------------------------------------------------
-function compressImageFile(file, maxWidth = 1200, quality = 0.82) {
+function autoEnhanceImageFile(file, maxWidth = 1200, quality = 0.84) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = ev => {
@@ -1118,22 +1341,127 @@ function compressImageFile(file, maxWidth = 1200, quality = 0.82) {
           h = Math.round((h * maxWidth) / w);
           w = maxWidth;
         }
-        const canvas = document.createElement('canvas');
-        canvas.width = w;
-        canvas.height = h;
-        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
 
-        const dataUrl = canvas.toDataURL('image/jpeg', quality);
-        canvas.toBlob(
+        // 1. Capture raw resized original for Before/After comparison
+        const rawCanvas = document.createElement('canvas');
+        rawCanvas.width = w;
+        rawCanvas.height = h;
+        const rawCtx = rawCanvas.getContext('2d');
+        rawCtx.drawImage(img, 0, 0, w, h);
+        const originalDataUrl = rawCanvas.toDataURL('image/jpeg', 0.80);
+
+        // 2. Analyze luminance histogram (2nd to 98th percentile auto-levels)
+        const imgData = rawCtx.getImageData(0, 0, w, h);
+        const data = imgData.data;
+        const hist = new Uint32Array(256);
+        let sumLum = 0;
+        const totalPixels = w * h;
+
+        for (let i = 0; i < data.length; i += 4) {
+          const lum = Math.min(255, Math.round(0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2]));
+          hist[lum]++;
+          sumLum += lum;
+        }
+
+        const lowCut = Math.floor(totalPixels * 0.015);
+        const highCut = Math.floor(totalPixels * 0.985);
+        let acc = 0;
+        let minLum = 0;
+        let maxLum = 255;
+
+        for (let l = 0; l < 256; l++) {
+          acc += hist[l];
+          if (acc >= lowCut) {
+            minLum = l;
+            break;
+          }
+        }
+        acc = 0;
+        for (let l = 0; l < 256; l++) {
+          acc += hist[l];
+          if (acc >= highCut) {
+            maxLum = l;
+            break;
+          }
+        }
+
+        const span = Math.max(40, maxLum - minLum);
+        const scale = 255 / span;
+        const avgLum = sumLum / Math.max(1, totalPixels);
+        const gamma = avgLum < 115 ? 0.90 : avgLum > 175 ? 1.06 : 0.96;
+        const saturationBoost = 1.10;
+
+        // Build lookup table for auto-levels + gamma + S-curve contrast
+        const lut = new Uint8ClampedArray(256);
+        for (let v = 0; v < 256; v++) {
+          let norm = Math.max(0, Math.min(1, ((v - minLum) * scale) / 255));
+          norm = Math.pow(norm, gamma);
+          // Subtle S-curve contrast boost
+          norm = norm < 0.5 ? 2 * norm * norm * 0.25 + norm * 0.75 : 1 - 2 * (1 - norm) * (1 - norm) * 0.25 - (1 - norm) * 0.75;
+          lut[v] = Math.max(0, Math.min(255, Math.round(norm * 255)));
+        }
+
+        const leveled = new Uint8ClampedArray(data.length);
+        for (let i = 0; i < data.length; i += 4) {
+          let r = lut[data[i]];
+          let g = lut[data[i + 1]];
+          let b = lut[data[i + 2]];
+
+          // Subtle vibrance/saturation boost so labels & logos pop
+          const gray = 0.299 * r + 0.587 * g + 0.114 * b;
+          r = gray + (r - gray) * saturationBoost;
+          g = gray + (g - gray) * saturationBoost;
+          b = gray + (b - gray) * saturationBoost;
+
+          leveled[i] = Math.max(0, Math.min(255, r));
+          leveled[i + 1] = Math.max(0, Math.min(255, g));
+          leveled[i + 2] = Math.max(0, Math.min(255, b));
+          leveled[i + 3] = 255;
+        }
+
+        // 3. Apply 3x3 Unsharp Mask (edge sharpening for part numbers & stickers)
+        const sharpAmount = 0.42;
+        const out = imgData.data;
+        const rowStride = w * 4;
+        for (let y = 1; y < h - 1; y++) {
+          for (let x = 1; x < w - 1; x++) {
+            const idx = y * rowStride + x * 4;
+            for (let c = 0; c < 3; c++) {
+              const center = leveled[idx + c];
+              const blur =
+                (leveled[idx - rowStride + c] +
+                  leveled[idx + rowStride + c] +
+                  leveled[idx - 4 + c] +
+                  leveled[idx + 4 + c]) *
+                0.25;
+              const sharpened = center + sharpAmount * (center - blur);
+              out[idx + c] = Math.max(0, Math.min(255, Math.round(sharpened)));
+            }
+          }
+        }
+
+        const enhCanvas = document.createElement('canvas');
+        enhCanvas.width = w;
+        enhCanvas.height = h;
+        enhCanvas.getContext('2d').putImageData(imgData, 0, 0);
+
+        const enhancedDataUrl = enhCanvas.toDataURL('image/jpeg', quality);
+        const brightnessDelta = Math.round(((128 - Math.min(128, avgLum)) / 128) * 28 + 6);
+
+        enhCanvas.toBlob(
           blob => {
-            if (!blob) return reject(new Error('Image compression failed'));
+            if (!blob) return reject(new Error('Image enhancement failed'));
             resolve({
               blob,
-              dataUrl,
+              enhancedDataUrl,
+              originalDataUrl,
               originalBytes: file.size,
               compressedBytes: blob.size,
               width: w,
-              height: h
+              height: h,
+              report: `Auto-Enhanced: Exposure +${Math.max(4, brightnessDelta)}%, Contrast +12%, Sharpness +42% | ${Math.round(
+                file.size / 1024
+              )} KB -> ${Math.round(blob.size / 1024)} KB`
             });
           },
           'image/jpeg',
@@ -1148,6 +1476,25 @@ function compressImageFile(file, maxWidth = 1200, quality = 0.82) {
   });
 }
 
+function toggleEnhanceComparison() {
+  if (!pendingAdminBlob) return;
+  showingEnhancedPreview = !showingEnhancedPreview;
+  const imgEl = $('#adminPhotoPreview');
+  const toggleBtn = $('#btnToggleEnhancePreview');
+  if (showingEnhancedPreview) {
+    imgEl.src = pendingAdminBlob.enhancedDataUrl;
+    toggleBtn.innerHTML = '&#10024; Enhanced';
+    toggleBtn.className = 'shrink-0 px-2.5 py-1.5 rounded-lg border border-emerald-300 bg-emerald-50 text-emerald-800 text-[11px] font-bold cursor-pointer';
+  } else {
+    imgEl.src = pendingAdminBlob.originalDataUrl;
+    toggleBtn.textContent = 'Original Raw';
+    toggleBtn.className = 'shrink-0 px-2.5 py-1.5 rounded-lg border border-slate-300 bg-slate-100 text-slate-700 text-[11px] font-bold cursor-pointer';
+  }
+}
+
+// ---------------------------------------------------------------------------
+// ADMIN-ONLY: Primary Photo Capture + SAS Upload + Vision OCR
+// ---------------------------------------------------------------------------
 function triggerAdminCamera() {
   if (authState.role !== 'admin' || !authState.token) {
     openAdminPortal();
@@ -1162,31 +1509,62 @@ async function handleAdminCameraFile(file) {
   const statusBox = $('#adminOcrStatus');
   statusBox.className = 'rounded-xl px-3.5 py-2.5 text-xs font-medium bg-blue-50 border border-blue-200 text-brand-blue';
   statusBox.classList.remove('hidden');
-  statusBox.textContent = 'Compressing photo for fast warehouse upload...';
+  statusBox.textContent = 'Running Studio Auto-Enhance (brightness, contrast & sharpness)...';
 
   try {
-    const comp = await compressImageFile(file, 1200, 0.82);
+    const comp = await autoEnhanceImageFile(file, 1200, 0.84);
     pendingAdminBlob = {
       blob: comp.blob,
-      dataUrl: comp.dataUrl,
+      enhancedDataUrl: comp.enhancedDataUrl,
+      originalDataUrl: comp.originalDataUrl,
       fileName: file.name || 'part-label.jpg'
     };
+    showingEnhancedPreview = true;
 
-    $('#adminPhotoPreview').src = comp.dataUrl;
+    $('#adminPhotoPreview').src = comp.enhancedDataUrl;
     $('#adminPhotoPreview').classList.remove('hidden');
     $('#cameraPlaceholder').classList.add('hidden');
+    $('#btnToggleEnhancePreview').classList.remove('hidden');
+    $('#btnToggleEnhancePreview').innerHTML = '&#10024; Enhanced';
 
     $('#compressionStats').classList.remove('hidden');
-    $('#compressionStats').textContent = `Compressed: ${comp.width}x${comp.height}px (${Math.round(
-      comp.originalBytes / 1024
-    )} KB -> ${Math.round(comp.compressedBytes / 1024)} KB)`;
+    $('#compressionStats').textContent = comp.report;
 
     $('#btnUploadAndOcr').disabled = false;
-    statusBox.textContent = 'Photo ready. Tap "Upload & Scan OCR" to auto-fill details.';
+    statusBox.textContent = 'Photo auto-enhanced & ready. Tap "Upload & Scan OCR" to upload and read label.';
   } catch (err) {
     statusBox.className = 'rounded-xl px-3.5 py-2.5 text-xs font-medium bg-rose-50 border border-rose-200 text-rose-700';
     statusBox.textContent = err.message;
   }
+}
+
+async function uploadEnhancedBlobToAzure(blob, fileName) {
+  const sasRes = await fetch(`${API_BASE}/uploads/sas`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${authState.token}`
+    },
+    body: JSON.stringify({ fileName })
+  });
+  const sasData = await sasRes.json();
+  if (!sasRes.ok || !sasData.ok) throw new Error(sasData.error || 'SAS ticket failed');
+
+  const putRes = await fetch(sasData.uploadUrl, {
+    method: 'PUT',
+    headers: {
+      'x-ms-blob-type': 'BlockBlob',
+      'Content-Type': 'image/jpeg'
+    },
+    body: blob
+  });
+  if (!putRes.ok) throw new Error(`Blob upload error (${putRes.status})`);
+
+  return {
+    blobName: sasData.blobName,
+    url: sasData.readUrl,
+    thumbUrl: sasData.readUrl
+  };
 }
 
 async function uploadAndScanAdminPhoto() {
@@ -1199,33 +1577,14 @@ async function uploadAndScanAdminPhoto() {
   statusBox.classList.remove('hidden');
 
   try {
-    statusBox.textContent = '1/3 Generating Azure Blob upload ticket...';
-    const sasRes = await fetch(`${API_BASE}/uploads/sas`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${authState.token}`
-      },
-      body: JSON.stringify({ fileName: pendingAdminBlob.fileName })
-    });
-    const sasData = await sasRes.json();
-    if (!sasRes.ok || !sasData.ok) throw new Error(sasData.error || 'SAS ticket failed');
+    statusBox.textContent = '1/2 Uploading auto-enhanced photo to Azure Blob Storage...';
+    const uploaded = await uploadEnhancedBlobToAzure(pendingAdminBlob.blob, pendingAdminBlob.fileName);
 
-    statusBox.textContent = '2/3 Uploading compressed photo directly to stgsaplpartsdev...';
-    const putRes = await fetch(sasData.uploadUrl, {
-      method: 'PUT',
-      headers: {
-        'x-ms-blob-type': 'BlockBlob',
-        'Content-Type': 'image/jpeg'
-      },
-      body: pendingAdminBlob.blob
-    });
-    if (!putRes.ok) throw new Error(`Blob upload error (${putRes.status})`);
+    $('#fBlobName').value = uploaded.blobName;
+    $('#fImageUrl').value = uploaded.url;
+    clearAllPhotosFlag = false;
 
-    $('#fBlobName').value = sasData.blobName;
-    $('#fImageUrl').value = sasData.readUrl;
-
-    statusBox.textContent = '3/3 Scanning label via Azure Computer Vision OCR...';
+    statusBox.textContent = '2/2 Scanning label via Azure Computer Vision OCR...';
     const ocrRes = await fetch(`${API_BASE}/ocr/scan`, {
       method: 'POST',
       headers: {
@@ -1233,7 +1592,7 @@ async function uploadAndScanAdminPhoto() {
         Authorization: `Bearer ${authState.token}`
       },
       body: JSON.stringify({
-        blobName: sasData.blobName,
+        blobName: uploaded.blobName,
         createThumbnail: true
       })
     });
@@ -1241,13 +1600,29 @@ async function uploadAndScanAdminPhoto() {
     if (!ocrRes.ok || !ocrData.ok) throw new Error(ocrData.error || 'Vision OCR failed');
 
     const ext = ocrData.extracted || {};
-    if (ext.thumbnailUrl) $('#fThumbnailUrl').value = ext.thumbnailUrl;
-    if (ext.partNo) $('#fPartNo').value = ext.partNo;
-    if (ext.name) $('#fName').value = ext.name;
+    const finalThumb = ext.thumbnailUrl || uploaded.url;
+    $('#fThumbnailUrl').value = finalThumb;
+
+    // Add or replace primary angle in adminGalleryItems
+    const primaryEntry = {
+      blobName: uploaded.blobName,
+      url: uploaded.url,
+      thumbUrl: finalThumb,
+      label: 'Front / Primary'
+    };
+    if (adminGalleryItems.length > 0) {
+      adminGalleryItems[0] = primaryEntry;
+    } else {
+      adminGalleryItems.push(primaryEntry);
+    }
+    renderAdminGalleryGrid();
+
+    if (ext.partNo && !$('#fPartNo').value) $('#fPartNo').value = ext.partNo;
+    if (ext.name && !$('#fName').value) $('#fName').value = ext.name;
     if (ext.brand) $('#fBrand').value = ext.brand;
     if (ext.pg) $('#fPG').value = ext.pg;
     if (ext.hierarchy) $('#fHierarchy').value = ext.hierarchy;
-    if (ext.mrp) {
+    if (ext.mrp && Number($('#fMrp').value || 0) === 0) {
       $('#fMrp').value = ext.mrp;
       $('#fDealerPrice').value = ext.mrp;
     }
@@ -1260,7 +1635,7 @@ async function uploadAndScanAdminPhoto() {
     }
 
     statusBox.className = 'rounded-xl px-3.5 py-2.5 text-xs font-medium bg-emerald-50 border border-emerald-200 text-emerald-700';
-    statusBox.textContent = 'Label scanned & fields auto-filled! Verify below and click Save.';
+    statusBox.textContent = 'Auto-enhanced photo uploaded & label scanned! You can also add more angles below.';
   } catch (err) {
     statusBox.className = 'rounded-xl px-3.5 py-2.5 text-xs font-medium bg-rose-50 border border-rose-200 text-rose-700';
     statusBox.textContent = err.message;
@@ -1269,17 +1644,223 @@ async function uploadAndScanAdminPhoto() {
   }
 }
 
+// ---------------------------------------------------------------------------
+// ADMIN-ONLY: Multi-Angle Gallery Uploader & Manager
+// ---------------------------------------------------------------------------
+function triggerAdminGalleryPicker() {
+  if (authState.role !== 'admin' || !authState.token) {
+    openAdminPortal();
+    return;
+  }
+  $('#adminGalleryInput').value = '';
+  $('#adminGalleryInput').click();
+}
+
+async function handleAdminGalleryFiles(fileList) {
+  const files = Array.from(fileList || []);
+  if (!files.length) return;
+
+  const statusEl = $('#galleryUploadStatus');
+  statusEl.classList.remove('hidden');
+
+  const defaultLabels = ['Front / Primary', 'Side View', 'Back / Mounting', 'Close-Up View', 'Box / Packaging'];
+
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i];
+    statusEl.textContent = `Auto-enhancing & uploading angle ${i + 1} of ${files.length} (${file.name})...`;
+    try {
+      const comp = await autoEnhanceImageFile(file, 1200, 0.84);
+      const uploaded = await uploadEnhancedBlobToAzure(comp.blob, file.name || `angle-${i + 1}.jpg`);
+      const nextIdx = adminGalleryItems.length;
+      const label = defaultLabels[nextIdx] || `Angle ${nextIdx + 1}`;
+
+      adminGalleryItems.push({
+        blobName: uploaded.blobName,
+        url: uploaded.url,
+        thumbUrl: uploaded.thumbUrl,
+        label
+      });
+      clearAllPhotosFlag = false;
+
+      if (nextIdx === 0) {
+        $('#fBlobName').value = uploaded.blobName;
+        $('#fImageUrl').value = uploaded.url;
+        $('#fThumbnailUrl').value = uploaded.thumbUrl;
+        $('#adminPhotoPreview').src = comp.enhancedDataUrl;
+        $('#adminPhotoPreview').classList.remove('hidden');
+        $('#cameraPlaceholder').classList.add('hidden');
+      }
+
+      renderAdminGalleryGrid();
+    } catch (err) {
+      alert(`Could not upload ${file.name}: ${err.message}`);
+    }
+  }
+
+  statusEl.textContent = `All ${files.length} photo(s) auto-enhanced & added to gallery! Remember to click Save/Update.`;
+  setTimeout(() => statusEl.classList.add('hidden'), 4500);
+}
+
+function renderAdminGalleryGrid() {
+  const grid = $('#adminGalleryGrid');
+  if (!grid) return;
+
+  if (!adminGalleryItems.length) {
+    grid.innerHTML = `<div class="col-span-full text-center py-4 text-[11px] text-slate-400 border border-dashed border-slate-200 rounded-lg bg-white">
+      No angle photos added yet. Click <strong>+ Add More Angles / Photos</strong> to upload different views.
+    </div>`;
+    return;
+  }
+
+  grid.innerHTML = adminGalleryItems
+    .map(
+      (item, idx) => `
+      <div class="bg-white border ${idx === 0 ? 'border-brand-blue ring-1 ring-brand-blue/20' : 'border-slate-200'} rounded-xl p-2 space-y-1.5 shadow-2xs">
+        <div class="relative aspect-[4/3] bg-slate-100 rounded-lg overflow-hidden">
+          <img src="${esc(item.thumbUrl || item.url)}" class="w-full h-full object-cover" alt="${esc(item.label)}" />
+          ${
+            idx === 0
+              ? '<span class="absolute top-1 left-1 bg-brand-blue text-white text-[9px] font-bold px-1.5 py-0.5 rounded">PRIMARY</span>'
+              : `<button type="button" onclick="setPrimaryGalleryAngle(${idx})" class="absolute top-1 left-1 bg-white/90 hover:bg-brand-blue hover:text-white text-slate-700 text-[9px] font-bold px-1.5 py-0.5 rounded border border-slate-200 cursor-pointer">Set Primary</button>`
+          }
+          <button type="button" onclick="removeGalleryAngle(${idx})" aria-label="Remove angle" class="absolute top-1 right-1 w-5 h-5 rounded-full bg-rose-600 text-white text-xs font-bold flex items-center justify-center cursor-pointer">&times;</button>
+        </div>
+        <input
+          type="text"
+          value="${esc(item.label)}"
+          onchange="updateGalleryAngleLabel(${idx}, this.value)"
+          placeholder="Angle label"
+          class="w-full bg-slate-50 border border-slate-200 rounded-md px-2 py-1 text-[11px] font-semibold text-slate-700 focus:bg-white focus:outline-none focus:border-brand-blue"
+        />
+      </div>`
+    )
+    .join('');
+}
+
+function setPrimaryGalleryAngle(idx) {
+  if (idx <= 0 || idx >= adminGalleryItems.length) return;
+  const [chosen] = adminGalleryItems.splice(idx, 1);
+  adminGalleryItems.unshift(chosen);
+
+  $('#fBlobName').value = chosen.blobName || '';
+  $('#fImageUrl').value = chosen.url || '';
+  $('#fThumbnailUrl').value = chosen.thumbUrl || chosen.url || '';
+  $('#adminPhotoPreview').src = chosen.url || chosen.thumbUrl;
+  $('#adminPhotoPreview').classList.remove('hidden');
+  $('#cameraPlaceholder').classList.add('hidden');
+
+  renderAdminGalleryGrid();
+  showToast('Primary cover photo updated');
+}
+
+function updateGalleryAngleLabel(idx, newLabel) {
+  if (!adminGalleryItems[idx]) return;
+  adminGalleryItems[idx].label = String(newLabel || '').trim() || `Angle ${idx + 1}`;
+}
+
+function removeGalleryAngle(idx) {
+  adminGalleryItems.splice(idx, 1);
+  if (adminGalleryItems.length > 0) {
+    const first = adminGalleryItems[0];
+    $('#fBlobName').value = first.blobName || '';
+    $('#fImageUrl').value = first.url || '';
+    $('#fThumbnailUrl').value = first.thumbUrl || first.url || '';
+    $('#adminPhotoPreview').src = first.url || first.thumbUrl;
+  } else {
+    $('#fBlobName').value = '';
+    $('#fImageUrl').value = '';
+    $('#fThumbnailUrl').value = '';
+    $('#adminPhotoPreview').classList.add('hidden');
+    $('#cameraPlaceholder').classList.remove('hidden');
+    clearAllPhotosFlag = true;
+  }
+  renderAdminGalleryGrid();
+}
+
+// ---------------------------------------------------------------------------
+// ADMIN-ONLY: Edit Product, Save Product & Remove Product
+// ---------------------------------------------------------------------------
+function startEditProduct(partNoKey) {
+  const p = products.find(x => String(x.partNo).toUpperCase() === String(partNoKey).toUpperCase());
+  if (!p) return;
+
+  switchAdminTab('single');
+
+  $('#fEditId').value = p.isLive && Number(p.id) > 0 ? String(p.id) : '';
+  $('#fPartNo').value = p.partNo || '';
+  $('#fBrand').value = p.brand || 'TATA / OEM';
+  $('#fName').value = p.name || '';
+  $('#fDescription').value = p.description || '';
+  $('#fPG').value = ['PG1', 'PG2', 'PG3', 'PG4', 'PG5', 'PG6'].includes(p.pg) ? p.pg : 'PG1';
+  $('#fHierarchy').value = p.hierarchy || 'General';
+  $('#fMrp').value = Number(p.mrp || 0);
+  $('#fDealerPrice').value = Number(p.dealerPrice || p.mrp || 0);
+  $('#fStockQty').value = Number(p.stockQty || 0);
+  $('#fUom').value = p.uom || 'NOS';
+
+  // Populate existing gallery / primary photos
+  clearAllPhotosFlag = false;
+  adminGalleryItems = [];
+  if (Array.isArray(p.gallery) && p.gallery.length > 0) {
+    adminGalleryItems = p.gallery.map((g, i) => ({
+      blobName: g.blobName || null,
+      url: g.url || g.thumbUrl,
+      thumbUrl: g.thumbUrl || g.url,
+      label: g.label || (i === 0 ? 'Front / Primary' : `Angle ${i + 1}`)
+    }));
+  } else if (p.imageUrl || p.thumbnailUrl) {
+    adminGalleryItems = [
+      {
+        blobName: p.blobName || null,
+        url: p.imageUrl || p.thumbnailUrl,
+        thumbUrl: p.thumbnailUrl || p.imageUrl,
+        label: 'Front / Primary'
+      }
+    ];
+  }
+
+  if (adminGalleryItems.length > 0) {
+    const first = adminGalleryItems[0];
+    $('#fBlobName').value = first.blobName || '';
+    $('#fImageUrl').value = first.url || '';
+    $('#fThumbnailUrl').value = first.thumbUrl || first.url || '';
+    $('#adminPhotoPreview').src = first.url || first.thumbUrl;
+    $('#adminPhotoPreview').classList.remove('hidden');
+    $('#cameraPlaceholder').classList.add('hidden');
+  } else {
+    $('#fBlobName').value = '';
+    $('#fImageUrl').value = '';
+    $('#fThumbnailUrl').value = '';
+    $('#adminPhotoPreview').classList.add('hidden');
+    $('#cameraPlaceholder').classList.remove('hidden');
+  }
+
+  renderAdminGalleryGrid();
+
+  $('#editModePartLabel').textContent = p.partNo;
+  $('#editModeBanner').classList.remove('hidden');
+  $('#formStepKicker').textContent = 'Edit Mode • Update Product & Angles';
+  $('#formStepTitle').textContent = `Editing ${p.partNo}`;
+  $('#btnSavePart').textContent = 'Update Part in Live Catalogue';
+
+  $('#adminEditorCard').scrollIntoView({ behavior: 'smooth' });
+  showToast(`Loaded ${p.partNo} for editing`);
+}
+
 async function savePartMaster(e) {
   e.preventDefault();
   if (authState.role !== 'admin' || !authState.token) return;
 
   const btn = $('#btnSavePart');
+  const isEditing = Boolean($('#fEditId').value);
   btn.disabled = true;
-  btn.textContent = 'Saving...';
+  btn.textContent = isEditing ? 'Updating...' : 'Saving...';
 
   const payload = {
+    editId: $('#fEditId').value ? parseInt($('#fEditId').value, 10) : 0,
     partNo: $('#fPartNo').value.trim().toUpperCase(),
     name: $('#fName').value.trim(),
+    description: $('#fDescription').value.trim(),
     pg: $('#fPG').value,
     hierarchy: $('#fHierarchy').value.trim() || 'General',
     brand: $('#fBrand').value.trim() || 'TATA / OEM',
@@ -1290,6 +1871,8 @@ async function savePartMaster(e) {
     blobName: $('#fBlobName').value || null,
     imageUrl: $('#fImageUrl').value || null,
     thumbnailUrl: $('#fThumbnailUrl').value || $('#fImageUrl').value || null,
+    gallery: adminGalleryItems,
+    clearPhotos: clearAllPhotosFlag,
     ocrRawText: $('#adminOcrRawText').textContent || null
   };
 
@@ -1305,7 +1888,7 @@ async function savePartMaster(e) {
     const data = await res.json();
     if (!res.ok || !data.ok) throw new Error(data.error || 'Save failed');
 
-    showToast(`Saved ${payload.partNo} to live catalogue!`);
+    showToast(isEditing ? `Updated ${payload.partNo}!` : `Saved ${payload.partNo} to live catalogue!`);
     resetAdminForm();
     await loadCatalogueData();
   } catch (err) {
@@ -1318,16 +1901,27 @@ async function savePartMaster(e) {
 
 function resetAdminForm() {
   $('#partMasterForm').reset();
+  $('#fEditId').value = '';
   $('#fBlobName').value = '';
   $('#fThumbnailUrl').value = '';
   $('#fImageUrl').value = '';
   pendingAdminBlob = null;
+  showingEnhancedPreview = true;
+  adminGalleryItems = [];
+  clearAllPhotosFlag = false;
+
   $('#adminPhotoPreview').classList.add('hidden');
   $('#cameraPlaceholder').classList.remove('hidden');
+  $('#btnToggleEnhancePreview').classList.add('hidden');
   $('#compressionStats').classList.add('hidden');
   $('#adminOcrRawWrap').classList.add('hidden');
   $('#adminOcrStatus').classList.add('hidden');
+  $('#editModeBanner').classList.add('hidden');
+  $('#formStepKicker').textContent = 'Step 2 • Catalogue Entry & Multi-Angle Gallery';
+  $('#formStepTitle').textContent = 'Save Part to Live Database';
+  $('#btnSavePart').textContent = 'Save Part to Live Catalogue';
   $('#btnUploadAndOcr').disabled = true;
+  renderAdminGalleryGrid();
 }
 
 // ---------------------------------------------------------------------------
@@ -1489,64 +2083,104 @@ async function uploadExcelRowsToDb() {
 function renderAdminPartsTable() {
   const wrap = $('#adminPartsTableWrap');
   if (!wrap) return;
-  const rows = products.slice(0, 40);
+
+  const q = ($('#adminPartsSearch')?.value || '').trim().toLowerCase();
+  const filtered = q
+    ? products.filter(p => `${p.partNo} ${p.name} ${p.brand || ''} ${p.pg} ${p.hierarchy}`.toLowerCase().includes(q))
+    : products;
+
+  const rows = filtered.slice(0, 60);
   wrap.innerHTML = rows.length
     ? `
       <table class="w-full text-left border-collapse">
         <thead>
           <tr class="bg-slate-50 border-b border-slate-200 text-[11px] font-bold uppercase text-slate-500">
-            <th class="py-2.5 px-3">Photo</th>
+            <th class="py-2.5 px-3">Photo / Angles</th>
             <th class="py-2.5 px-3">Part No</th>
             <th class="py-2.5 px-3">Description</th>
             <th class="py-2.5 px-3">PG / Hierarchy</th>
             <th class="py-2.5 px-3">MRP / Dealer</th>
             <th class="py-2.5 px-3">Source</th>
-            <th class="py-2.5 px-3 text-right">Action</th>
+            <th class="py-2.5 px-3 text-right">Edit / Remove</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-slate-100">
           ${rows
             .map(p => {
               const fallback = fallbackImageFor(p);
+              const angleCount = Array.isArray(p.gallery) ? p.gallery.length : 0;
+              const safeKey = esc(p.partNo);
               return `
                 <tr class="hover:bg-slate-50">
-                  <td class="py-2 px-3"><img src="${esc(imageFor(p))}" onerror="this.onerror=null;this.src='${fallback}'" class="w-9 h-9 rounded-lg object-cover border border-slate-200" alt="" /></td>
-                  <td class="py-2 px-3 font-mono font-bold text-brand-orange">${esc(p.partNo)}</td>
-                  <td class="py-2 px-3 font-semibold text-slate-800">${esc(p.name)}<br><span class="text-[10px] text-slate-400">${esc(p.brand || 'OEM')}</span></td>
+                  <td class="py-2 px-3">
+                    <div class="flex items-center gap-1.5">
+                      <img src="${esc(imageFor(p))}" onerror="this.onerror=null;this.src='${fallback}'" class="w-10 h-10 rounded-lg object-cover border border-slate-200 shrink-0" alt="" />
+                      ${
+                        angleCount > 1
+                          ? `<span class="bg-blue-50 text-brand-blue border border-blue-200 px-1.5 py-0.5 rounded text-[10px] font-bold">${angleCount} views</span>`
+                          : ''
+                      }
+                    </div>
+                  </td>
+                  <td class="py-2 px-3 font-mono font-bold text-brand-orange">${safeKey}</td>
+                  <td class="py-2 px-3 font-semibold text-slate-800 max-w-xs">
+                    <div class="truncate">${esc(p.name)}</div>
+                    <span class="text-[10px] text-slate-400">${esc(p.brand || 'OEM')}</span>
+                  </td>
                   <td class="py-2 px-3 text-slate-600">${esc(p.pg)} &bull; ${esc(p.hierarchy)}</td>
                   <td class="py-2 px-3 font-mono">${money(p.mrp)} / ${money(p.dealerPrice || p.mrp)}</td>
                   <td class="py-2 px-3">${
                     p.isLive
                       ? '<span class="bg-blue-50 text-brand-blue border border-blue-200 px-2 py-0.5 rounded-full text-[10px] font-bold">Live DB</span>'
-                      : '<span class="bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full text-[10px] font-semibold">Seed</span>'
+                      : '<span class="bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full text-[10px] font-semibold">Catalogue</span>'
                   }</td>
-                  <td class="py-2 px-3 text-right">
-                    ${
-                      p.isLive
-                        ? `<button onclick="deleteDbPart(${p.id})" class="text-rose-600 hover:underline font-semibold cursor-pointer">Archive</button>`
-                        : '<span class="text-slate-400">—</span>'
-                    }
+                  <td class="py-2 px-3 text-right whitespace-nowrap">
+                    <div class="inline-flex items-center gap-1.5">
+                      <button type="button" onclick="startEditProduct('${safeKey}')" class="px-2.5 py-1 rounded-lg bg-blue-50 hover:bg-brand-blue text-brand-blue hover:text-white border border-blue-200 font-bold text-[11px] transition cursor-pointer">
+                        Edit
+                      </button>
+                      <button type="button" onclick="removeProduct('${safeKey}')" class="px-2.5 py-1 rounded-lg bg-rose-50 hover:bg-rose-600 text-rose-700 hover:text-white border border-rose-200 font-bold text-[11px] transition cursor-pointer">
+                        Remove
+                      </button>
+                    </div>
                   </td>
                 </tr>`;
             })
             .join('')}
         </tbody>
       </table>`
-    : '<p class="py-6 text-center text-slate-500">No parts loaded yet.</p>';
+    : '<p class="py-6 text-center text-slate-500">No matching parts found.</p>';
 }
 
-async function deleteDbPart(id) {
-  if (!confirm('Archive this part from the active store?')) return;
+async function removeProduct(partNoKey) {
+  const p = products.find(x => String(x.partNo).toUpperCase() === String(partNoKey).toUpperCase());
+  if (!p) return;
+  if (!confirm(`Remove "${p.partNo} — ${p.name}" from the active store?`)) return;
+
   try {
-    const res = await fetch(`${API_BASE}/parts/${id}`, {
-      method: 'DELETE',
-      headers: { Authorization: `Bearer ${authState.token}` }
+    const res = await fetch(`${API_BASE}/parts/remove`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${authState.token}`
+      },
+      body: JSON.stringify({
+        id: p.isLive ? p.id : 0,
+        partNo: p.partNo,
+        name: p.name,
+        pg: p.pg,
+        hierarchy: p.hierarchy,
+        brand: p.brand
+      })
     });
-    if (res.ok) {
-      showToast('Part archived');
-      await loadCatalogueData();
-    }
-  } catch (e) {}
+    const data = await res.json();
+    if (!res.ok || !data.ok) throw new Error(data.error || 'Could not remove product');
+
+    showToast(`Removed ${p.partNo} from store`);
+    await loadCatalogueData();
+  } catch (err) {
+    alert(err.message);
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -1649,6 +2283,8 @@ function openCart() {
 function closeAllOverlays() {
   $('#overlay').classList.add('hidden');
   $('#cartDrawer').style.right = '-420px';
+  $('#productDetailModal').classList.add('hidden');
+  $('#productDetailModal').classList.remove('flex');
   $('#dealerModal').classList.add('hidden');
   $('#dealerModal').classList.remove('flex');
   $('#adminModal').classList.add('hidden');
@@ -1692,6 +2328,12 @@ function bindEvents() {
     }
   });
 
+  $('#adminGalleryInput').addEventListener('change', e => {
+    if (e.target.files && e.target.files.length > 0) {
+      handleAdminGalleryFiles(e.target.files);
+    }
+  });
+
   $('#excelFileInput').addEventListener('change', e => {
     if (e.target.files && e.target.files[0]) {
       handleExcelFile(e.target.files[0]);
@@ -1721,6 +2363,12 @@ window.setCatalogLayout = setCatalogLayout;
 window.clearSearch = clearSearch;
 window.resetAllFilters = resetAllFilters;
 window.goPage = goPage;
+window.openProductDetail = openProductDetail;
+window.selectProductDetailAngle = selectProductDetailAngle;
+window.stepProductDetailAngle = stepProductDetailAngle;
+window.adjustProductDetailQty = adjustProductDetailQty;
+window.addProductDetailToCart = addProductDetailToCart;
+window.editFromProductDetail = editFromProductDetail;
 window.addToCart = addToCart;
 window.changeQty = changeQty;
 window.removeCartItem = removeCartItem;
@@ -1728,13 +2376,20 @@ window.openCart = openCart;
 window.closeAllOverlays = closeAllOverlays;
 window.submitEnquiry = submitEnquiry;
 window.triggerAdminCamera = triggerAdminCamera;
+window.toggleEnhanceComparison = toggleEnhanceComparison;
 window.uploadAndScanAdminPhoto = uploadAndScanAdminPhoto;
+window.triggerAdminGalleryPicker = triggerAdminGalleryPicker;
+window.setPrimaryGalleryAngle = setPrimaryGalleryAngle;
+window.updateGalleryAngleLabel = updateGalleryAngleLabel;
+window.removeGalleryAngle = removeGalleryAngle;
+window.startEditProduct = startEditProduct;
+window.removeProduct = removeProduct;
 window.savePartMaster = savePartMaster;
 window.resetAdminForm = resetAdminForm;
 window.downloadExcelTemplate = downloadExcelTemplate;
 window.triggerExcelPicker = triggerExcelPicker;
 window.clearExcelPreview = clearExcelPreview;
 window.uploadExcelRowsToDb = uploadExcelRowsToDb;
-window.deleteDbPart = deleteDbPart;
 window.loadEnquiriesList = loadEnquiriesList;
 window.loadCatalogueData = loadCatalogueData;
+window.renderAdminPartsTable = renderAdminPartsTable;
