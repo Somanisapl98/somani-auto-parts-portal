@@ -414,9 +414,12 @@ function renderCatalog() {
             const inCartQty = cart[partKey] || 0;
             return `
               <article class="white-card rounded-2xl overflow-hidden flex flex-col shadow-2xs">
-                <div onclick="openProductDetail('${safeKey}')" class="relative aspect-[4/3] bg-slate-100 border-b border-slate-100 overflow-hidden cursor-pointer">
+                <div onclick="openProductDetail('${safeKey}')" class="relative aspect-[4/3] bg-slate-100 border-b border-slate-100 overflow-hidden cursor-pointer group">
                   <img loading="lazy" src="${esc(imageFor(p))}" onerror="this.onerror=null;this.src='${fallback}'" alt="${esc(p.name)}" class="w-full h-full object-cover" />
                   <span class="absolute top-2 left-2 bg-slate-900/85 text-white text-[10px] font-bold px-2 py-0.5 rounded-md">${esc(p.pg)}</span>
+                  <button type="button" onclick="event.stopPropagation();openProductZoomByPartNo('${safeKey}')" aria-label="Zoom image" title="Zoom image" class="absolute bottom-2 right-2 w-7 h-7 rounded-full bg-white/95 hover:bg-brand-blue text-slate-700 hover:text-white border border-slate-200 shadow-xs flex items-center justify-center text-xs transition cursor-zoom-in">
+                    &#128269;
+                  </button>
                   ${
                     galleryCount > 1
                       ? `<span class="absolute top-2 right-2 bg-brand-blue/95 text-white text-[9px] font-bold px-2 py-0.5 rounded-md shadow-2xs">${galleryCount} VIEWS</span>`
@@ -496,7 +499,7 @@ function renderCatalog() {
               <tr class="hover:bg-slate-50">
                 <td onclick="openProductDetail('${safeKey}')" class="py-2.5 px-4 cursor-pointer">
                   <div class="flex items-center gap-2.5">
-                    <img src="${esc(imageFor(p))}" onerror="this.onerror=null;this.src='${fallback}'" class="w-10 h-10 rounded-lg object-cover border border-slate-200 shrink-0" alt="" />
+                    <img onclick="openProductZoomByPartNo('${safeKey}')" title="Click to zoom &amp; inspect" src="${esc(imageFor(p))}" onerror="this.onerror=null;this.src='${fallback}'" class="w-10 h-10 rounded-lg object-cover border border-slate-200 hover:border-brand-blue shrink-0 cursor-zoom-in" alt="" />
                     <div>
                       <span class="font-bold text-slate-900 hover:text-brand-blue text-xs sm:text-sm block">${esc(p.name)}</span>
                       <span class="text-[10px] text-brand-blue font-semibold">View Details</span>
@@ -1586,7 +1589,7 @@ async function handleAdminCameraFile(file) {
     showingEnhancedPreview = true;
 
     $('#adminPhotoPreview').src = comp.enhancedDataUrl;
-    $('#adminPhotoPreview').classList.remove('hidden');
+    $('#adminPhotoPreviewWrap').classList.remove('hidden');
     $('#cameraPlaceholder').classList.add('hidden');
     $('#btnToggleEnhancePreview').classList.remove('hidden');
     $('#btnToggleEnhancePreview').innerHTML = '&#10024; Enhanced';
@@ -1751,7 +1754,7 @@ async function handleAdminGalleryFiles(fileList) {
         $('#fImageUrl').value = uploaded.url;
         $('#fThumbnailUrl').value = uploaded.thumbUrl;
         $('#adminPhotoPreview').src = comp.enhancedDataUrl;
-        $('#adminPhotoPreview').classList.remove('hidden');
+        $('#adminPhotoPreviewWrap').classList.remove('hidden');
         $('#cameraPlaceholder').classList.add('hidden');
       }
 
@@ -1781,7 +1784,7 @@ function renderAdminGalleryGrid() {
       (item, idx) => `
       <div class="bg-white border ${idx === 0 ? 'border-brand-blue ring-1 ring-brand-blue/20' : 'border-slate-200'} rounded-xl p-2 space-y-1.5 shadow-2xs">
         <div class="relative aspect-[4/3] bg-slate-100 rounded-lg overflow-hidden">
-          <img src="${esc(item.thumbUrl || item.url)}" class="w-full h-full object-cover" alt="${esc(item.label)}" />
+          <img onclick="openAdminGalleryZoom(${idx})" title="Click to zoom &amp; inspect" src="${esc(item.thumbUrl || item.url)}" class="w-full h-full object-cover cursor-zoom-in hover:scale-[1.03] transition-transform" alt="${esc(item.label)}" />
           ${
             idx === 0
               ? '<span class="absolute top-1 left-1 bg-brand-blue text-white text-[9px] font-bold px-1.5 py-0.5 rounded">PRIMARY</span>'
@@ -1810,7 +1813,7 @@ function setPrimaryGalleryAngle(idx) {
   $('#fImageUrl').value = chosen.url || '';
   $('#fThumbnailUrl').value = chosen.thumbUrl || chosen.url || '';
   $('#adminPhotoPreview').src = chosen.url || chosen.thumbUrl;
-  $('#adminPhotoPreview').classList.remove('hidden');
+  $('#adminPhotoPreviewWrap').classList.remove('hidden');
   $('#cameraPlaceholder').classList.add('hidden');
 
   renderAdminGalleryGrid();
@@ -1834,7 +1837,7 @@ function removeGalleryAngle(idx) {
     $('#fBlobName').value = '';
     $('#fImageUrl').value = '';
     $('#fThumbnailUrl').value = '';
-    $('#adminPhotoPreview').classList.add('hidden');
+    $('#adminPhotoPreviewWrap').classList.add('hidden');
     $('#cameraPlaceholder').classList.remove('hidden');
     clearAllPhotosFlag = true;
   }
@@ -1889,13 +1892,13 @@ function startEditProduct(partNoKey) {
     $('#fImageUrl').value = first.url || '';
     $('#fThumbnailUrl').value = first.thumbUrl || first.url || '';
     $('#adminPhotoPreview').src = first.url || first.thumbUrl;
-    $('#adminPhotoPreview').classList.remove('hidden');
+    $('#adminPhotoPreviewWrap').classList.remove('hidden');
     $('#cameraPlaceholder').classList.add('hidden');
   } else {
     $('#fBlobName').value = '';
     $('#fImageUrl').value = '';
     $('#fThumbnailUrl').value = '';
-    $('#adminPhotoPreview').classList.add('hidden');
+    $('#adminPhotoPreviewWrap').classList.add('hidden');
     $('#cameraPlaceholder').classList.remove('hidden');
   }
 
@@ -1974,7 +1977,7 @@ function resetAdminForm() {
   adminGalleryItems = [];
   clearAllPhotosFlag = false;
 
-  $('#adminPhotoPreview').classList.add('hidden');
+  $('#adminPhotoPreviewWrap').classList.add('hidden');
   $('#cameraPlaceholder').classList.remove('hidden');
   $('#btnToggleEnhancePreview').classList.add('hidden');
   $('#compressionStats').classList.add('hidden');
@@ -2345,6 +2348,7 @@ function openCart() {
 }
 
 function closeAllOverlays() {
+  closeImageZoom();
   $('#overlay').classList.add('hidden');
   $('#cartDrawer').style.right = '-420px';
   $('#productDetailModal').classList.add('hidden');
@@ -2457,3 +2461,346 @@ window.uploadExcelRowsToDb = uploadExcelRowsToDb;
 window.loadEnquiriesList = loadEnquiriesList;
 window.loadCatalogueData = loadCatalogueData;
 window.renderAdminPartsTable = renderAdminPartsTable;
+
+// ---------------------------------------------------------------------------
+// INTERACTIVE IMAGE ZOOM LIGHTBOX (Auto-Zoom 2x, Pan, Pinch & Angle Switcher)
+// ---------------------------------------------------------------------------
+let zoomState = {
+  angles: [],
+  index: 0,
+  title: '',
+  partNo: '',
+  scale: 2.0,
+  tx: 0,
+  ty: 0,
+  isDragging: false,
+  dragMoved: false,
+  startX: 0,
+  startY: 0,
+  pinchStartDist: 0,
+  pinchStartScale: 2.0
+};
+
+function buildAnglesForProduct(p) {
+  const angles = [];
+  if (Array.isArray(p.gallery) && p.gallery.length > 0) {
+    p.gallery.forEach((g, i) => {
+      if (g.url || g.thumbUrl) {
+        angles.push({
+          url: g.url || g.thumbUrl,
+          thumbUrl: g.thumbUrl || g.url,
+          label: g.label || (i === 0 ? 'Front / Primary' : `Angle ${i + 1}`)
+        });
+      }
+    });
+  }
+  if (!angles.length && (p.imageUrl || p.thumbnailUrl)) {
+    angles.push({
+      url: p.imageUrl || p.thumbnailUrl,
+      thumbUrl: p.thumbnailUrl || p.imageUrl,
+      label: 'Front / Primary'
+    });
+  }
+  if (!angles.length) {
+    const fb = fallbackImageFor(p);
+    angles.push({ url: fb, thumbUrl: fb, label: 'Catalogue Reference' });
+  }
+  return angles;
+}
+
+function openProductZoomByPartNo(partNoKey) {
+  const p = products.find(x => String(x.partNo).toUpperCase() === String(partNoKey).toUpperCase());
+  if (!p) return;
+  openImageZoomLightbox({
+    angles: buildAnglesForProduct(p),
+    startIndex: 0,
+    title: p.name,
+    partNo: p.partNo,
+    initialScale: 2.0
+  });
+}
+
+function openProductDetailZoom() {
+  if (!detailProduct || !detailAngles.length) return;
+  openImageZoomLightbox({
+    angles: detailAngles,
+    startIndex: detailAngleIndex,
+    title: detailProduct.name,
+    partNo: detailProduct.partNo,
+    initialScale: 2.0
+  });
+}
+
+function openAdminStep1Zoom() {
+  if (!pendingAdminBlob) return;
+  const srcUrl = showingEnhancedPreview ? pendingAdminBlob.enhancedDataUrl : pendingAdminBlob.originalDataUrl;
+  openImageZoomLightbox({
+    angles: [
+      {
+        url: srcUrl,
+        thumbUrl: srcUrl,
+        label: showingEnhancedPreview ? 'Studio Auto-Enhanced Preview' : 'Original Raw Camera Photo'
+      }
+    ],
+    startIndex: 0,
+    title: $('#fName').value.trim() || pendingAdminBlob.fileName || 'Captured Product Photo',
+    partNo: $('#fPartNo').value.trim().toUpperCase() || 'STEP 1 PREVIEW',
+    initialScale: 2.0
+  });
+}
+
+function openAdminGalleryZoom(startIndex = 0) {
+  if (!adminGalleryItems.length) return;
+  openImageZoomLightbox({
+    angles: adminGalleryItems.map((g, i) => ({
+      url: g.url || g.thumbUrl,
+      thumbUrl: g.thumbUrl || g.url,
+      label: g.label || (i === 0 ? 'Front / Primary' : `Angle ${i + 1}`)
+    })),
+    startIndex,
+    title: $('#fName').value.trim() || 'Product Angles Preview',
+    partNo: $('#fPartNo').value.trim().toUpperCase() || 'GALLERY',
+    initialScale: 2.0
+  });
+}
+
+function openImageZoomLightbox({ angles, startIndex = 0, title = '', partNo = '', initialScale = 2.0 }) {
+  if (!angles || !angles.length) return;
+  zoomState.angles = angles;
+  zoomState.index = Math.max(0, Math.min(startIndex, angles.length - 1));
+  zoomState.title = title;
+  zoomState.partNo = partNo;
+  zoomState.scale = initialScale;
+  zoomState.tx = 0;
+  zoomState.ty = 0;
+
+  $('#zoomPartBadge').textContent = partNo ? `[${partNo}]` : '';
+  $('#zoomTitleText').textContent = title || 'Product Inspection';
+
+  renderZoomAngle();
+
+  const lb = $('#imageZoomLightbox');
+  lb.classList.remove('hidden');
+  lb.classList.add('flex');
+}
+
+function closeImageZoom() {
+  const lb = $('#imageZoomLightbox');
+  if (!lb) return;
+  lb.classList.add('hidden');
+  lb.classList.remove('flex');
+}
+
+function renderZoomAngle() {
+  const current = zoomState.angles[zoomState.index] || zoomState.angles[0];
+  if (!current) return;
+
+  const img = $('#zoomImg');
+  img.src = current.url;
+  $('#zoomAngleLabel').textContent = current.label ? `• ${current.label}` : '';
+
+  const multi = zoomState.angles.length > 1;
+  $('#zoomPrevBtn').classList.toggle('hidden', !multi);
+  $('#zoomNextBtn').classList.toggle('hidden', !multi);
+
+  const bar = $('#zoomThumbsBar');
+  if (multi) {
+    bar.classList.remove('hidden');
+    bar.innerHTML = zoomState.angles
+      .map(
+        (a, i) => `
+        <button type="button" onclick="selectZoomAngle(${i})" class="shrink-0 w-14 h-14 rounded-lg overflow-hidden border-2 transition cursor-pointer ${
+          i === zoomState.index ? 'border-brand-orange scale-105' : 'border-slate-700 opacity-65 hover:opacity-100'
+        }">
+          <img src="${esc(a.thumbUrl || a.url)}" class="w-full h-full object-cover" alt="${esc(a.label)}" />
+        </button>`
+      )
+      .join('');
+  } else {
+    bar.classList.add('hidden');
+  }
+
+  applyZoomTransform(true);
+}
+
+function selectZoomAngle(idx) {
+  if (idx < 0 || idx >= zoomState.angles.length) return;
+  zoomState.index = idx;
+  zoomState.scale = 2.0;
+  zoomState.tx = 0;
+  zoomState.ty = 0;
+  renderZoomAngle();
+}
+
+function stepZoomAngle(delta) {
+  if (zoomState.angles.length <= 1) return;
+  zoomState.index = (zoomState.index + delta + zoomState.angles.length) % zoomState.angles.length;
+  zoomState.scale = 2.0;
+  zoomState.tx = 0;
+  zoomState.ty = 0;
+  renderZoomAngle();
+}
+
+function applyZoomTransform(animate = false) {
+  const img = $('#zoomImg');
+  if (!img) return;
+  if (zoomState.scale <= 1.01) {
+    zoomState.scale = 1.0;
+    zoomState.tx = 0;
+    zoomState.ty = 0;
+  }
+  img.style.transition = animate ? 'transform 0.18s ease-out' : 'none';
+  img.style.transform = `translate3d(${zoomState.tx}px, ${zoomState.ty}px, 0) scale(${zoomState.scale})`;
+  img.style.cursor = zoomState.scale > 1 ? (zoomState.isDragging ? 'grabbing' : 'grab') : 'zoom-in';
+  $('#zoomLevelBadge').textContent = `${zoomState.scale.toFixed(1)}×`;
+}
+
+function adjustZoomLevel(delta) {
+  zoomState.scale = Math.max(1.0, Math.min(4.0, Number((zoomState.scale + delta).toFixed(1))));
+  applyZoomTransform(true);
+}
+
+function resetZoomTransform() {
+  zoomState.scale = 1.0;
+  zoomState.tx = 0;
+  zoomState.ty = 0;
+  applyZoomTransform(true);
+}
+
+function initZoomViewportControls() {
+  const vp = $('#zoomViewport');
+  if (!vp) return;
+
+  // Mouse drag to pan
+  vp.addEventListener('mousedown', e => {
+    if (e.target.closest('button')) return;
+    zoomState.isDragging = true;
+    zoomState.dragMoved = false;
+    zoomState.startX = e.clientX - zoomState.tx;
+    zoomState.startY = e.clientY - zoomState.ty;
+    applyZoomTransform(false);
+  });
+
+  window.addEventListener('mousemove', e => {
+    if (!zoomState.isDragging) return;
+    zoomState.dragMoved = true;
+    if (zoomState.scale > 1) {
+      zoomState.tx = e.clientX - zoomState.startX;
+      zoomState.ty = e.clientY - zoomState.startY;
+      applyZoomTransform(false);
+    }
+  });
+
+  window.addEventListener('mouseup', e => {
+    if (!zoomState.isDragging) return;
+    const wasClick = !zoomState.dragMoved;
+    zoomState.isDragging = false;
+    applyZoomTransform(false);
+
+    if (wasClick && e.target.id === 'zoomImg') {
+      // Cycle zoom levels on click: 2.0x -> 3.5x -> 1.0x -> 2.0x
+      if (zoomState.scale < 1.8) {
+        zoomState.scale = 2.0;
+      } else if (zoomState.scale < 3.2) {
+        zoomState.scale = 3.5;
+      } else {
+        zoomState.scale = 1.0;
+        zoomState.tx = 0;
+        zoomState.ty = 0;
+      }
+      applyZoomTransform(true);
+    }
+  });
+
+  // Mouse wheel zoom
+  vp.addEventListener(
+    'wheel',
+    e => {
+      e.preventDefault();
+      const delta = e.deltaY < 0 ? 0.35 : -0.35;
+      adjustZoomLevel(delta);
+    },
+    { passive: false }
+  );
+
+  // Touch pan & two-finger pinch zoom
+  vp.addEventListener(
+    'touchstart',
+    e => {
+      if (e.target.closest('button')) return;
+      if (e.touches.length === 1) {
+        zoomState.isDragging = true;
+        zoomState.dragMoved = false;
+        zoomState.startX = e.touches[0].clientX - zoomState.tx;
+        zoomState.startY = e.touches[0].clientY - zoomState.ty;
+      } else if (e.touches.length === 2) {
+        zoomState.isDragging = false;
+        const dx = e.touches[0].clientX - e.touches[1].clientX;
+        const dy = e.touches[0].clientY - e.touches[1].clientY;
+        zoomState.pinchStartDist = Math.hypot(dx, dy);
+        zoomState.pinchStartScale = zoomState.scale;
+      }
+    },
+    { passive: true }
+  );
+
+  vp.addEventListener(
+    'touchmove',
+    e => {
+      if (e.touches.length === 1 && zoomState.isDragging) {
+        zoomState.dragMoved = true;
+        if (zoomState.scale > 1) {
+          zoomState.tx = e.touches[0].clientX - zoomState.startX;
+          zoomState.ty = e.touches[0].clientY - zoomState.startY;
+          applyZoomTransform(false);
+        }
+      } else if (e.touches.length === 2 && zoomState.pinchStartDist > 0) {
+        const dx = e.touches[0].clientX - e.touches[1].clientX;
+        const dy = e.touches[0].clientY - e.touches[1].clientY;
+        const dist = Math.hypot(dx, dy);
+        const ratio = dist / zoomState.pinchStartDist;
+        zoomState.scale = Math.max(1.0, Math.min(4.0, Number((zoomState.pinchStartScale * ratio).toFixed(2))));
+        applyZoomTransform(false);
+      }
+    },
+    { passive: true }
+  );
+
+  vp.addEventListener('touchend', e => {
+    if (zoomState.isDragging && !zoomState.dragMoved && e.target.id === 'zoomImg') {
+      if (zoomState.scale < 1.8) {
+        zoomState.scale = 2.0;
+      } else if (zoomState.scale < 3.2) {
+        zoomState.scale = 3.5;
+      } else {
+        zoomState.scale = 1.0;
+        zoomState.tx = 0;
+        zoomState.ty = 0;
+      }
+      applyZoomTransform(true);
+    }
+    zoomState.isDragging = false;
+    zoomState.pinchStartDist = 0;
+  });
+
+  // Escape key closes Zoom Lightbox
+  document.addEventListener('keydown', e => {
+    const lb = $('#imageZoomLightbox');
+    if (!lb || lb.classList.contains('hidden')) return;
+    if (e.key === 'Escape') closeImageZoom();
+    else if (e.key === 'ArrowRight') stepZoomAngle(1);
+    else if (e.key === 'ArrowLeft') stepZoomAngle(-1);
+  });
+}
+
+document.addEventListener('DOMContentLoaded', initZoomViewportControls);
+
+window.openProductZoomByPartNo = openProductZoomByPartNo;
+window.openProductDetailZoom = openProductDetailZoom;
+window.openAdminStep1Zoom = openAdminStep1Zoom;
+window.openAdminGalleryZoom = openAdminGalleryZoom;
+window.closeImageZoom = closeImageZoom;
+window.selectZoomAngle = selectZoomAngle;
+window.stepZoomAngle = stepZoomAngle;
+window.adjustZoomLevel = adjustZoomLevel;
+window.resetZoomTransform = resetZoomTransform;

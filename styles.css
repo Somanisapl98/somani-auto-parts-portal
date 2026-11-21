@@ -63,3 +63,16 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: #1b569e;
 }
+
+#zoomViewport {
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+#zoomImg {
+  transform-origin: center center;
+  will-change: transform;
+  user-select: none;
+  -webkit-user-drag: none;
+}
