@@ -35,7 +35,7 @@
       }
     };
   </script>
-  <link rel="stylesheet" href="styles.css?v=20261121-zoom1" />
+  <link rel="stylesheet" href="styles.css?v=20261121-mobileux2" />
 </head>
 <body class="min-h-screen font-sans antialiased selection:bg-brand-blue selection:text-white">
 
@@ -592,9 +592,14 @@
   <!-- ====================================================================== -->
   <!-- PRODUCT DETAIL MODAL (Multi-Angle Gallery + Full Description + Order)  -->
   <!-- ====================================================================== -->
-  <div id="productDetailModal" class="hidden fixed inset-0 z-50 items-center justify-center p-3 sm:p-5 overflow-y-auto">
+  <div id="productDetailModal" class="hidden fixed inset-0 z-50 items-center justify-center p-2.5 sm:p-5 overflow-y-auto">
     <div class="modal-animate relative w-full max-w-4xl bg-white border border-slate-200 rounded-2xl shadow-2xl overflow-hidden my-auto">
-      <button onclick="closeAllOverlays()" aria-label="Close" class="absolute top-3.5 right-3.5 z-20 w-9 h-9 rounded-full bg-white/90 hover:bg-slate-100 border border-slate-200 text-slate-700 text-xl flex items-center justify-center shadow-xs cursor-pointer">&times;</button>
+      <div class="flex items-center justify-between px-4 py-2.5 bg-slate-50 border-b border-slate-200">
+        <button type="button" onclick="handleUiBackButton()" class="inline-flex items-center gap-1.5 text-xs font-bold text-slate-700 hover:text-brand-blue bg-white border border-slate-300 px-3 py-1.5 rounded-lg shadow-2xs cursor-pointer">
+          &larr; Back to Catalogue
+        </button>
+        <button type="button" onclick="handleUiBackButton()" aria-label="Close" class="w-8 h-8 rounded-full bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 text-lg flex items-center justify-center cursor-pointer">&times;</button>
+      </div>
 
       <div class="grid grid-cols-1 md:grid-cols-12">
         <!-- Left: Interactive Multi-Angle Photo Viewer -->
@@ -1007,6 +1012,6 @@
     <div id="zoomThumbsBar" class="hidden px-4 py-2.5 bg-slate-900/95 border-t border-slate-800 flex items-center justify-center gap-2 overflow-x-auto no-scrollbar shrink-0"></div>
   </div>
 
-  <script src="app.js?v=20261121-zoom1"></script>
+  <script src="app.js?v=20261121-mobileux2"></script>
 </body>
 </html>

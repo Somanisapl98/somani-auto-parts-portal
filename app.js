@@ -440,9 +440,10 @@ function renderCatalog() {
                   </h3>
 
                   <div class="mt-2">
-                    <span class="inline-block font-mono text-[10px] sm:text-[11px] font-bold text-brand-orange bg-orange-50 border border-orange-200 px-2 py-0.5 rounded-md max-w-full truncate">
-                      ${safeKey}
-                    </span>
+                    <button type="button" onclick="event.stopPropagation();openProductDetail('${safeKey}')" title="Open product details &amp; options" class="inline-flex items-center gap-1 font-mono text-[10px] sm:text-[11px] font-bold text-brand-orange hover:bg-brand-orange hover:text-white bg-orange-50 border border-orange-200 px-2 py-0.5 rounded-md max-w-full truncate transition cursor-pointer">
+                      <span>${safeKey}</span>
+                      <span class="text-[9px] opacity-75">&rsaquo;</span>
+                    </button>
                   </div>
 
                   <div class="mt-auto pt-2.5 border-t border-slate-100 space-y-2">
@@ -506,7 +507,7 @@ function renderCatalog() {
                     </div>
                   </div>
                 </td>
-                <td class="py-2.5 px-4"><span class="font-mono text-xs font-bold text-brand-orange bg-orange-50 border border-orange-200 px-2 py-0.5 rounded">${safeKey}</span></td>
+                <td onclick="openProductDetail('${safeKey}')" class="py-2.5 px-4 cursor-pointer"><span class="font-mono text-xs font-bold text-brand-orange hover:bg-brand-orange hover:text-white bg-orange-50 border border-orange-200 px-2 py-0.5 rounded transition">${safeKey} &rsaquo;</span></td>
                 <td class="py-2.5 px-4 text-xs text-slate-600">${esc(p.pg)} &bull; ${esc(p.hierarchy)}</td>
                 <td class="py-2.5 px-4 text-xs font-semibold text-slate-700">${esc(p.brand || 'OEM')}</td>
                 <td class="py-2.5 px-4">${priceBlockHtml(p)}</td>
@@ -658,6 +659,7 @@ function openProductDetail(partNoKey) {
 
   $('#overlay').classList.remove('hidden');
   $('#productDetailModal').classList.remove('hidden');
+  pushOverlayHistoryState('product-details');
   $('#productDetailModal').classList.add('flex');
 }
 
@@ -807,6 +809,7 @@ function openDealerAuth(tab = 'login') {
   }
   $('#overlay').classList.remove('hidden');
   $('#dealerModal').classList.remove('hidden');
+  pushOverlayHistoryState('dealer-login');
   $('#dealerModal').classList.add('flex');
   switchDealerTab(tab);
 }
@@ -853,6 +856,7 @@ function openAdminPortal() {
   }
   $('#overlay').classList.remove('hidden');
   $('#adminModal').classList.remove('hidden');
+  pushOverlayHistoryState('admin-login');
   $('#adminModal').classList.add('flex');
   switchAdminAuthTab('login');
 }
@@ -2157,13 +2161,67 @@ function renderAdminPartsTable() {
     : products;
 
   const rows = filtered.slice(0, 60);
-  wrap.innerHTML = rows.length
-    ? `
+  if (!rows.length) {
+    wrap.innerHTML = '<p class="py-6 text-center text-slate-500">No matching parts found.</p>';
+    return;
+  }
+
+  // Mobile-friendly interactive cards (< 768px) + Desktop table (>= 768px)
+  const mobileCardsHtml = `
+    <div class="md:hidden space-y-2.5">
+      ${rows
+        .map(p => {
+          const fallback = fallbackImageFor(p);
+          const angleCount = Array.isArray(p.gallery) ? p.gallery.length : 0;
+          const safeKey = esc(p.partNo);
+          return `
+            <div onclick="openAdminPartActions('${safeKey}')" class="border border-slate-200 hover:border-brand-blue rounded-xl p-3 bg-slate-50/60 active:bg-blue-50/40 transition cursor-pointer space-y-2.5">
+              <div class="flex items-start gap-3">
+                <div class="relative shrink-0">
+                  <img onclick="event.stopPropagation();openProductZoomByPartNo('${safeKey}')" src="${esc(imageFor(p))}" onerror="this.onerror=null;this.src='${fallback}'" class="w-14 h-14 rounded-xl object-cover border border-slate-200 bg-white cursor-zoom-in" alt="" />
+                  ${
+                    angleCount > 1
+                      ? `<span class="absolute -bottom-1 -right-1 bg-brand-blue text-white text-[9px] font-bold px-1.5 py-0.2 rounded-full">${angleCount}</span>`
+                      : ''
+                  }
+                </div>
+                <div class="min-w-0 flex-1">
+                  <div class="flex items-center justify-between gap-1.5">
+                    <span class="font-mono text-xs font-extrabold text-brand-orange bg-orange-50 border border-orange-200 px-2 py-0.5 rounded-md truncate">
+                      ${safeKey} &rsaquo;
+                    </span>
+                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0 ${
+                      p.isLive ? 'bg-blue-50 text-brand-blue border border-blue-200' : 'bg-slate-200/70 text-slate-600'
+                    }">${p.isLive ? 'Live DB' : 'Seed'}</span>
+                  </div>
+                  <p class="text-xs font-bold text-slate-900 mt-1 line-clamp-2">${esc(p.name)}</p>
+                  <p class="text-[11px] text-slate-500 mt-0.5">${esc(p.brand || 'OEM')} &bull; ${esc(p.pg)} &bull; MRP ${money(p.mrp)}</p>
+                </div>
+              </div>
+
+              <div onclick="event.stopPropagation()" class="grid grid-cols-3 gap-1.5 pt-2 border-t border-slate-200/80">
+                <button type="button" onclick="startEditProduct('${safeKey}')" class="py-1.5 px-2 rounded-lg bg-brand-blue text-white font-bold text-[11px] text-center cursor-pointer">
+                  &#9998; Edit / Photos
+                </button>
+                <button type="button" onclick="openProductDetail('${safeKey}')" class="py-1.5 px-2 rounded-lg bg-white border border-slate-300 text-slate-700 font-bold text-[11px] text-center cursor-pointer">
+                  Preview
+                </button>
+                <button type="button" onclick="removeProduct('${safeKey}')" class="py-1.5 px-2 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 font-bold text-[11px] text-center cursor-pointer">
+                  Remove
+                </button>
+              </div>
+            </div>`;
+        })
+        .join('')}
+    </div>`;
+
+  const desktopTableHtml = `
+    <div class="hidden md:block overflow-x-auto">
       <table class="w-full text-left border-collapse">
         <thead>
           <tr class="bg-slate-50 border-b border-slate-200 text-[11px] font-bold uppercase text-slate-500">
             <th class="py-2.5 px-3">Photo / Angles</th>
-            <th class="py-2.5 px-3">Part No</th>
+            <th class="py-2.5 px-3">Part No (Click to Open)</th>
             <th class="py-2.5 px-3">Description</th>
             <th class="py-2.5 px-3">PG / Hierarchy</th>
             <th class="py-2.5 px-3">MRP / Dealer</th>
@@ -2181,7 +2239,7 @@ function renderAdminPartsTable() {
                 <tr class="hover:bg-slate-50">
                   <td class="py-2 px-3">
                     <div class="flex items-center gap-1.5">
-                      <img src="${esc(imageFor(p))}" onerror="this.onerror=null;this.src='${fallback}'" class="w-10 h-10 rounded-lg object-cover border border-slate-200 shrink-0" alt="" />
+                      <img onclick="openProductZoomByPartNo('${safeKey}')" title="Click to zoom &amp; inspect" src="${esc(imageFor(p))}" onerror="this.onerror=null;this.src='${fallback}'" class="w-10 h-10 rounded-lg object-cover border border-slate-200 hover:border-brand-blue shrink-0 cursor-zoom-in" alt="" />
                       ${
                         angleCount > 1
                           ? `<span class="bg-blue-50 text-brand-blue border border-blue-200 px-1.5 py-0.5 rounded text-[10px] font-bold">${angleCount} views</span>`
@@ -2189,8 +2247,12 @@ function renderAdminPartsTable() {
                       }
                     </div>
                   </td>
-                  <td class="py-2 px-3 font-mono font-bold text-brand-orange">${safeKey}</td>
-                  <td class="py-2 px-3 font-semibold text-slate-800 max-w-xs">
+                  <td class="py-2 px-3">
+                    <button type="button" onclick="openAdminPartActions('${safeKey}')" title="Click to open part options" class="font-mono font-bold text-brand-orange hover:bg-brand-orange hover:text-white bg-orange-50 border border-orange-200 px-2 py-0.5 rounded transition cursor-pointer">
+                      ${safeKey} &rsaquo;
+                    </button>
+                  </td>
+                  <td onclick="openAdminPartActions('${safeKey}')" class="py-2 px-3 font-semibold text-slate-800 hover:text-brand-blue max-w-xs cursor-pointer">
                     <div class="truncate">${esc(p.name)}</div>
                     <span class="text-[10px] text-slate-400">${esc(p.brand || 'OEM')}</span>
                   </td>
@@ -2215,8 +2277,15 @@ function renderAdminPartsTable() {
             })
             .join('')}
         </tbody>
-      </table>`
-    : '<p class="py-6 text-center text-slate-500">No matching parts found.</p>';
+      </table>
+    </div>`;
+
+  wrap.innerHTML = mobileCardsHtml + desktopTableHtml;
+}
+
+function openAdminPartActions(partNoKey) {
+  // Opens the interactive Product Detail Modal with all options (Zoom Angles, Description, Edit in Studio, Add to Cart)
+  openProductDetail(partNoKey);
 }
 
 async function removeProduct(partNoKey) {
@@ -2345,10 +2414,15 @@ function switchAdminTab(tab) {
 function openCart() {
   $('#overlay').classList.remove('hidden');
   $('#cartDrawer').style.right = '0px';
+  pushOverlayHistoryState('enquiry-cart');
 }
 
-function closeAllOverlays() {
-  closeImageZoom();
+function closeAllOverlays(skipHistory = false) {
+  const lb = $('#imageZoomLightbox');
+  if (lb) {
+    lb.classList.add('hidden');
+    lb.classList.remove('flex');
+  }
   $('#overlay').classList.add('hidden');
   $('#cartDrawer').style.right = '-420px';
   $('#productDetailModal').classList.add('hidden');
@@ -2357,6 +2431,9 @@ function closeAllOverlays() {
   $('#dealerModal').classList.remove('flex');
   $('#adminModal').classList.add('hidden');
   $('#adminModal').classList.remove('flex');
+  if (!skipHistory) {
+    clearOverlayHistoryState();
+  }
 }
 
 function bindEvents() {
@@ -2582,13 +2659,15 @@ function openImageZoomLightbox({ angles, startIndex = 0, title = '', partNo = ''
   const lb = $('#imageZoomLightbox');
   lb.classList.remove('hidden');
   lb.classList.add('flex');
+  pushOverlayHistoryState('zoom-view');
 }
 
 function closeImageZoom() {
   const lb = $('#imageZoomLightbox');
-  if (!lb) return;
+  if (!lb || lb.classList.contains('hidden')) return;
   lb.classList.add('hidden');
   lb.classList.remove('flex');
+  clearOverlayHistoryState();
 }
 
 function renderZoomAngle() {
@@ -2804,3 +2883,58 @@ window.selectZoomAngle = selectZoomAngle;
 window.stepZoomAngle = stepZoomAngle;
 window.adjustZoomLevel = adjustZoomLevel;
 window.resetZoomTransform = resetZoomTransform;
+
+// ---------------------------------------------------------------------------
+// PHONE / BROWSER BACK-BUTTON INTEGRATION (Prevents Accidental Site Exit)
+// ---------------------------------------------------------------------------
+let _closingFromPopstate = false;
+
+function pushOverlayHistoryState(layerName) {
+  try {
+    if (!window.history || !window.history.pushState) return;
+    if (window.history.state && window.history.state.saplLayer === layerName) return;
+    window.history.pushState({ saplLayer: layerName }, '', `#${layerName}`);
+  } catch (e) {}
+}
+
+function clearOverlayHistoryState() {
+  try {
+    if (_closingFromPopstate) return;
+    if (window.history && window.history.state && window.history.state.saplLayer) {
+      window.history.back();
+    }
+  } catch (e) {}
+}
+
+function handleUiBackButton() {
+  const zoomLb = $('#imageZoomLightbox');
+  if (zoomLb && !zoomLb.classList.contains('hidden')) {
+    closeImageZoom();
+    return;
+  }
+  if (window.history && window.history.state && window.history.state.saplLayer) {
+    window.history.back();
+  } else {
+    closeAllOverlays(true);
+  }
+}
+
+window.addEventListener('popstate', () => {
+  _closingFromPopstate = true;
+  try {
+    const zoomLb = $('#imageZoomLightbox');
+    if (zoomLb && !zoomLb.classList.contains('hidden')) {
+      zoomLb.classList.add('hidden');
+      zoomLb.classList.remove('flex');
+      return;
+    }
+    closeAllOverlays(true);
+  } finally {
+    setTimeout(() => {
+      _closingFromPopstate = false;
+    }, 30);
+  }
+});
+
+window.handleUiBackButton = handleUiBackButton;
+window.openAdminPartActions = openAdminPartActions;
