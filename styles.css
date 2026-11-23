@@ -80,3 +80,44 @@ body {
 .corp-badge-shadow {
   box-shadow: 0 8px 24px -12px rgba(27, 86, 158, 0.22);
 }
+
+.uno-hero-bracket {
+  position: relative;
+  border-left: 3px solid rgba(255, 255, 255, 0.9);
+  border-top: 3px solid rgba(255, 255, 255, 0.9);
+  border-bottom: 3px solid rgba(255, 255, 255, 0.9);
+}
+.uno-hero-bracket::before,
+.uno-hero-bracket::after {
+  content: "";
+  position: absolute;
+  left: -3px;
+  width: 36px;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.9);
+}
+.uno-hero-bracket::before { top: -3px; }
+.uno-hero-bracket::after { bottom: -3px; }
+
+.uno-exp-bracket {
+  position: relative;
+}
+.uno-exp-bracket::after {
+  content: "";
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  bottom: 14px;
+  width: 24px;
+  border-top: 2.5px solid rgba(255, 255, 255, 0.85);
+  border-right: 2.5px solid rgba(255, 255, 255, 0.85);
+  border-bottom: 2.5px solid rgba(255, 255, 255, 0.85);
+  pointer-events: none;
+}
+
+.uno-accent-bar {
+  width: 32px;
+  height: 3px;
+  background: #0072CE;
+  border-radius: 2px;
+}

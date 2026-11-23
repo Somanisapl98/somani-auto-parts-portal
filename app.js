@@ -3,15 +3,15 @@ const API_BASE = 'https://func-sapl-parts-api-dev-h6fsevdbe3gfg7cx.centralindia-
 const HERO_4K_SLIDES = [
   {
     url: 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&w=2560&q=90',
-    kicker: 'Genuine Commercial Vehicle Spares & Lubricants'
+    kicker: '27 Years of Excellence • Commercial Vehicles Only'
   },
   {
     url: 'https://images.unsplash.com/photo-1519003722824-194d4455a60c?auto=format&fit=crop&w=2560&q=90',
-    kicker: 'TATA Motors • Eicher • Heavy-Duty Fleet Parts'
+    kicker: 'Tata • Cummins • Holset • JOST • RSB • SKF • DRiV • Uno Minda'
   },
   {
     url: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=2560&q=90',
-    kicker: 'Somani Auto Pvt. Ltd. • Raipur Wholesale & Dealer Store'
+    kicker: 'Raipur HQ & 10 Branches • Parts, Oils & Illiquid Stock'
   }
 ];
 
@@ -2930,8 +2930,8 @@ function filterBranches(stateCode) {
     card.classList.toggle('hidden', !match);
   });
 
-  const activeCls = 'px-3 py-1.5 rounded-lg bg-white text-brand-blue shadow-2xs cursor-pointer';
-  const idleCls = 'px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 cursor-pointer';
+  const activeCls = 'px-3.5 py-1.5 rounded-md bg-[#0B4F9F] text-white cursor-pointer';
+  const idleCls = 'px-3.5 py-1.5 rounded-md text-slate-600 hover:text-slate-900 cursor-pointer';
 
   const tAll = $('#brTabAll');
   const tCG = $('#brTabCG');
@@ -2943,3 +2943,17 @@ function filterBranches(stateCode) {
 
 window.filterByVendorBrand = filterByVendorBrand;
 window.filterBranches = filterBranches;
+
+function filterByPG(pgCode) {
+  switchView('store');
+  activePG = pgCode || 'ALL';
+  activeHierarchy = 'ALL';
+  page = 1;
+  $('#kpiPgLabel').textContent = activePG === 'ALL' ? 'PG1–PG6' : activePG;
+  buildPG();
+  updateHierarchy();
+  renderCatalog();
+  const catSec = $('#catalogSection');
+  if (catSec) catSec.scrollIntoView({ behavior: 'smooth' });
+}
+window.filterByPG = filterByPG;
