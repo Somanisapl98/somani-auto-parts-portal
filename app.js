@@ -1173,8 +1173,8 @@ function updateAuthUI() {
     if (mobLabel) mobLabel.textContent = 'Sign In';
     if (deskLabel) deskLabel.textContent = 'Sign In';
     if (drawerAdminBtn) drawerAdminBtn.classList.remove('hidden');
-    $('#kpiTierLabel').textContent = 'Admin Mode';
-    $('#kpiTierSub').textContent = 'Backend Studio unlocked';
+    $('#kpiTierLabel').textContent = 'Partner Store';
+    $('#kpiTierSub').textContent = 'Sign In for Net Pricing';
   } else {
     if (mobLabel) mobLabel.textContent = 'Sign In';
     if (deskLabel) deskLabel.textContent = 'Sign In';
@@ -3028,8 +3028,12 @@ function _enterShopPortalNow() {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
+function _isStorefrontSignedIn() {
+  return Boolean(authState.token && authState.role === 'dealer');
+}
+
 function openShopPortal() {
-  if (!authState.token) {
+  if (!_isStorefrontSignedIn()) {
     _pendingShopRedirect = () => _enterShopPortalNow();
     const notice = $('#signInGateNotice');
     if (notice) notice.classList.remove('hidden');
@@ -3059,7 +3063,7 @@ function openShopPortalWithBrand(brandName) {
     renderCatalog();
     if (brandName) showToast(`Showing ${brandName} in Shop Portal`);
   };
-  if (!authState.token) {
+  if (!_isStorefrontSignedIn()) {
     _pendingShopRedirect = applyBrand;
     const notice = $('#signInGateNotice');
     if (notice) notice.classList.remove('hidden');
@@ -3080,7 +3084,7 @@ function openShopPortalWithPG(pgCode) {
     updateHierarchy();
     renderCatalog();
   };
-  if (!authState.token) {
+  if (!_isStorefrontSignedIn()) {
     _pendingShopRedirect = applyPG;
     const notice = $('#signInGateNotice');
     if (notice) notice.classList.remove('hidden');
