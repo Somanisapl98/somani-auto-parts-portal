@@ -2,15 +2,15 @@ const API_BASE = 'https://func-sapl-parts-api-dev-h6fsevdbe3gfg7cx.centralindia-
 
 const HERO_4K_SLIDES = [
   {
-    url: 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&w=2560&q=90',
+    url: 'https://images.unsplash.com/photo-1519003722824-194d4455a60c?auto=format&fit=crop&w=2560&q=92',
     kicker: '27 Years of Excellence • Commercial Vehicles Only'
   },
   {
-    url: 'https://images.unsplash.com/photo-1519003722824-194d4455a60c?auto=format&fit=crop&w=2560&q=90',
+    url: 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&w=2560&q=92',
     kicker: 'Tata • Cummins • Holset • JOST • RSB • SKF • DRiV • Uno Minda'
   },
   {
-    url: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=2560&q=90',
+    url: 'https://images.unsplash.com/photo-1565043589221-1a6fd9ae45c7?auto=format&fit=crop&w=2560&q=92',
     kicker: 'Raipur HQ & 10 Branches • Parts, Oils & Illiquid Stock'
   }
 ];
@@ -2384,6 +2384,10 @@ function switchView(view) {
   } else {
     $('#adminView').classList.add('hidden');
     $('#storeView').classList.remove('hidden');
+    if ($('#corporateFrontPage') && $('#shopPortalView')) {
+      $('#corporateFrontPage').classList.remove('hidden');
+      $('#shopPortalView').classList.add('hidden');
+    }
     if (authState.role === 'dealer' && authState.token) {
       $('#dealerEnquiriesBox').classList.remove('hidden');
       loadEnquiriesList();
@@ -2957,3 +2961,54 @@ function filterByPG(pgCode) {
   if (catSec) catSec.scrollIntoView({ behavior: 'smooth' });
 }
 window.filterByPG = filterByPG;
+
+// ---------------------------------------------------------------------------
+// DEDICATED SHOP NOW PORTAL NAVIGATION
+// ---------------------------------------------------------------------------
+function openShopPortal() {
+  $('#adminView').classList.add('hidden');
+  $('#storeView').classList.remove('hidden');
+  if ($('#corporateFrontPage')) $('#corporateFrontPage').classList.add('hidden');
+  if ($('#shopPortalView')) $('#shopPortalView').classList.remove('hidden');
+  if (authState.role === 'dealer' && authState.token) {
+    $('#dealerEnquiriesBox').classList.remove('hidden');
+    loadEnquiriesList();
+  } else {
+    $('#dealerEnquiriesBox').classList.add('hidden');
+  }
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function openCorporateHome() {
+  switchView('store');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function openShopPortalWithBrand(brandName) {
+  openShopPortal();
+  activePG = 'ALL';
+  activeHierarchy = 'ALL';
+  const searchEl = $('#searchInput');
+  if (searchEl) searchEl.value = brandName || '';
+  page = 1;
+  buildPG();
+  updateHierarchy();
+  renderCatalog();
+  if (brandName) showToast(`Showing ${brandName} in Shop Portal`);
+}
+
+function openShopPortalWithPG(pgCode) {
+  openShopPortal();
+  activePG = pgCode || 'ALL';
+  activeHierarchy = 'ALL';
+  page = 1;
+  $('#kpiPgLabel').textContent = activePG === 'ALL' ? 'PG1–PG6' : activePG;
+  buildPG();
+  updateHierarchy();
+  renderCatalog();
+}
+
+window.openShopPortal = openShopPortal;
+window.openCorporateHome = openCorporateHome;
+window.openShopPortalWithBrand = openShopPortalWithBrand;
+window.openShopPortalWithPG = openShopPortalWithPG;

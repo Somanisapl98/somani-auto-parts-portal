@@ -121,3 +121,8 @@ body {
   background: #0072CE;
   border-radius: 2px;
 }
+
+.corp-img-frame {
+  object-fit: cover;
+  object-position: center 22%;
+}
