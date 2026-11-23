@@ -826,12 +826,40 @@ function switchDealerTab(tab) {
   }
   $('#dealerFormReset').classList.toggle('hidden', tab !== 'reset');
 
-  const active = 'py-2 rounded-lg bg-white text-brand-blue shadow-2xs cursor-pointer';
-  const idle = 'py-2 rounded-lg text-slate-600 hover:text-slate-900 cursor-pointer';
-  $('#dTabLogin').className = tab === 'login' ? active : idle;
-  $('#dTabRegister').className = tab === 'register' ? active : idle;
-  $('#dTabReset').className = tab === 'reset' ? active : idle;
+  const titleEl = $('#signInModalTitle');
+  const subEl = $('#signInModalSub');
+  if (titleEl && subEl) {
+    if (tab === 'register') {
+      titleEl.textContent = 'Create Account';
+      subEl.textContent = 'Quick 1-step Email OTP setup';
+    } else if (tab === 'reset') {
+      titleEl.textContent = 'Reset Password';
+      subEl.textContent = 'Verify via 6-digit Email OTP';
+    } else {
+      titleEl.textContent = 'Sign In';
+      subEl.textContent = 'Enter your Mobile, Email, or User ID to continue';
+    }
+  }
 }
+
+function toggleSignInPasswordVis(show) {
+  const inp = $('#dLoginPass');
+  if (inp) inp.type = show ? 'text' : 'password';
+}
+
+function toggleSimpleOtpLogin() {
+  const nextMode = authState.dealerLoginMode === 'password' ? 'otp' : 'password';
+  authState.dealerLoginMode = nextMode;
+  $('#dLoginPassWrap').classList.toggle('hidden', nextMode !== 'password');
+  $('#dLoginOtpWrap').classList.toggle('hidden', nextMode !== 'otp');
+  const toggleBtn = $('#dToggleOtpLoginBtn');
+  if (toggleBtn) {
+    toggleBtn.textContent = nextMode === 'otp' ? 'Login with Password' : 'Login with Email OTP';
+  }
+}
+
+window.toggleSignInPasswordVis = toggleSignInPasswordVis;
+window.toggleSimpleOtpLogin = toggleSimpleOtpLogin;
 
 function setDealerLoginMode(mode) {
   authState.dealerLoginMode = mode;
@@ -1057,7 +1085,13 @@ async function submitDealerLogin(e) {
     saveSession(data.token, 'dealer', data.user, data.businessName || data.user);
     closeAllOverlays();
     renderCatalog();
-    switchView('store');
+    if (typeof _pendingShopRedirect === 'function') {
+      const fn = _pendingShopRedirect;
+      _pendingShopRedirect = null;
+      fn();
+    } else {
+      openShopPortal();
+    }
     showToast(`Welcome, ${data.businessName || data.user}`);
   } catch (err) {
     errBox.textContent = err.message;
@@ -2963,9 +2997,11 @@ function filterByPG(pgCode) {
 window.filterByPG = filterByPG;
 
 // ---------------------------------------------------------------------------
-// DEDICATED SHOP NOW PORTAL NAVIGATION
+// DEDICATED SHOP NOW PORTAL NAVIGATION (Sign-In Gated)
 // ---------------------------------------------------------------------------
-function openShopPortal() {
+let _pendingShopRedirect = null;
+
+function _enterShopPortalNow() {
   $('#adminView').classList.add('hidden');
   $('#storeView').classList.remove('hidden');
   if ($('#corporateFrontPage')) $('#corporateFrontPage').classList.add('hidden');
@@ -2979,33 +3015,66 @@ function openShopPortal() {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
+function openShopPortal() {
+  if (!authState.token) {
+    _pendingShopRedirect = () => _enterShopPortalNow();
+    const notice = $('#signInGateNotice');
+    if (notice) notice.classList.remove('hidden');
+    openDealerAuth('login');
+    return;
+  }
+  const notice = $('#signInGateNotice');
+  if (notice) notice.classList.add('hidden');
+  _enterShopPortalNow();
+}
+
 function openCorporateHome() {
   switchView('store');
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function openShopPortalWithBrand(brandName) {
-  openShopPortal();
-  activePG = 'ALL';
-  activeHierarchy = 'ALL';
-  const searchEl = $('#searchInput');
-  if (searchEl) searchEl.value = brandName || '';
-  page = 1;
-  buildPG();
-  updateHierarchy();
-  renderCatalog();
-  if (brandName) showToast(`Showing ${brandName} in Shop Portal`);
+  const applyBrand = () => {
+    _enterShopPortalNow();
+    activePG = 'ALL';
+    activeHierarchy = 'ALL';
+    const searchEl = $('#searchInput');
+    if (searchEl) searchEl.value = brandName || '';
+    page = 1;
+    buildPG();
+    updateHierarchy();
+    renderCatalog();
+    if (brandName) showToast(`Showing ${brandName} in Shop Portal`);
+  };
+  if (!authState.token) {
+    _pendingShopRedirect = applyBrand;
+    const notice = $('#signInGateNotice');
+    if (notice) notice.classList.remove('hidden');
+    openDealerAuth('login');
+    return;
+  }
+  applyBrand();
 }
 
 function openShopPortalWithPG(pgCode) {
-  openShopPortal();
-  activePG = pgCode || 'ALL';
-  activeHierarchy = 'ALL';
-  page = 1;
-  $('#kpiPgLabel').textContent = activePG === 'ALL' ? 'PG1–PG6' : activePG;
-  buildPG();
-  updateHierarchy();
-  renderCatalog();
+  const applyPG = () => {
+    _enterShopPortalNow();
+    activePG = pgCode || 'ALL';
+    activeHierarchy = 'ALL';
+    page = 1;
+    $('#kpiPgLabel').textContent = activePG === 'ALL' ? 'PG1–PG6' : activePG;
+    buildPG();
+    updateHierarchy();
+    renderCatalog();
+  };
+  if (!authState.token) {
+    _pendingShopRedirect = applyPG;
+    const notice = $('#signInGateNotice');
+    if (notice) notice.classList.remove('hidden');
+    openDealerAuth('login');
+    return;
+  }
+  applyPG();
 }
 
 window.openShopPortal = openShopPortal;

@@ -35,7 +35,7 @@
       }
     };
   </script>
-  <link rel="stylesheet" href="styles.css?v=20261123-logosignin1" />
+  <link rel="stylesheet" href="styles.css?v=20261123-gate4d1" />
 </head>
 <body class="min-h-screen font-sans antialiased selection:bg-brand-blue selection:text-white">
 
@@ -140,9 +140,10 @@
           <button type="button" onclick="toggleCorporateMenu();openShopPortalWithPG('PG6')" class="block py-1 font-semibold text-slate-700 hover:text-[#0072CE] cursor-pointer">Commercial Oils &amp; Lubricants</button>
         </div>
         <div class="space-y-2">
-          <p class="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">Account Access</p>
-          <button type="button" onclick="toggleCorporateMenu();openDealerAuth('login')" class="block py-1 font-bold text-slate-800 hover:text-[#0072CE] cursor-pointer">Sign In / Create Account (OTP)</button>
-          <button type="button" id="drawerAdminStudioBtn" onclick="toggleCorporateMenu();openAdminPortal()" class="hidden py-1 font-bold text-brand-orange hover:underline cursor-pointer">Open Admin Studio &rarr;</button>
+          <p class="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">Staff &amp; Management</p>
+          <button type="button" onclick="toggleCorporateMenu();openAdminPortal()" class="inline-flex items-center gap-2 py-1.5 px-3 rounded-lg bg-slate-100 hover:bg-orange-50 font-bold text-slate-800 hover:text-brand-orange transition cursor-pointer">
+            <span>&#128274; Admin Access</span>
+          </button>
         </div>
       </div>
     </div>
@@ -178,7 +179,7 @@
 
             <div class="mt-6 flex flex-wrap items-center gap-3.5">
               <!-- Dedicated Shop Now Portal Icon + Button -->
-              <button type="button" onclick="openShopPortal()" class="inline-flex items-center gap-3 bg-[#0072CE] hover:bg-[#0B4F9F] text-white font-bold text-xs sm:text-sm px-5 py-3 rounded-lg shadow-xl transition cursor-pointer group">
+              <button type="button" onclick="openShopPortal()" class="btn-4d inline-flex items-center gap-3 bg-[#0072CE] hover:bg-[#0B4F9F] text-white font-bold text-xs sm:text-sm px-5 py-3 rounded-xl cursor-pointer group">
                 <span class="w-8 h-8 rounded-md bg-white/15 border border-white/25 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
                   <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
@@ -266,7 +267,7 @@
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
             <!-- Card 1: Commercial Vehicle Parts -->
-            <div onclick="openShopPortalWithPG('PG1')" class="group rounded-lg overflow-hidden bg-[#0B4F9F] text-white grid grid-cols-1 sm:grid-cols-12 shadow-md cursor-pointer">
+            <div onclick="openShopPortalWithPG('PG1')" class="card-4d-blue group rounded-xl overflow-hidden text-white grid grid-cols-1 sm:grid-cols-12 cursor-pointer">
               <div class="sm:col-span-5 aspect-[16/10] sm:aspect-auto overflow-hidden bg-slate-900">
                 <img src="https://images.unsplash.com/photo-1537462715879-360eeb61a0ad?auto=format&fit=crop&w=1400&q=88" alt="Commercial Vehicle Engine & Drivetrain Parts" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
               </div>
@@ -282,7 +283,7 @@
             </div>
 
             <!-- Card 2: Commercial Oils & Lubricants -->
-            <div onclick="openShopPortalWithPG('PG6')" class="group rounded-lg overflow-hidden bg-white border border-slate-200 hover:border-[#0B4F9F] grid grid-cols-1 sm:grid-cols-12 shadow-2xs cursor-pointer transition">
+            <div onclick="openShopPortalWithPG('PG6')" class="card-4d group rounded-xl overflow-hidden grid grid-cols-1 sm:grid-cols-12 cursor-pointer">
               <div class="sm:col-span-5 aspect-[16/10] sm:aspect-auto overflow-hidden bg-slate-900">
                 <img src="https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?auto=format&fit=crop&w=1400&q=88" alt="Commercial Oils and Lubricants" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
               </div>
@@ -298,7 +299,7 @@
             </div>
 
             <!-- Card 3: Illiquid Stock -->
-            <div onclick="openShopPortal()" class="group rounded-lg overflow-hidden bg-white border border-slate-200 hover:border-[#0B4F9F] grid grid-cols-1 sm:grid-cols-12 shadow-2xs cursor-pointer transition">
+            <div onclick="openShopPortal()" class="card-4d group rounded-xl overflow-hidden grid grid-cols-1 sm:grid-cols-12 cursor-pointer">
               <div class="sm:col-span-5 aspect-[16/10] sm:aspect-auto overflow-hidden bg-slate-900">
                 <img src="https://images.unsplash.com/photo-1553413077-190dd305871c?auto=format&fit=crop&w=1400&q=88" alt="Illiquid Commercial Vehicle Stock Warehouse" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
               </div>
@@ -314,7 +315,7 @@
             </div>
 
             <!-- Card 4: 10-Branch Regional Supply -->
-            <div onclick="document.getElementById('branchNetwork').scrollIntoView({behavior:'smooth'})" class="group rounded-lg overflow-hidden bg-white border border-slate-200 hover:border-[#0B4F9F] grid grid-cols-1 sm:grid-cols-12 shadow-2xs cursor-pointer transition">
+            <div onclick="document.getElementById('branchNetwork').scrollIntoView({behavior:'smooth'})" class="card-4d group rounded-xl overflow-hidden grid grid-cols-1 sm:grid-cols-12 cursor-pointer">
               <div class="sm:col-span-5 aspect-[16/10] sm:aspect-auto overflow-hidden bg-slate-900">
                 <img src="https://images.unsplash.com/photo-1519003722824-194d4455a60c?auto=format&fit=crop&w=1400&q=88" alt="Commercial Highway Fleet Across 10 Branches" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
               </div>
@@ -346,7 +347,7 @@
 
           <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-5">
             <!-- 1. TATA MOTORS LOGO -->
-            <button type="button" onclick="openShopPortalWithBrand('TATA')" class="group rounded-lg bg-[#F5F5F7] hover:bg-white border border-transparent hover:border-[#0B4F9F] p-5 sm:p-6 text-center transition shadow-2xs hover:shadow-md cursor-pointer flex flex-col items-center justify-between">
+            <button type="button" onclick="openShopPortalWithBrand('TATA')" class="card-4d group rounded-xl p-4 sm:p-6 text-center cursor-pointer flex flex-col items-center justify-between">
               <div class="h-16 w-full flex items-center justify-center group-hover:scale-105 transition-transform">
                 <svg class="h-12 w-auto" viewBox="0 0 180 95" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Tata Motors Logo">
                   <ellipse cx="90" cy="36" rx="54" ry="28" stroke="#1B569E" stroke-width="6.5" fill="#FFFFFF"/>
@@ -363,7 +364,7 @@
             </button>
 
             <!-- 2. CUMMINS LOGO -->
-            <button type="button" onclick="openShopPortalWithBrand('CUMMINS')" class="group rounded-lg bg-[#F5F5F7] hover:bg-white border border-transparent hover:border-[#0B4F9F] p-5 sm:p-6 text-center transition shadow-2xs hover:shadow-md cursor-pointer flex flex-col items-center justify-between">
+            <button type="button" onclick="openShopPortalWithBrand('CUMMINS')" class="card-4d group rounded-xl p-4 sm:p-6 text-center cursor-pointer flex flex-col items-center justify-between">
               <div class="h-16 w-full flex items-center justify-center group-hover:scale-105 transition-transform">
                 <svg class="h-12 w-auto" viewBox="0 0 160 95" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Cummins Logo">
                   <rect x="28" y="6" width="104" height="62" rx="10" fill="#DA291C"/>
@@ -378,7 +379,7 @@
             </button>
 
             <!-- 3. HOLSET LOGO -->
-            <button type="button" onclick="openShopPortalWithBrand('HOLSET')" class="group rounded-lg bg-[#F5F5F7] hover:bg-white border border-transparent hover:border-[#0B4F9F] p-5 sm:p-6 text-center transition shadow-2xs hover:shadow-md cursor-pointer flex flex-col items-center justify-between">
+            <button type="button" onclick="openShopPortalWithBrand('HOLSET')" class="card-4d group rounded-xl p-4 sm:p-6 text-center cursor-pointer flex flex-col items-center justify-between">
               <div class="h-16 w-full flex items-center justify-center group-hover:scale-105 transition-transform">
                 <svg class="h-12 w-auto" viewBox="0 0 180 90" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Holset Turbochargers Logo">
                   <circle cx="42" cy="45" r="24" stroke="#DA291C" stroke-width="5" fill="#111827"/>
@@ -396,7 +397,7 @@
             </button>
 
             <!-- 4. JOST LOGO -->
-            <button type="button" onclick="openShopPortalWithBrand('JOST')" class="group rounded-lg bg-[#F5F5F7] hover:bg-white border border-transparent hover:border-[#0B4F9F] p-5 sm:p-6 text-center transition shadow-2xs hover:shadow-md cursor-pointer flex flex-col items-center justify-between">
+            <button type="button" onclick="openShopPortalWithBrand('JOST')" class="card-4d group rounded-xl p-4 sm:p-6 text-center cursor-pointer flex flex-col items-center justify-between">
               <div class="h-16 w-full flex items-center justify-center group-hover:scale-105 transition-transform">
                 <svg class="h-12 w-auto" viewBox="0 0 180 90" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="JOST Logo">
                   <rect x="18" y="20" width="144" height="50" rx="6" fill="#F59E0B"/>
@@ -411,7 +412,7 @@
             </button>
 
             <!-- 5. RSB LOGO -->
-            <button type="button" onclick="openShopPortalWithBrand('RSB')" class="group rounded-lg bg-[#F5F5F7] hover:bg-white border border-transparent hover:border-[#0B4F9F] p-5 sm:p-6 text-center transition shadow-2xs hover:shadow-md cursor-pointer flex flex-col items-center justify-between">
+            <button type="button" onclick="openShopPortalWithBrand('RSB')" class="card-4d group rounded-xl p-4 sm:p-6 text-center cursor-pointer flex flex-col items-center justify-between">
               <div class="h-16 w-full flex items-center justify-center group-hover:scale-105 transition-transform">
                 <svg class="h-12 w-auto" viewBox="0 0 180 90" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="RSB Transmissions Logo">
                   <polygon points="32,18 158,18 144,72 18,72" fill="#0B4F9F"/>
@@ -426,7 +427,7 @@
             </button>
 
             <!-- 6. SKF BEARING LOGO -->
-            <button type="button" onclick="openShopPortalWithBrand('SKF')" class="group rounded-lg bg-[#F5F5F7] hover:bg-white border border-transparent hover:border-[#0B4F9F] p-5 sm:p-6 text-center transition shadow-2xs hover:shadow-md cursor-pointer flex flex-col items-center justify-between">
+            <button type="button" onclick="openShopPortalWithBrand('SKF')" class="card-4d group rounded-xl p-4 sm:p-6 text-center cursor-pointer flex flex-col items-center justify-between">
               <div class="h-16 w-full flex items-center justify-center group-hover:scale-105 transition-transform">
                 <svg class="h-12 w-auto" viewBox="0 0 180 90" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="SKF Bearing Logo">
                   <rect x="24" y="18" width="132" height="54" rx="8" fill="#00529B"/>
@@ -440,7 +441,7 @@
             </button>
 
             <!-- 7. DRiV LOGO -->
-            <button type="button" onclick="openShopPortalWithBrand('DRIV')" class="group rounded-lg bg-[#F5F5F7] hover:bg-white border border-transparent hover:border-[#0B4F9F] p-5 sm:p-6 text-center transition shadow-2xs hover:shadow-md cursor-pointer flex flex-col items-center justify-between">
+            <button type="button" onclick="openShopPortalWithBrand('DRIV')" class="card-4d group rounded-xl p-4 sm:p-6 text-center cursor-pointer flex flex-col items-center justify-between">
               <div class="h-16 w-full flex items-center justify-center group-hover:scale-105 transition-transform">
                 <svg class="h-12 w-auto" viewBox="0 0 180 90" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="DRiV Logo">
                   <rect x="20" y="18" width="140" height="54" rx="8" fill="#0F172A"/>
@@ -455,7 +456,7 @@
             </button>
 
             <!-- 8. UNO MINDA LOGO (Exact Brand Badge from image_164301.png) -->
-            <button type="button" onclick="openShopPortalWithBrand('UNO MINDA')" class="group rounded-lg bg-[#F5F5F7] hover:bg-white border border-transparent hover:border-[#0B4F9F] p-5 sm:p-6 text-center transition shadow-2xs hover:shadow-md cursor-pointer flex flex-col items-center justify-between">
+            <button type="button" onclick="openShopPortalWithBrand('UNO MINDA')" class="card-4d group rounded-xl p-4 sm:p-6 text-center cursor-pointer flex flex-col items-center justify-between">
               <div class="h-16 w-full flex items-center justify-center group-hover:scale-105 transition-transform">
                 <svg class="h-13 w-auto" viewBox="0 0 210 95" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Uno Minda Logo">
                   <path d="M78 16 C92 8, 112 8, 124 14" stroke="#E11D48" stroke-width="4" stroke-linecap="round"/>
@@ -503,7 +504,7 @@
           </div>
 
           <div id="branchCardsGrid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-            <div data-state="CG" class="branch-card rounded-lg border-2 border-[#0B4F9F] bg-white p-4 shadow-xs flex flex-col justify-between">
+            <div data-state="CG" class="branch-card card-4d rounded-xl border-2 border-[#0B4F9F] p-4 flex flex-col justify-between">
               <div class="flex items-center justify-between gap-1">
                 <span class="text-[10px] font-extrabold uppercase tracking-wider bg-[#0B4F9F] text-white px-2 py-0.5 rounded">Headquarter</span>
                 <span class="text-[10px] font-bold text-slate-400">CG</span>
@@ -514,7 +515,7 @@
               </div>
             </div>
 
-            <div data-state="CG" class="branch-card rounded-lg border border-slate-200 bg-white p-4 shadow-2xs flex flex-col justify-between">
+            <div data-state="CG" class="branch-card card-4d rounded-xl p-4 flex flex-col justify-between">
               <div class="flex items-center justify-between gap-1">
                 <span class="text-[10px] font-bold uppercase text-[#0B4F9F] bg-blue-50 px-2 py-0.5 rounded">Branch</span>
                 <span class="text-[10px] font-bold text-slate-400">CG</span>
@@ -525,7 +526,7 @@
               </div>
             </div>
 
-            <div data-state="CG" class="branch-card rounded-lg border border-slate-200 bg-white p-4 shadow-2xs flex flex-col justify-between">
+            <div data-state="CG" class="branch-card card-4d rounded-xl p-4 flex flex-col justify-between">
               <div class="flex items-center justify-between gap-1">
                 <span class="text-[10px] font-bold uppercase text-[#0B4F9F] bg-blue-50 px-2 py-0.5 rounded">Branch</span>
                 <span class="text-[10px] font-bold text-slate-400">CG</span>
@@ -536,7 +537,7 @@
               </div>
             </div>
 
-            <div data-state="CG" class="branch-card rounded-lg border border-slate-200 bg-white p-4 shadow-2xs flex flex-col justify-between">
+            <div data-state="CG" class="branch-card card-4d rounded-xl p-4 flex flex-col justify-between">
               <div class="flex items-center justify-between gap-1">
                 <span class="text-[10px] font-bold uppercase text-[#0B4F9F] bg-blue-50 px-2 py-0.5 rounded">Branch</span>
                 <span class="text-[10px] font-bold text-slate-400">CG</span>
@@ -547,7 +548,7 @@
               </div>
             </div>
 
-            <div data-state="CG" class="branch-card rounded-lg border border-slate-200 bg-white p-4 shadow-2xs flex flex-col justify-between">
+            <div data-state="CG" class="branch-card card-4d rounded-xl p-4 flex flex-col justify-between">
               <div class="flex items-center justify-between gap-1">
                 <span class="text-[10px] font-bold uppercase text-[#0B4F9F] bg-blue-50 px-2 py-0.5 rounded">Branch</span>
                 <span class="text-[10px] font-bold text-slate-400">CG</span>
@@ -558,7 +559,7 @@
               </div>
             </div>
 
-            <div data-state="CG" class="branch-card rounded-lg border border-slate-200 bg-white p-4 shadow-2xs flex flex-col justify-between">
+            <div data-state="CG" class="branch-card card-4d rounded-xl p-4 flex flex-col justify-between">
               <div class="flex items-center justify-between gap-1">
                 <span class="text-[10px] font-bold uppercase text-[#0B4F9F] bg-blue-50 px-2 py-0.5 rounded">Branch</span>
                 <span class="text-[10px] font-bold text-slate-400">CG</span>
@@ -569,7 +570,7 @@
               </div>
             </div>
 
-            <div data-state="MP" class="branch-card rounded-lg border border-slate-200 bg-white p-4 shadow-2xs flex flex-col justify-between">
+            <div data-state="MP" class="branch-card card-4d rounded-xl p-4 flex flex-col justify-between">
               <div class="flex items-center justify-between gap-1">
                 <span class="text-[10px] font-bold uppercase text-brand-orange bg-orange-50 px-2 py-0.5 rounded">Branch</span>
                 <span class="text-[10px] font-bold text-slate-400">MP</span>
@@ -580,7 +581,7 @@
               </div>
             </div>
 
-            <div data-state="MP" class="branch-card rounded-lg border border-slate-200 bg-white p-4 shadow-2xs flex flex-col justify-between">
+            <div data-state="MP" class="branch-card card-4d rounded-xl p-4 flex flex-col justify-between">
               <div class="flex items-center justify-between gap-1">
                 <span class="text-[10px] font-bold uppercase text-brand-orange bg-orange-50 px-2 py-0.5 rounded">Branch</span>
                 <span class="text-[10px] font-bold text-slate-400">MP</span>
@@ -591,7 +592,7 @@
               </div>
             </div>
 
-            <div data-state="MP" class="branch-card rounded-lg border border-slate-200 bg-white p-4 shadow-2xs flex flex-col justify-between">
+            <div data-state="MP" class="branch-card card-4d rounded-xl p-4 flex flex-col justify-between">
               <div class="flex items-center justify-between gap-1">
                 <span class="text-[10px] font-bold uppercase text-brand-orange bg-orange-50 px-2 py-0.5 rounded">Branch</span>
                 <span class="text-[10px] font-bold text-slate-400">MP</span>
@@ -602,7 +603,7 @@
               </div>
             </div>
 
-            <div data-state="MP" class="branch-card rounded-lg border border-slate-200 bg-white p-4 shadow-2xs flex flex-col justify-between">
+            <div data-state="MP" class="branch-card card-4d rounded-xl p-4 flex flex-col justify-between">
               <div class="flex items-center justify-between gap-1">
                 <span class="text-[10px] font-bold uppercase text-brand-orange bg-orange-50 px-2 py-0.5 rounded">Branch</span>
                 <span class="text-[10px] font-bold text-slate-400">MP</span>
@@ -1285,83 +1286,82 @@
   </aside>
 
   <!-- ====================================================================== -->
-  <!-- DEALER AUTH MODAL: 1) Sign In  |  2) Create Account (Auto ID & Password via OTP)  |  3) Forgot Password -->
+  <!-- SIMPLE SIGN IN POPUP MODAL (Kid-Friendly Design Inspired by Uno Minda Cart Login) -->
   <!-- ====================================================================== -->
   <div id="dealerModal" class="hidden fixed inset-0 z-50 items-center justify-center p-3 sm:p-4 overflow-y-auto">
-    <div class="modal-animate relative w-full max-w-md bg-white border border-slate-200 rounded-2xl p-5 sm:p-6 shadow-2xl space-y-4 my-auto">
-      <button onclick="closeAllOverlays()" class="absolute top-4 right-4 w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xl flex items-center justify-center cursor-pointer">&times;</button>
+    <div class="modal-animate relative w-full max-w-[420px] bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-2xl space-y-5 my-auto">
+      <button onclick="closeAllOverlays()" aria-label="Close" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 text-xl flex items-center justify-center cursor-pointer">&times;</button>
 
-      <div>
-        <span class="text-[11px] font-extrabold uppercase tracking-wider text-brand-blue">PARTNER &amp; FLEET PORTAL</span>
-        <h3 class="text-xl font-extrabold text-slate-900 mt-0.5">Sign In to Portal</h3>
-      </div>
-
-      <div class="grid grid-cols-3 gap-1 bg-slate-100 p-1 rounded-xl text-xs font-bold">
-        <button type="button" id="dTabLogin" onclick="switchDealerTab('login')" class="py-2 rounded-lg bg-white text-brand-blue shadow-2xs cursor-pointer">Sign In</button>
-        <button type="button" id="dTabRegister" onclick="switchDealerTab('register')" class="py-2 rounded-lg text-slate-600 hover:text-slate-900 cursor-pointer">Create Account</button>
-        <button type="button" id="dTabReset" onclick="switchDealerTab('reset')" class="py-2 rounded-lg text-slate-600 hover:text-slate-900 cursor-pointer">Forgot Password</button>
+      <!-- Clean Header -->
+      <div class="space-y-1">
+        <div id="signInGateNotice" class="hidden mb-2 rounded-lg bg-blue-50 border border-blue-200 px-3 py-2 text-xs font-semibold text-[#0B4F9F]">
+          Please sign in to open the Parts &amp; Stock Store.
+        </div>
+        <h3 id="signInModalTitle" class="text-2xl font-extrabold text-slate-900 tracking-tight">Sign In</h3>
+        <p id="signInModalSub" class="text-xs text-slate-500">Enter your Mobile, Email, or User ID to continue</p>
       </div>
 
       <div id="dealerOtpBanner" class="hidden rounded-xl px-3.5 py-2.5 text-xs font-medium bg-blue-50 border border-blue-200 text-brand-blue"></div>
       <div id="dealerError" class="hidden rounded-xl px-3.5 py-2.5 text-xs font-medium bg-rose-50 border border-rose-200 text-rose-700"></div>
 
-      <form id="dealerFormLogin" onsubmit="submitDealerLogin(event)" class="space-y-3">
-        <div class="flex items-center justify-between text-xs">
-          <span class="text-slate-500">Login Method:</span>
-          <div class="inline-flex bg-slate-100 rounded-lg p-0.5 font-semibold">
-            <button type="button" id="dModePass" onclick="setDealerLoginMode('password')" class="px-2.5 py-1 rounded-md bg-white text-slate-900 shadow-2xs cursor-pointer">Password</button>
-            <button type="button" id="dModeOtp" onclick="setDealerLoginMode('otp')" class="px-2.5 py-1 rounded-md text-slate-600 cursor-pointer">6-Digit OTP</button>
-          </div>
-        </div>
-
+      <!-- STEP 1: SUPER SIMPLE LOGIN FORM (Matches image_16afd7.png) -->
+      <form id="dealerFormLogin" onsubmit="submitDealerLogin(event)" class="space-y-4">
         <div>
-          <label class="block text-xs font-bold text-slate-700 mb-1">DEALER ID OR REGISTERED EMAIL</label>
-          <div class="flex gap-2">
-            <input id="dLoginId" required placeholder="e.g. SAPL-D-1001 or dealer@company.com" class="flex-1 bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-base sm:text-sm focus:bg-white focus:outline-none focus:border-brand-blue" />
-            <button type="button" id="dLoginSendOtpBtn" onclick="requestOtpFlow('otp_login', '#dLoginId', 'dealerOtpBanner', 'dealerError')" class="hidden px-3 py-2 rounded-xl bg-blue-50 border border-brand-blue text-brand-blue text-xs font-bold shrink-0 cursor-pointer">
-              Send OTP
-            </button>
-          </div>
+          <label class="block text-xs font-bold text-slate-700 mb-1.5">Mobile / Email / User ID</label>
+          <input id="dLoginId" required placeholder="Enter Mobile, Email or ID" class="w-full bg-slate-100/90 border border-slate-200 rounded-lg px-3.5 py-3 text-base sm:text-sm text-slate-900 placeholder-slate-400 focus:bg-white focus:outline-none focus:border-[#0072CE] transition" />
         </div>
 
         <div id="dLoginPassWrap">
-          <div class="flex items-center justify-between mb-1">
-            <label class="block text-xs font-bold text-slate-700">PASSWORD</label>
-            <button type="button" onclick="switchDealerTab('reset')" class="text-[11px] font-bold text-brand-blue hover:underline cursor-pointer">
-              Forgot Password?
+          <label class="block text-xs font-bold text-slate-700 mb-1.5">Password</label>
+          <input id="dLoginPass" type="password" placeholder="Enter Password" class="w-full bg-slate-100/90 border border-slate-200 rounded-lg px-3.5 py-3 text-base sm:text-sm text-slate-900 placeholder-slate-400 focus:bg-white focus:outline-none focus:border-[#0072CE] transition" />
+
+          <div class="flex items-center justify-between mt-2.5 text-xs">
+            <label class="inline-flex items-center gap-2 text-slate-600 font-medium cursor-pointer select-none">
+              <input type="checkbox" id="dShowPassChk" onchange="toggleSignInPasswordVis(this.checked)" class="w-4 h-4 rounded border-slate-300 text-[#0072CE] focus:ring-[#0072CE] cursor-pointer" />
+              <span>Show password</span>
+            </label>
+            <button type="button" onclick="switchDealerTab('reset')" class="font-semibold text-[#0072CE] hover:underline cursor-pointer">
+              Forget password
             </button>
           </div>
-          <input id="dLoginPass" type="password" placeholder="Enter your password" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-base sm:text-sm focus:bg-white focus:outline-none focus:border-brand-blue" />
         </div>
 
-        <div id="dLoginOtpWrap" class="hidden">
-          <label class="block text-xs font-bold text-slate-700 mb-1">ENTER 6-DIGIT OTP</label>
-          <input id="dLoginOtp" maxlength="6" inputmode="numeric" placeholder="6-digit OTP" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 font-mono text-base sm:text-sm tracking-widest focus:bg-white focus:outline-none focus:border-brand-blue" />
+        <div id="dLoginOtpWrap" class="hidden space-y-2">
+          <div class="flex items-center justify-between">
+            <label class="block text-xs font-bold text-slate-700">6-Digit OTP</label>
+            <button type="button" id="dLoginSendOtpBtn" onclick="requestOtpFlow('otp_login', '#dLoginId', 'dealerOtpBanner', 'dealerError')" class="text-xs font-bold text-[#0072CE] hover:underline cursor-pointer">
+              Send OTP to Email
+            </button>
+          </div>
+          <input id="dLoginOtp" maxlength="6" inputmode="numeric" placeholder="Enter 6-digit OTP" class="w-full bg-slate-100/90 border border-slate-200 rounded-lg px-3.5 py-3 font-mono text-base sm:text-sm tracking-widest focus:bg-white focus:outline-none focus:border-[#0072CE]" />
         </div>
 
-        <button type="submit" id="dLoginSubmitBtn" class="w-full py-3 rounded-xl bg-brand-blue hover:bg-brand-blueDark text-white font-bold text-sm cursor-pointer">
-          Sign In to Dealer Store
+        <p class="text-[11px] text-slate-500 leading-relaxed">
+          By continuing, you agree to <strong class="text-slate-700">Somani Auto Pvt. Ltd.</strong> Terms of Use &amp; Commercial Portal Policy.
+        </p>
+
+        <button type="submit" id="dLoginSubmitBtn" class="btn-4d w-full py-3 rounded-lg bg-[#0072CE] hover:bg-[#0B4F9F] text-white font-bold text-sm cursor-pointer">
+          Login
         </button>
 
-        <p class="text-center text-xs text-slate-500 pt-1">
-          New dealer?
-          <button type="button" onclick="switchDealerTab('register')" class="font-bold text-brand-orange hover:underline cursor-pointer">
-            Create Account via Email OTP &rarr;
+        <div class="pt-1 flex items-center justify-between text-xs border-t border-slate-100">
+          <button type="button" id="dToggleOtpLoginBtn" onclick="toggleSimpleOtpLogin()" class="font-semibold text-slate-600 hover:text-[#0072CE] cursor-pointer">
+            Login with Email OTP
           </button>
-        </p>
+          <button type="button" onclick="switchDealerTab('register')" class="font-bold text-[#0072CE] hover:underline cursor-pointer">
+            New User? Register &rarr;
+          </button>
+        </div>
       </form>
 
-      <div id="dealerFormRegister" class="hidden space-y-3">
+      <!-- STEP 2: SIMPLE NEW ACCOUNT REGISTRATION -->
+      <div id="dealerFormRegister" class="hidden space-y-3.5">
         <form id="dealerRegInputForm" onsubmit="submitDealerRegister(event)" class="space-y-3">
-          <div class="bg-blue-50/70 border border-blue-200 rounded-xl p-3 text-xs text-slate-700">
-            Verify your email via 6-digit OTP. Your unique <strong>Dealer User ID</strong> and <strong>Password</strong> will be created automatically and sent to your email.
-          </div>
-
           <div>
-            <label class="block text-xs font-bold text-slate-700 mb-1">1. DEALER EMAIL ADDRESS *</label>
+            <label class="block text-xs font-bold text-slate-700 mb-1">1. Your Email Address *</label>
             <div class="flex gap-2">
-              <input id="dRegContact" type="email" required placeholder="dealer@company.com" class="flex-1 bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-base sm:text-sm focus:bg-white focus:outline-none focus:border-brand-blue" />
-              <button type="button" onclick="requestOtpFlow('dealer_register', '#dRegContact', 'dealerOtpBanner', 'dealerError')" class="px-3.5 py-2 rounded-xl bg-brand-orange hover:bg-brand-orangeDark text-white text-xs font-bold shrink-0 cursor-pointer">
+              <input id="dRegContact" type="email" required placeholder="name@company.com" class="flex-1 bg-slate-100 border border-slate-200 rounded-lg px-3 py-2.5 text-base sm:text-sm focus:bg-white focus:outline-none focus:border-[#0072CE]" />
+              <button type="button" onclick="requestOtpFlow('dealer_register', '#dRegContact', 'dealerOtpBanner', 'dealerError')" class="px-3.5 py-2 rounded-lg bg-brand-orange hover:bg-brand-orangeDark text-white text-xs font-bold shrink-0 cursor-pointer">
                 Send OTP
               </button>
             </div>
@@ -1369,63 +1369,66 @@
 
           <div class="grid grid-cols-2 gap-2.5">
             <div>
-              <label class="block text-xs font-bold text-slate-700 mb-1">2. 6-DIGIT EMAIL OTP *</label>
-              <input id="dRegOtp" required maxlength="6" inputmode="numeric" placeholder="123456" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 font-mono text-base sm:text-sm tracking-widest focus:bg-white focus:outline-none focus:border-brand-blue" />
+              <label class="block text-xs font-bold text-slate-700 mb-1">2. 6-Digit OTP *</label>
+              <input id="dRegOtp" required maxlength="6" inputmode="numeric" placeholder="123456" class="w-full bg-slate-100 border border-slate-200 rounded-lg px-3 py-2.5 font-mono text-base sm:text-sm tracking-widest focus:bg-white focus:outline-none focus:border-[#0072CE]" />
             </div>
             <div>
-              <label class="block text-xs font-bold text-slate-700 mb-1">MOBILE (OPTIONAL)</label>
-              <input id="dRegMobile" type="tel" maxlength="10" inputmode="numeric" placeholder="9826100002" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-base sm:text-sm focus:bg-white focus:outline-none focus:border-brand-blue" />
+              <label class="block text-xs font-bold text-slate-700 mb-1">Mobile Number</label>
+              <input id="dRegMobile" type="tel" maxlength="10" inputmode="numeric" placeholder="9826100000" class="w-full bg-slate-100 border border-slate-200 rounded-lg px-3 py-2.5 text-base sm:text-sm focus:bg-white focus:outline-none focus:border-[#0072CE]" />
             </div>
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
             <div class="sm:col-span-2">
-              <label class="block text-xs font-bold text-slate-700 mb-1">3. WORKSHOP / FIRM NAME *</label>
-              <input id="dRegBusiness" required placeholder="Balaji Auto Spares" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-base sm:text-sm focus:bg-white focus:outline-none focus:border-brand-blue" />
+              <label class="block text-xs font-bold text-slate-700 mb-1">3. Firm / Workshop Name *</label>
+              <input id="dRegBusiness" required placeholder="Balaji Auto Spares" class="w-full bg-slate-100 border border-slate-200 rounded-lg px-3 py-2.5 text-base sm:text-sm focus:bg-white focus:outline-none focus:border-[#0072CE]" />
             </div>
             <div>
-              <label class="block text-xs font-bold text-slate-700 mb-1">MPMS CODE</label>
-              <input id="dRegMpms" placeholder="D-A-1001" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 font-mono uppercase text-base sm:text-sm focus:bg-white focus:outline-none focus:border-brand-blue" />
+              <label class="block text-xs font-bold text-slate-700 mb-1">MPMS Code</label>
+              <input id="dRegMpms" placeholder="D-A-1001" class="w-full bg-slate-100 border border-slate-200 rounded-lg px-3 py-2.5 font-mono uppercase text-base sm:text-sm focus:bg-white focus:outline-none focus:border-[#0072CE]" />
             </div>
           </div>
 
-          <button type="submit" id="dRegSubmitBtn" class="w-full py-3 rounded-xl bg-brand-blue hover:bg-brand-blueDark text-white font-bold text-sm cursor-pointer">
-            Verify OTP &amp; Auto-Create Account
+          <button type="submit" id="dRegSubmitBtn" class="btn-4d w-full py-3 rounded-lg bg-[#0072CE] hover:bg-[#0B4F9F] text-white font-bold text-sm cursor-pointer">
+            Create Account &amp; Enter Store
+          </button>
+
+          <button type="button" onclick="switchDealerTab('login')" class="w-full text-center text-xs font-semibold text-slate-500 hover:text-slate-800 pt-1 cursor-pointer">
+            &larr; Back to Sign In
           </button>
         </form>
 
-        <div id="dealerGeneratedCard" class="hidden space-y-3 bg-emerald-50 border border-emerald-200 rounded-2xl p-4">
-          <div class="flex items-center gap-2 text-emerald-800 font-extrabold text-sm">
-            <span>&#10003; Account Created &amp; Signed In!</span>
-          </div>
+        <div id="dealerGeneratedCard" class="hidden space-y-3 bg-emerald-50 border border-emerald-200 rounded-xl p-4">
+          <div class="text-emerald-800 font-extrabold text-sm">&#10003; Account Ready!</div>
           <p id="dealerGenEmailNote" class="text-xs text-emerald-700"></p>
-          <div class="bg-white border border-emerald-200 rounded-xl p-3 space-y-1.5 font-mono text-xs">
+          <div class="bg-white border border-emerald-200 rounded-lg p-3 space-y-1.5 font-mono text-xs">
             <div class="flex justify-between">
-              <span class="text-slate-500">Auto Dealer ID:</span>
-              <strong id="genDealerIdVal" class="text-brand-blue font-extrabold text-sm"></strong>
+              <span class="text-slate-500">User ID:</span>
+              <strong id="genDealerIdVal" class="text-[#0072CE] font-extrabold text-sm"></strong>
             </div>
             <div class="flex justify-between">
-              <span class="text-slate-500">Auto Password:</span>
+              <span class="text-slate-500">Password:</span>
               <strong id="genDealerPassVal" class="text-brand-orange font-extrabold text-sm"></strong>
             </div>
           </div>
           <div class="grid grid-cols-2 gap-2">
-            <button type="button" onclick="copyGeneratedCredentials()" class="py-2.5 px-3 rounded-xl border border-emerald-300 bg-white hover:bg-emerald-100 text-emerald-800 text-xs font-bold cursor-pointer">
-              Copy ID &amp; Password
+            <button type="button" onclick="copyGeneratedCredentials()" class="py-2 px-3 rounded-lg border border-emerald-300 bg-white text-emerald-800 text-xs font-bold cursor-pointer">
+              Copy Details
             </button>
-            <button type="button" onclick="closeAllOverlays()" class="py-2.5 px-3 rounded-xl bg-brand-blue hover:bg-brand-blueDark text-white text-xs font-bold cursor-pointer">
-              Continue to Store &rarr;
+            <button type="button" onclick="closeAllOverlays();openShopPortal()" class="py-2 px-3 rounded-lg bg-[#0072CE] text-white text-xs font-bold cursor-pointer">
+              Open Store &rarr;
             </button>
           </div>
         </div>
       </div>
 
+      <!-- STEP 3: SIMPLE FORGOT PASSWORD -->
       <form id="dealerFormReset" onsubmit="submitPasswordReset(event, 'dealer')" class="hidden space-y-3">
         <div>
-          <label class="block text-xs font-bold text-slate-700 mb-1">REGISTERED EMAIL OR DEALER ID *</label>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Registered Email or User ID *</label>
           <div class="flex gap-2">
-            <input id="dResetContact" required placeholder="Enter registered Email or Dealer ID" class="flex-1 bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-base sm:text-sm focus:bg-white focus:outline-none focus:border-brand-blue" />
-            <button type="button" onclick="requestOtpFlow('dealer_reset', '#dResetContact', 'dealerOtpBanner', 'dealerError')" class="px-3.5 py-2 rounded-xl bg-brand-orange hover:bg-brand-orangeDark text-white text-xs font-bold shrink-0 cursor-pointer">
+            <input id="dResetContact" required placeholder="Enter Email or User ID" class="flex-1 bg-slate-100 border border-slate-200 rounded-lg px-3 py-2.5 text-base sm:text-sm focus:bg-white focus:outline-none focus:border-[#0072CE]" />
+            <button type="button" onclick="requestOtpFlow('dealer_reset', '#dResetContact', 'dealerOtpBanner', 'dealerError')" class="px-3.5 py-2 rounded-lg bg-brand-orange text-white text-xs font-bold shrink-0 cursor-pointer">
               Send OTP
             </button>
           </div>
@@ -1433,28 +1436,31 @@
 
         <div class="grid grid-cols-2 gap-2.5">
           <div>
-            <label class="block text-xs font-bold text-slate-700 mb-1">6-DIGIT EMAIL OTP *</label>
-            <input id="dResetOtp" required maxlength="6" inputmode="numeric" placeholder="123456" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 font-mono text-base sm:text-sm tracking-widest focus:bg-white focus:outline-none focus:border-brand-blue" />
+            <label class="block text-xs font-bold text-slate-700 mb-1">6-Digit OTP *</label>
+            <input id="dResetOtp" required maxlength="6" inputmode="numeric" placeholder="123456" class="w-full bg-slate-100 border border-slate-200 rounded-lg px-3 py-2.5 font-mono text-base sm:text-sm tracking-widest focus:bg-white focus:outline-none focus:border-[#0072CE]" />
           </div>
           <div>
-            <label class="block text-xs font-bold text-slate-700 mb-1">NEW USER ID (OPTIONAL)</label>
-            <input id="dResetNewId" maxlength="30" placeholder="Keep existing ID" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 font-mono uppercase text-base sm:text-sm focus:bg-white focus:outline-none focus:border-brand-blue" />
+            <label class="block text-xs font-bold text-slate-700 mb-1">New User ID (Optional)</label>
+            <input id="dResetNewId" maxlength="30" placeholder="Optional" class="w-full bg-slate-100 border border-slate-200 rounded-lg px-3 py-2.5 font-mono uppercase text-base sm:text-sm focus:bg-white focus:outline-none focus:border-[#0072CE]" />
           </div>
         </div>
 
         <div>
-          <label class="block text-xs font-bold text-slate-700 mb-1">NEW PASSWORD (MIN 6 CHARS) *</label>
-          <input id="dResetNewPass" type="password" required minlength="6" placeholder="Enter new password" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-base sm:text-sm focus:bg-white focus:outline-none focus:border-brand-blue" />
+          <label class="block text-xs font-bold text-slate-700 mb-1">New Password *</label>
+          <input id="dResetNewPass" type="password" required minlength="6" placeholder="Min 6 characters" class="w-full bg-slate-100 border border-slate-200 rounded-lg px-3 py-2.5 text-base sm:text-sm focus:bg-white focus:outline-none focus:border-[#0072CE]" />
         </div>
 
-        <button type="submit" id="dResetSubmitBtn" class="w-full py-3 rounded-xl bg-brand-blue hover:bg-brand-blueDark text-white font-bold text-sm cursor-pointer">
-          Verify OTP &amp; Reset Password
+        <button type="submit" id="dResetSubmitBtn" class="btn-4d w-full py-3 rounded-lg bg-[#0072CE] text-white font-bold text-sm cursor-pointer">
+          Reset Password
+        </button>
+
+        <button type="button" onclick="switchDealerTab('login')" class="w-full text-center text-xs font-semibold text-slate-500 hover:text-slate-800 pt-1 cursor-pointer">
+          &larr; Back to Sign In
         </button>
       </form>
     </div>
   </div>
 
-  <!-- ====================================================================== -->
   <!-- ADMIN AUTH MODAL: 1) Sign In  |  2) Forgot Password (OTP to analytics.sapl@somanigrp.com) -->
   <!-- ====================================================================== -->
   <div id="adminModal" class="hidden fixed inset-0 z-50 items-center justify-center p-3 sm:p-4">
@@ -1560,6 +1566,6 @@
     <div id="zoomThumbsBar" class="hidden px-4 py-2.5 bg-slate-900/95 border-t border-slate-800 flex items-center justify-center gap-2 overflow-x-auto no-scrollbar shrink-0"></div>
   </div>
 
-  <script src="app.js?v=20261123-logosignin1"></script>
+  <script src="app.js?v=20261123-gate4d1"></script>
 </body>
 </html>

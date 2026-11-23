@@ -126,3 +126,42 @@ body {
   object-fit: cover;
   object-position: center 22%;
 }
+
+.btn-4d {
+  box-shadow: 0 5px 0 #083b7a, 0 12px 24px -6px rgba(11, 79, 159, 0.42);
+  transition: transform 0.14s ease, box-shadow 0.14s ease, background-color 0.15s ease;
+}
+.btn-4d:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 7px 0 #083b7a, 0 16px 28px -6px rgba(11, 79, 159, 0.5);
+}
+.btn-4d:active {
+  transform: translateY(3px);
+  box-shadow: 0 2px 0 #083b7a, 0 6px 12px -4px rgba(11, 79, 159, 0.35);
+}
+
+.card-4d {
+  background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 10px 25px -10px rgba(15, 23, 42, 0.12), 0 3px 0 #e2e8f0;
+  transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.22s ease, border-color 0.22s ease;
+}
+@media (hover: hover) {
+  .card-4d:hover {
+    transform: translateY(-5px) scale(1.01);
+    border-color: #0072CE;
+    box-shadow: 0 20px 36px -12px rgba(11, 79, 159, 0.24), 0 5px 0 #0072CE;
+  }
+}
+
+.card-4d-blue {
+  background: linear-gradient(145deg, #0d5bb5 0%, #083c7a 100%);
+  box-shadow: 0 14px 30px -10px rgba(11, 79, 159, 0.45), 0 4px 0 #062b59;
+  transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.22s ease;
+}
+@media (hover: hover) {
+  .card-4d-blue:hover {
+    transform: translateY(-5px) scale(1.01);
+    box-shadow: 0 22px 40px -12px rgba(11, 79, 159, 0.55), 0 6px 0 #041e40;
+  }
+}
