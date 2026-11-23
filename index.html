@@ -35,7 +35,7 @@
       }
     };
   </script>
-  <link rel="stylesheet" href="styles.css?v=20261123-gate4d1" />
+  <link rel="stylesheet" href="styles.css?v=20261123-compactmob1" />
 </head>
 <body class="min-h-screen font-sans antialiased selection:bg-brand-blue selection:text-white">
 
@@ -51,14 +51,14 @@
   </div>
 
   <!-- ====================================================================== -->
-  <!-- TOP UNO MINDA-STYLE SLEEK NAVIGATION BAR                               -->
+  <!-- TOP UNO MINDA-STYLE SLEEK NAVIGATION BAR (MOBILE-COMPACT)              -->
   <!-- ====================================================================== -->
   <header class="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-2xs">
-    <div class="max-w-7xl mx-auto px-3 sm:px-6 h-[68px] flex items-center justify-between gap-3">
+    <div class="max-w-7xl mx-auto px-2.5 sm:px-6 h-[56px] sm:h-[66px] flex items-center justify-between gap-1.5 sm:gap-3">
       <!-- Brand Logo -->
-      <a href="#top" onclick="openCorporateHome();return false;" class="flex items-center gap-2.5 sm:gap-3 min-w-0 shrink-0">
-        <div class="bg-white border border-slate-200 px-2 py-1 rounded-md shadow-2xs shrink-0 flex items-center justify-center">
-          <svg class="h-8 sm:h-9 w-auto" viewBox="0 0 260 205" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Somani Auto Pvt. Ltd. Logo">
+      <a href="#top" onclick="openCorporateHome();return false;" class="flex items-center gap-1.5 sm:gap-3 min-w-0 shrink-0">
+        <div class="bg-white border border-slate-200 px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-md shadow-2xs shrink-0 flex items-center justify-center">
+          <svg class="h-6 sm:h-9 w-auto" viewBox="0 0 260 205" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Somani Auto Pvt. Ltd. Logo">
             <ellipse cx="130" cy="76" rx="64" ry="70" stroke="#1B569E" stroke-width="7.5" fill="#FFFFFF"/>
             <path d="M142 33 C114 23, 94 38, 102 68 C109 94, 121 114, 103 118 C92 120, 84 114, 79 109 C88 126, 114 132, 127 118 C139 104, 127 80, 120 57 C115 41, 126 33, 142 33 Z" fill="#1B569E"/>
             <path d="M118 44 C144 34, 163 48, 154 75 C146 97, 136 105, 152 106 C163 106, 173 100, 181 94 C169 112, 143 120, 130 107 C118 95, 131 73, 137 56 C141 45, 130 42, 118 44 Z" fill="#1B569E"/>
@@ -69,19 +69,19 @@
           </svg>
         </div>
 
-        <div class="min-w-0 leading-tight">
-          <span class="text-xs sm:text-sm font-extrabold text-slate-900 tracking-tight uppercase block truncate">
-            <span class="sm:hidden">Somani Auto</span>
+        <div class="min-w-0 leading-none">
+          <span class="text-[11px] sm:text-sm font-extrabold text-slate-900 tracking-tight uppercase block whitespace-nowrap">
+            <span class="sm:hidden">SOMANI AUTO</span>
             <span class="hidden sm:inline">Somani Auto Pvt. Ltd.</span>
           </span>
-          <span class="hidden sm:block text-[10px] font-semibold tracking-wider text-[#0B4F9F] uppercase">
+          <span class="hidden sm:block text-[10px] font-semibold tracking-wider text-[#0B4F9F] uppercase mt-0.5">
             27+ Years &bull; Commercial Fleets
           </span>
         </div>
       </a>
 
       <!-- Center / Right Uno Minda-Style Uppercase Navigation -->
-      <div class="flex items-center gap-2 sm:gap-5">
+      <div class="flex items-center gap-1.5 sm:gap-4 shrink-0">
         <nav class="hidden lg:flex items-center gap-5 text-[12px] font-bold uppercase tracking-wider text-slate-800">
           <a href="#aboutCorporate" onclick="openCorporateHome()" class="inline-flex items-center gap-1 hover:text-[#0072CE] transition">
             <span>ABOUT US</span>
@@ -103,45 +103,45 @@
           </button>
         </nav>
 
-        <!-- Clean Sign In Button (Replaces Dealer Login; Admin removed from navbar) -->
-        <button id="dealerBtn" onclick="openDealerAuth('login')" class="text-xs font-extrabold uppercase tracking-wider px-3.5 py-2 rounded-md border border-slate-300 bg-white hover:border-[#0072CE] hover:text-[#0072CE] text-slate-800 transition cursor-pointer">
+        <!-- Single-Line Compact Sign In Button -->
+        <button id="dealerBtn" onclick="openDealerAuth('login')" class="text-[11px] sm:text-xs font-extrabold uppercase tracking-wide px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-md border border-slate-300 bg-white hover:border-[#0072CE] hover:text-[#0072CE] text-slate-800 whitespace-nowrap transition cursor-pointer">
           <span class="sm:hidden" id="dealerBtnMobile">Sign In</span>
           <span class="hidden sm:inline" id="dealerBtnDesktop">Sign In</span>
         </button>
 
-        <!-- Mobile / Quick Shop Now Icon -->
-        <button type="button" onclick="openShopPortal()" aria-label="Shop Now" class="lg:hidden bg-[#0072CE] hover:bg-[#0B4F9F] text-white text-xs font-extrabold uppercase tracking-wider px-3 py-2 rounded-md transition cursor-pointer">
+        <!-- Single-Line Compact Mobile Shop Now Button -->
+        <button type="button" onclick="openShopPortal()" aria-label="Shop Now" class="lg:hidden bg-[#0072CE] hover:bg-[#0B4F9F] text-white text-[11px] font-extrabold uppercase tracking-wide px-2.5 py-1.5 rounded-md whitespace-nowrap shadow-2xs transition cursor-pointer">
           Shop Now
         </button>
 
-        <!-- Uno Minda-Style Hamburger Menu Button -->
-        <button type="button" onclick="toggleCorporateMenu()" aria-label="Open Navigation Menu" class="p-2 rounded-md hover:bg-slate-100 text-slate-800 transition cursor-pointer">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+        <!-- Compact Hamburger Menu Button -->
+        <button type="button" onclick="toggleCorporateMenu()" aria-label="Open Navigation Menu" class="p-1.5 sm:p-2 rounded-md hover:bg-slate-100 text-slate-800 transition cursor-pointer">
+          <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
           </svg>
         </button>
       </div>
     </div>
 
-    <!-- Collapsible Slide-Down Menu Drawer (Triggered by Hamburger ≡) -->
-    <div id="corporateMenuDrawer" class="hidden border-t border-slate-200 bg-white shadow-xl">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4 grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
-        <div class="space-y-2">
-          <p class="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">Corporate</p>
-          <a href="#aboutCorporate" onclick="toggleCorporateMenu();openCorporateHome()" class="block py-1 font-bold text-slate-800 hover:text-[#0072CE]">About Somani Auto (27+ Years)</a>
-          <a href="#verticalsSection" onclick="toggleCorporateMenu();openCorporateHome()" class="block py-1 font-bold text-slate-800 hover:text-[#0072CE]">CV Parts, Oils &amp; Illiquid Stock</a>
-          <a href="#vendorPartners" onclick="toggleCorporateMenu();openCorporateHome()" class="block py-1 font-bold text-slate-800 hover:text-[#0072CE]">8 Authorized OEM Partners</a>
-          <a href="#branchNetwork" onclick="toggleCorporateMenu();openCorporateHome()" class="block py-1 font-bold text-slate-800 hover:text-[#0072CE]">10 Branches (CG &amp; MP)</a>
+    <!-- Compact Overlay Menu Drawer (2-Column Grid on Mobile — Does Not Push Hero Down) -->
+    <div id="corporateMenuDrawer" class="hidden absolute left-0 right-0 top-full z-40 border-t border-slate-200 bg-white/98 backdrop-blur-md shadow-2xl">
+      <div class="max-w-7xl mx-auto px-3 sm:px-6 py-3 sm:py-4 grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 text-[11px] sm:text-xs">
+        <div class="space-y-1.5">
+          <p class="text-[9px] sm:text-[10px] font-extrabold uppercase tracking-widest text-slate-400">Corporate</p>
+          <a href="#aboutCorporate" onclick="toggleCorporateMenu();openCorporateHome()" class="block py-0.5 font-bold text-slate-800 hover:text-[#0072CE]">About (27+ Years)</a>
+          <a href="#verticalsSection" onclick="toggleCorporateMenu();openCorporateHome()" class="block py-0.5 font-bold text-slate-800 hover:text-[#0072CE]">Parts, Oils &amp; Stock</a>
+          <a href="#vendorPartners" onclick="toggleCorporateMenu();openCorporateHome()" class="block py-0.5 font-bold text-slate-800 hover:text-[#0072CE]">8 OEM Partners</a>
+          <a href="#branchNetwork" onclick="toggleCorporateMenu();openCorporateHome()" class="block py-0.5 font-bold text-slate-800 hover:text-[#0072CE]">10 Branches</a>
         </div>
-        <div class="space-y-2">
-          <p class="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">Parts &amp; Stock Portal</p>
-          <button type="button" onclick="toggleCorporateMenu();openShopPortal()" class="block py-1 font-bold text-[#0072CE] hover:underline cursor-pointer">Open Shop Now Portal &rarr;</button>
-          <button type="button" onclick="toggleCorporateMenu();openShopPortalWithPG('PG1')" class="block py-1 font-semibold text-slate-700 hover:text-[#0072CE] cursor-pointer">Commercial Vehicle Spares</button>
-          <button type="button" onclick="toggleCorporateMenu();openShopPortalWithPG('PG6')" class="block py-1 font-semibold text-slate-700 hover:text-[#0072CE] cursor-pointer">Commercial Oils &amp; Lubricants</button>
+        <div class="space-y-1.5">
+          <p class="text-[9px] sm:text-[10px] font-extrabold uppercase tracking-widest text-slate-400">Parts Portal</p>
+          <button type="button" onclick="toggleCorporateMenu();openShopPortal()" class="block py-0.5 font-bold text-[#0072CE] hover:underline text-left cursor-pointer">Open Shop Now &rarr;</button>
+          <button type="button" onclick="toggleCorporateMenu();openShopPortalWithPG('PG1')" class="block py-0.5 font-semibold text-slate-700 hover:text-[#0072CE] text-left cursor-pointer">CV Spare Parts</button>
+          <button type="button" onclick="toggleCorporateMenu();openShopPortalWithPG('PG6')" class="block py-0.5 font-semibold text-slate-700 hover:text-[#0072CE] text-left cursor-pointer">Oils &amp; Lubricants</button>
         </div>
-        <div class="space-y-2">
-          <p class="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">Staff &amp; Management</p>
-          <button type="button" onclick="toggleCorporateMenu();openAdminPortal()" class="inline-flex items-center gap-2 py-1.5 px-3 rounded-lg bg-slate-100 hover:bg-orange-50 font-bold text-slate-800 hover:text-brand-orange transition cursor-pointer">
+        <div class="col-span-2 sm:col-span-1 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100 flex items-center justify-between sm:block space-y-0 sm:space-y-1.5">
+          <p class="text-[9px] sm:text-[10px] font-extrabold uppercase tracking-widest text-slate-400">Staff &amp; Management</p>
+          <button type="button" onclick="toggleCorporateMenu();openAdminPortal()" class="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-lg bg-slate-100 hover:bg-orange-50 font-bold text-slate-800 hover:text-brand-orange transition cursor-pointer">
             <span>&#128274; Admin Access</span>
           </button>
         </div>
@@ -159,51 +159,47 @@
     <!-- ==================================================================== -->
     <div id="corporateFrontPage">
 
-      <!-- BAND 1: FULL-BLEED 8K COMMERCIAL HIGHWAY HERO WITH L-BRACKET & SHOP NOW PORTAL ICON -->
-      <section id="top" class="relative w-full min-h-[440px] sm:min-h-[550px] lg:min-h-[600px] overflow-hidden bg-slate-950 flex items-center">
+      <!-- BAND 1: FULL-BLEED 8K COMMERCIAL HIGHWAY HERO (MOBILE-COMPACT) -->
+      <section id="top" class="relative w-full min-h-[300px] sm:min-h-[500px] lg:min-h-[560px] overflow-hidden bg-slate-950 flex items-center">
         <div id="heroBgLayerA" class="bg-4k-layer absolute inset-0 opacity-100 scale-100"></div>
         <div id="heroBgLayerB" class="bg-4k-layer absolute inset-0 opacity-0 scale-105"></div>
-        <div class="absolute inset-0 bg-gradient-to-r from-slate-950/90 via-slate-950/65 to-slate-950/35"></div>
+        <div class="absolute inset-0 bg-gradient-to-r from-slate-950/92 via-slate-950/72 to-slate-950/40"></div>
 
-        <div class="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-8 py-12 sm:py-16">
-          <div class="uno-hero-bracket max-w-2xl pl-5 sm:pl-8 py-6 sm:py-9 pr-4">
-            <p id="heroKicker" class="text-[11px] sm:text-xs font-extrabold uppercase tracking-[0.2em] text-sky-400 mb-2">
+        <div class="relative z-10 w-full max-w-7xl mx-auto px-3.5 sm:px-8 py-7 sm:py-14">
+          <div class="uno-hero-bracket max-w-2xl pl-3.5 sm:pl-8 py-4 sm:py-8 pr-2">
+            <p id="heroKicker" class="text-[9px] sm:text-xs font-extrabold uppercase tracking-[0.14em] sm:tracking-[0.2em] text-sky-400 mb-1.5">
               27 Years of Excellence • Commercial Vehicles Only
             </p>
-            <h2 class="text-3xl sm:text-5xl lg:text-[54px] font-extrabold text-white tracking-tight leading-[1.12]">
+            <h2 class="text-2xl sm:text-5xl lg:text-[54px] font-extrabold text-white tracking-tight leading-[1.15]">
               Driving The New<br />Future of Commercial Fleets
             </h2>
-            <p class="mt-3.5 text-xs sm:text-base text-slate-200 max-w-xl leading-relaxed font-normal">
-              Authorized distributor serving <strong class="text-white">Commercial Vehicle Parts, Oils &amp; Illiquid Stock</strong> for <strong class="text-white">27+ years</strong> across <strong class="text-white">10 branches</strong> in Chhattisgarh &amp; Madhya Pradesh.
+            <p class="mt-2 sm:mt-3.5 text-[11px] sm:text-base text-slate-200 max-w-xl leading-relaxed font-normal">
+              Serving <strong class="text-white">Commercial Vehicle Parts, Oils &amp; Illiquid Stock</strong> for <strong class="text-white">27+ years</strong> across <strong class="text-white">10 branches</strong> in CG &amp; MP.
             </p>
 
-            <div class="mt-6 flex flex-wrap items-center gap-3.5">
-              <!-- Dedicated Shop Now Portal Icon + Button -->
-              <button type="button" onclick="openShopPortal()" class="btn-4d inline-flex items-center gap-3 bg-[#0072CE] hover:bg-[#0B4F9F] text-white font-bold text-xs sm:text-sm px-5 py-3 rounded-xl cursor-pointer group">
-                <span class="w-8 h-8 rounded-md bg-white/15 border border-white/25 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-                  <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+            <div class="mt-4 sm:mt-6 flex items-center gap-2.5 sm:gap-3.5">
+              <button type="button" onclick="openShopPortal()" class="btn-4d inline-flex items-center gap-2 sm:gap-3 bg-[#0072CE] hover:bg-[#0B4F9F] text-white font-bold text-xs sm:text-sm px-3.5 sm:px-5 py-2 sm:py-3 rounded-xl cursor-pointer group">
+                <span class="w-7 h-7 sm:w-8 sm:h-8 rounded-md bg-white/15 border border-white/25 flex items-center justify-center shrink-0">
+                  <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
                   </svg>
                 </span>
                 <span class="text-left leading-tight">
-                  <span class="block text-[10px] uppercase tracking-wider text-sky-200 font-semibold">Parts &amp; Stock Portal</span>
-                  <span class="block text-sm font-extrabold">Shop Now &rarr;</span>
+                  <span class="hidden sm:block text-[10px] uppercase tracking-wider text-sky-200 font-semibold">Parts &amp; Stock Portal</span>
+                  <span class="block text-xs sm:text-sm font-extrabold">Shop Now &rarr;</span>
                 </span>
               </button>
 
-              <a href="#aboutCorporate" class="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 backdrop-blur-xs border border-white/30 text-white font-semibold text-xs sm:text-sm px-5 py-3.5 rounded-lg transition">
-                <span>Company Profile</span>
+              <a href="#aboutCorporate" class="inline-flex items-center gap-1.5 bg-white/10 hover:bg-white/20 border border-white/30 text-white font-semibold text-xs sm:text-sm px-3.5 sm:px-5 py-2.5 sm:py-3.5 rounded-xl transition">
+                <span>About Us</span>
                 <span>&rarr;</span>
               </a>
             </div>
           </div>
 
-          <div class="mt-8 flex items-center justify-between">
+          <div class="mt-5 sm:mt-8 flex items-center justify-between">
             <div id="heroDots" class="flex items-center gap-2"></div>
-            <a href="#aboutCorporate" aria-label="Scroll down" class="hidden sm:inline-flex w-7 h-11 rounded-full border-2 border-white/60 items-start justify-center p-1.5 hover:border-white transition">
-              <span class="w-1 h-2.5 rounded-full bg-white animate-bounce"></span>
-            </a>
-            <div class="text-[11px] font-bold tracking-wider uppercase text-sky-300 bg-slate-900/70 border border-white/15 px-3 py-1.5 rounded-md">
+            <div class="text-[10px] sm:text-[11px] font-bold tracking-wider uppercase text-sky-300 bg-slate-900/75 border border-white/15 px-2.5 py-1 rounded-md">
               Raipur HQ &bull; 10 Branches
             </div>
           </div>
@@ -211,7 +207,7 @@
       </section>
 
       <!-- BAND 2: ABOUT US SPLIT LAYOUT + OVERLAPPING "27 YEARS" BLUE CARD -->
-      <section id="aboutCorporate" class="bg-white py-12 sm:py-20 border-b border-slate-200">
+      <section id="aboutCorporate" class="bg-white py-7 sm:py-16 border-b border-slate-200">
         <div class="max-w-7xl mx-auto px-4 sm:px-8">
           <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
             <div class="lg:col-span-6 relative pb-6 sm:pb-0 sm:pr-10">
@@ -223,9 +219,9 @@
                 />
               </div>
 
-              <div class="uno-exp-bracket bg-[#0B4F9F] text-white p-5 sm:p-7 rounded-md shadow-2xl w-56 sm:w-64 -mt-14 ml-auto mr-2 sm:mt-0 sm:mr-0 sm:absolute sm:bottom-6 sm:right-0">
+              <div class="uno-exp-bracket bg-[#0B4F9F] text-white p-3.5 sm:p-6 rounded-lg shadow-xl w-44 sm:w-64 -mt-10 ml-auto mr-2 sm:mt-0 sm:mr-0 sm:absolute sm:bottom-6 sm:right-0">
                 <p class="text-xs sm:text-sm font-semibold text-blue-100">More Than</p>
-                <div class="text-4xl sm:text-6xl font-extrabold font-mono tracking-tight my-1">27</div>
+                <div class="text-3xl sm:text-6xl font-extrabold font-mono tracking-tight my-0.5">27+</div>
                 <p class="text-xs sm:text-sm font-bold leading-snug text-white">Years of<br />Serving Fleets</p>
               </div>
             </div>
@@ -254,7 +250,7 @@
       </section>
 
       <!-- BAND 3: CORE COMMERCIAL VERTICALS (2x2 UNO MINDA FEATURE CARDS WITH HIGH-RES PHOTOS) -->
-      <section id="verticalsSection" class="bg-[#F8FAFC] py-12 sm:py-16 border-b border-slate-200">
+      <section id="verticalsSection" class="bg-[#F8FAFC] py-7 sm:py-14 border-b border-slate-200">
         <div class="max-w-7xl mx-auto px-4 sm:px-8 space-y-8">
           <div class="text-center max-w-2xl mx-auto space-y-2">
             <div class="uno-accent-bar mx-auto"></div>
@@ -265,7 +261,7 @@
             <p class="text-xs sm:text-sm text-slate-500">Dedicated commercial fleet inventory across parts, lubricants, and legacy illiquid assemblies</p>
           </div>
 
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div class="grid grid-cols-2 md:grid-cols-2 gap-2.5 sm:gap-5">
             <!-- Card 1: Commercial Vehicle Parts -->
             <div onclick="openShopPortalWithPG('PG1')" class="card-4d-blue group rounded-xl overflow-hidden text-white grid grid-cols-1 sm:grid-cols-12 cursor-pointer">
               <div class="sm:col-span-5 aspect-[16/10] sm:aspect-auto overflow-hidden bg-slate-900">
@@ -334,7 +330,7 @@
       </section>
 
       <!-- BAND 4: AUTHORIZED VENDOR & OEM PARTNERS (8 PARTNERS) -->
-      <section id="vendorPartners" class="bg-white py-12 sm:py-16 border-b border-slate-200">
+      <section id="vendorPartners" class="bg-white py-7 sm:py-14 border-b border-slate-200">
         <div class="max-w-7xl mx-auto px-4 sm:px-8 space-y-7">
           <div class="text-center max-w-2xl mx-auto space-y-2">
             <div class="uno-accent-bar mx-auto"></div>
@@ -347,7 +343,7 @@
 
           <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-5">
             <!-- 1. TATA MOTORS LOGO -->
-            <button type="button" onclick="openShopPortalWithBrand('TATA')" class="card-4d group rounded-xl p-4 sm:p-6 text-center cursor-pointer flex flex-col items-center justify-between">
+            <button type="button" onclick="openShopPortalWithBrand('TATA')" class="card-4d group rounded-xl p-3 sm:p-5 text-center cursor-pointer flex flex-col items-center justify-between">
               <div class="h-16 w-full flex items-center justify-center group-hover:scale-105 transition-transform">
                 <svg class="h-12 w-auto" viewBox="0 0 180 95" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Tata Motors Logo">
                   <ellipse cx="90" cy="36" rx="54" ry="28" stroke="#1B569E" stroke-width="6.5" fill="#FFFFFF"/>
@@ -364,7 +360,7 @@
             </button>
 
             <!-- 2. CUMMINS LOGO -->
-            <button type="button" onclick="openShopPortalWithBrand('CUMMINS')" class="card-4d group rounded-xl p-4 sm:p-6 text-center cursor-pointer flex flex-col items-center justify-between">
+            <button type="button" onclick="openShopPortalWithBrand('CUMMINS')" class="card-4d group rounded-xl p-3 sm:p-5 text-center cursor-pointer flex flex-col items-center justify-between">
               <div class="h-16 w-full flex items-center justify-center group-hover:scale-105 transition-transform">
                 <svg class="h-12 w-auto" viewBox="0 0 160 95" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Cummins Logo">
                   <rect x="28" y="6" width="104" height="62" rx="10" fill="#DA291C"/>
@@ -379,7 +375,7 @@
             </button>
 
             <!-- 3. HOLSET LOGO -->
-            <button type="button" onclick="openShopPortalWithBrand('HOLSET')" class="card-4d group rounded-xl p-4 sm:p-6 text-center cursor-pointer flex flex-col items-center justify-between">
+            <button type="button" onclick="openShopPortalWithBrand('HOLSET')" class="card-4d group rounded-xl p-3 sm:p-5 text-center cursor-pointer flex flex-col items-center justify-between">
               <div class="h-16 w-full flex items-center justify-center group-hover:scale-105 transition-transform">
                 <svg class="h-12 w-auto" viewBox="0 0 180 90" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Holset Turbochargers Logo">
                   <circle cx="42" cy="45" r="24" stroke="#DA291C" stroke-width="5" fill="#111827"/>
@@ -397,7 +393,7 @@
             </button>
 
             <!-- 4. JOST LOGO -->
-            <button type="button" onclick="openShopPortalWithBrand('JOST')" class="card-4d group rounded-xl p-4 sm:p-6 text-center cursor-pointer flex flex-col items-center justify-between">
+            <button type="button" onclick="openShopPortalWithBrand('JOST')" class="card-4d group rounded-xl p-3 sm:p-5 text-center cursor-pointer flex flex-col items-center justify-between">
               <div class="h-16 w-full flex items-center justify-center group-hover:scale-105 transition-transform">
                 <svg class="h-12 w-auto" viewBox="0 0 180 90" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="JOST Logo">
                   <rect x="18" y="20" width="144" height="50" rx="6" fill="#F59E0B"/>
@@ -412,7 +408,7 @@
             </button>
 
             <!-- 5. RSB LOGO -->
-            <button type="button" onclick="openShopPortalWithBrand('RSB')" class="card-4d group rounded-xl p-4 sm:p-6 text-center cursor-pointer flex flex-col items-center justify-between">
+            <button type="button" onclick="openShopPortalWithBrand('RSB')" class="card-4d group rounded-xl p-3 sm:p-5 text-center cursor-pointer flex flex-col items-center justify-between">
               <div class="h-16 w-full flex items-center justify-center group-hover:scale-105 transition-transform">
                 <svg class="h-12 w-auto" viewBox="0 0 180 90" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="RSB Transmissions Logo">
                   <polygon points="32,18 158,18 144,72 18,72" fill="#0B4F9F"/>
@@ -427,7 +423,7 @@
             </button>
 
             <!-- 6. SKF BEARING LOGO -->
-            <button type="button" onclick="openShopPortalWithBrand('SKF')" class="card-4d group rounded-xl p-4 sm:p-6 text-center cursor-pointer flex flex-col items-center justify-between">
+            <button type="button" onclick="openShopPortalWithBrand('SKF')" class="card-4d group rounded-xl p-3 sm:p-5 text-center cursor-pointer flex flex-col items-center justify-between">
               <div class="h-16 w-full flex items-center justify-center group-hover:scale-105 transition-transform">
                 <svg class="h-12 w-auto" viewBox="0 0 180 90" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="SKF Bearing Logo">
                   <rect x="24" y="18" width="132" height="54" rx="8" fill="#00529B"/>
@@ -441,7 +437,7 @@
             </button>
 
             <!-- 7. DRiV LOGO -->
-            <button type="button" onclick="openShopPortalWithBrand('DRIV')" class="card-4d group rounded-xl p-4 sm:p-6 text-center cursor-pointer flex flex-col items-center justify-between">
+            <button type="button" onclick="openShopPortalWithBrand('DRIV')" class="card-4d group rounded-xl p-3 sm:p-5 text-center cursor-pointer flex flex-col items-center justify-between">
               <div class="h-16 w-full flex items-center justify-center group-hover:scale-105 transition-transform">
                 <svg class="h-12 w-auto" viewBox="0 0 180 90" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="DRiV Logo">
                   <rect x="20" y="18" width="140" height="54" rx="8" fill="#0F172A"/>
@@ -456,7 +452,7 @@
             </button>
 
             <!-- 8. UNO MINDA LOGO (Exact Brand Badge from image_164301.png) -->
-            <button type="button" onclick="openShopPortalWithBrand('UNO MINDA')" class="card-4d group rounded-xl p-4 sm:p-6 text-center cursor-pointer flex flex-col items-center justify-between">
+            <button type="button" onclick="openShopPortalWithBrand('UNO MINDA')" class="card-4d group rounded-xl p-3 sm:p-5 text-center cursor-pointer flex flex-col items-center justify-between">
               <div class="h-16 w-full flex items-center justify-center group-hover:scale-105 transition-transform">
                 <svg class="h-13 w-auto" viewBox="0 0 210 95" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Uno Minda Logo">
                   <path d="M78 16 C92 8, 112 8, 124 14" stroke="#E11D48" stroke-width="4" stroke-linecap="round"/>
@@ -485,7 +481,7 @@
       </section>
 
       <!-- BAND 5: 10-BRANCH REGIONAL NETWORK + DEEP BLUE KPI BANNER -->
-      <section id="branchNetwork" class="bg-[#F8FAFC] pt-12 sm:pt-16">
+      <section id="branchNetwork" class="bg-[#F8FAFC] pt-7 sm:pt-14">
         <div class="max-w-7xl mx-auto px-4 sm:px-8 pb-10 space-y-6">
           <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
             <div class="space-y-2">
@@ -504,7 +500,7 @@
           </div>
 
           <div id="branchCardsGrid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-            <div data-state="CG" class="branch-card card-4d rounded-xl border-2 border-[#0B4F9F] p-4 flex flex-col justify-between">
+            <div data-state="CG" class="branch-card card-4d rounded-xl border-2 border-[#0B4F9F] p-3 sm:p-4 flex flex-col justify-between">
               <div class="flex items-center justify-between gap-1">
                 <span class="text-[10px] font-extrabold uppercase tracking-wider bg-[#0B4F9F] text-white px-2 py-0.5 rounded">Headquarter</span>
                 <span class="text-[10px] font-bold text-slate-400">CG</span>
@@ -515,7 +511,7 @@
               </div>
             </div>
 
-            <div data-state="CG" class="branch-card card-4d rounded-xl p-4 flex flex-col justify-between">
+            <div data-state="CG" class="branch-card card-4d rounded-xl p-3 sm:p-4 flex flex-col justify-between">
               <div class="flex items-center justify-between gap-1">
                 <span class="text-[10px] font-bold uppercase text-[#0B4F9F] bg-blue-50 px-2 py-0.5 rounded">Branch</span>
                 <span class="text-[10px] font-bold text-slate-400">CG</span>
@@ -526,7 +522,7 @@
               </div>
             </div>
 
-            <div data-state="CG" class="branch-card card-4d rounded-xl p-4 flex flex-col justify-between">
+            <div data-state="CG" class="branch-card card-4d rounded-xl p-3 sm:p-4 flex flex-col justify-between">
               <div class="flex items-center justify-between gap-1">
                 <span class="text-[10px] font-bold uppercase text-[#0B4F9F] bg-blue-50 px-2 py-0.5 rounded">Branch</span>
                 <span class="text-[10px] font-bold text-slate-400">CG</span>
@@ -537,7 +533,7 @@
               </div>
             </div>
 
-            <div data-state="CG" class="branch-card card-4d rounded-xl p-4 flex flex-col justify-between">
+            <div data-state="CG" class="branch-card card-4d rounded-xl p-3 sm:p-4 flex flex-col justify-between">
               <div class="flex items-center justify-between gap-1">
                 <span class="text-[10px] font-bold uppercase text-[#0B4F9F] bg-blue-50 px-2 py-0.5 rounded">Branch</span>
                 <span class="text-[10px] font-bold text-slate-400">CG</span>
@@ -548,7 +544,7 @@
               </div>
             </div>
 
-            <div data-state="CG" class="branch-card card-4d rounded-xl p-4 flex flex-col justify-between">
+            <div data-state="CG" class="branch-card card-4d rounded-xl p-3 sm:p-4 flex flex-col justify-between">
               <div class="flex items-center justify-between gap-1">
                 <span class="text-[10px] font-bold uppercase text-[#0B4F9F] bg-blue-50 px-2 py-0.5 rounded">Branch</span>
                 <span class="text-[10px] font-bold text-slate-400">CG</span>
@@ -559,7 +555,7 @@
               </div>
             </div>
 
-            <div data-state="CG" class="branch-card card-4d rounded-xl p-4 flex flex-col justify-between">
+            <div data-state="CG" class="branch-card card-4d rounded-xl p-3 sm:p-4 flex flex-col justify-between">
               <div class="flex items-center justify-between gap-1">
                 <span class="text-[10px] font-bold uppercase text-[#0B4F9F] bg-blue-50 px-2 py-0.5 rounded">Branch</span>
                 <span class="text-[10px] font-bold text-slate-400">CG</span>
@@ -570,7 +566,7 @@
               </div>
             </div>
 
-            <div data-state="MP" class="branch-card card-4d rounded-xl p-4 flex flex-col justify-between">
+            <div data-state="MP" class="branch-card card-4d rounded-xl p-3 sm:p-4 flex flex-col justify-between">
               <div class="flex items-center justify-between gap-1">
                 <span class="text-[10px] font-bold uppercase text-brand-orange bg-orange-50 px-2 py-0.5 rounded">Branch</span>
                 <span class="text-[10px] font-bold text-slate-400">MP</span>
@@ -581,7 +577,7 @@
               </div>
             </div>
 
-            <div data-state="MP" class="branch-card card-4d rounded-xl p-4 flex flex-col justify-between">
+            <div data-state="MP" class="branch-card card-4d rounded-xl p-3 sm:p-4 flex flex-col justify-between">
               <div class="flex items-center justify-between gap-1">
                 <span class="text-[10px] font-bold uppercase text-brand-orange bg-orange-50 px-2 py-0.5 rounded">Branch</span>
                 <span class="text-[10px] font-bold text-slate-400">MP</span>
@@ -592,7 +588,7 @@
               </div>
             </div>
 
-            <div data-state="MP" class="branch-card card-4d rounded-xl p-4 flex flex-col justify-between">
+            <div data-state="MP" class="branch-card card-4d rounded-xl p-3 sm:p-4 flex flex-col justify-between">
               <div class="flex items-center justify-between gap-1">
                 <span class="text-[10px] font-bold uppercase text-brand-orange bg-orange-50 px-2 py-0.5 rounded">Branch</span>
                 <span class="text-[10px] font-bold text-slate-400">MP</span>
@@ -603,7 +599,7 @@
               </div>
             </div>
 
-            <div data-state="MP" class="branch-card card-4d rounded-xl p-4 flex flex-col justify-between">
+            <div data-state="MP" class="branch-card card-4d rounded-xl p-3 sm:p-4 flex flex-col justify-between">
               <div class="flex items-center justify-between gap-1">
                 <span class="text-[10px] font-bold uppercase text-brand-orange bg-orange-50 px-2 py-0.5 rounded">Branch</span>
                 <span class="text-[10px] font-bold text-slate-400">MP</span>
@@ -1566,6 +1562,6 @@
     <div id="zoomThumbsBar" class="hidden px-4 py-2.5 bg-slate-900/95 border-t border-slate-800 flex items-center justify-center gap-2 overflow-x-auto no-scrollbar shrink-0"></div>
   </div>
 
-  <script src="app.js?v=20261123-gate4d1"></script>
+  <script src="app.js?v=20261123-compactmob1"></script>
 </body>
 </html>
