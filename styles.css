@@ -76,3 +76,7 @@ body {
   user-select: none;
   -webkit-user-drag: none;
 }
+
+.corp-badge-shadow {
+  box-shadow: 0 8px 24px -12px rgba(27, 86, 158, 0.22);
+}

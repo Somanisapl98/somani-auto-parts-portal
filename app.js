@@ -2900,3 +2900,46 @@ window.addEventListener('popstate', () => {
 
 window.handleUiBackButton = handleUiBackButton;
 window.openAdminPartActions = openAdminPartActions;
+
+// ---------------------------------------------------------------------------
+// CORPORATE FRONT PAGE: Vendor Partner Filter & Branch Network Tabs
+// ---------------------------------------------------------------------------
+function filterByVendorBrand(brandName) {
+  switchView('store');
+  activePG = 'ALL';
+  activeHierarchy = 'ALL';
+  const searchEl = $('#searchInput');
+  if (searchEl) {
+    searchEl.value = brandName;
+  }
+  page = 1;
+  buildPG();
+  updateHierarchy();
+  renderCatalog();
+  const catSec = $('#catalogSection');
+  if (catSec) {
+    catSec.scrollIntoView({ behavior: 'smooth' });
+  }
+  showToast(`Showing ${brandName} commercial parts`);
+}
+
+function filterBranches(stateCode) {
+  const cards = $$('#branchCardsGrid .branch-card');
+  cards.forEach(card => {
+    const match = stateCode === 'ALL' || card.dataset.state === stateCode;
+    card.classList.toggle('hidden', !match);
+  });
+
+  const activeCls = 'px-3 py-1.5 rounded-lg bg-white text-brand-blue shadow-2xs cursor-pointer';
+  const idleCls = 'px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 cursor-pointer';
+
+  const tAll = $('#brTabAll');
+  const tCG = $('#brTabCG');
+  const tMP = $('#brTabMP');
+  if (tAll) tAll.className = stateCode === 'ALL' ? activeCls : idleCls;
+  if (tCG) tCG.className = stateCode === 'CG' ? activeCls : idleCls;
+  if (tMP) tMP.className = stateCode === 'MP' ? activeCls : idleCls;
+}
+
+window.filterByVendorBrand = filterByVendorBrand;
+window.filterBranches = filterBranches;

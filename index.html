@@ -35,7 +35,7 @@
       }
     };
   </script>
-  <link rel="stylesheet" href="styles.css?v=20261121-twofinger1" />
+  <link rel="stylesheet" href="styles.css?v=20261123-corporate1" />
 </head>
 <body class="min-h-screen font-sans antialiased selection:bg-brand-blue selection:text-white">
 
@@ -91,9 +91,12 @@
           <span>Connecting...</span>
         </div>
 
-        <button id="storeNavBtn" onclick="switchView('store')" class="hidden md:inline-flex text-xs font-semibold px-3 py-2 rounded-lg bg-slate-100 text-slate-900 hover:bg-slate-200 transition cursor-pointer">
-          Catalogue
-        </button>
+        <nav class="hidden xl:flex items-center gap-1 mr-1">
+          <a href="#aboutCorporate" onclick="switchView('store')" class="text-xs font-semibold px-2.5 py-1.5 rounded-lg text-slate-600 hover:text-brand-blue hover:bg-blue-50/70 transition">About (27 Yrs)</a>
+          <a href="#vendorPartners" onclick="switchView('store')" class="text-xs font-semibold px-2.5 py-1.5 rounded-lg text-slate-600 hover:text-brand-blue hover:bg-blue-50/70 transition">OEM Partners</a>
+          <a href="#branchNetwork" onclick="switchView('store')" class="text-xs font-semibold px-2.5 py-1.5 rounded-lg text-slate-600 hover:text-brand-blue hover:bg-blue-50/70 transition">10 Branches</a>
+          <a href="#catalogSection" onclick="switchView('store')" class="text-xs font-semibold px-2.5 py-1.5 rounded-lg bg-slate-100 text-slate-900 hover:bg-slate-200 transition">Parts Catalogue</a>
+        </nav>
 
         <button id="dealerBtn" onclick="openDealerAuth('login')" class="text-[11px] sm:text-xs font-bold px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-lg border border-slate-300 bg-white text-slate-700 hover:border-brand-blue hover:text-brand-blue transition cursor-pointer">
           <span class="sm:hidden" id="dealerBtnMobile">Dealer</span>
@@ -119,31 +122,322 @@
   <!-- VIEW 1: PUBLIC & DEALER E-COMMERCE STOREFRONT (PURE WHITE THEME)       -->
   <!-- ====================================================================== -->
   <div id="storeView">
-    <section id="top" class="relative w-full min-h-[215px] sm:min-h-[310px] py-7 sm:py-11 overflow-hidden border-b border-slate-200 bg-white flex items-center">
+    <section id="top" class="relative w-full min-h-[260px] sm:min-h-[370px] py-8 sm:py-14 overflow-hidden border-b border-slate-200 bg-white flex items-center">
       <div id="heroBgLayerA" class="bg-4k-layer absolute inset-0 opacity-100 scale-100"></div>
       <div id="heroBgLayerB" class="bg-4k-layer absolute inset-0 opacity-0 scale-105"></div>
-      <div class="absolute inset-0 bg-gradient-to-b from-white/90 via-white/80 to-[#F8FAFC]"></div>
+      <div class="absolute inset-0 bg-gradient-to-b from-white/92 via-white/84 to-[#F8FAFC]"></div>
 
-      <div class="relative z-10 w-full max-w-4xl mx-auto px-4 sm:px-6 flex flex-col items-center justify-center text-center">
-        <span id="heroKicker" class="inline-block text-[10px] sm:text-xs font-extrabold tracking-wider text-brand-blue bg-blue-50/95 border border-blue-200 px-3 py-1 rounded-full uppercase mb-2.5">
-          Genuine Commercial Vehicle Spares &amp; Lubricants
-        </span>
+      <div class="relative z-10 w-full max-w-5xl mx-auto px-4 sm:px-6 flex flex-col items-center justify-center text-center">
+        <div class="inline-flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 mb-3">
+          <span class="inline-flex items-center gap-1.5 text-[10px] sm:text-xs font-extrabold tracking-wider text-white bg-brand-orange px-3 py-1 rounded-full uppercase shadow-2xs">
+            &#9733; 27 Years of Excellence
+          </span>
+          <span id="heroKicker" class="inline-block text-[10px] sm:text-xs font-extrabold tracking-wider text-brand-blue bg-blue-50/95 border border-blue-200 px-3 py-1 rounded-full uppercase">
+            Commercial Vehicle Parts • Oils • Illiquid Stock
+          </span>
+        </div>
 
-        <h2 class="text-xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900 tracking-tight leading-snug sm:leading-tight">
-          Genuine Parts for Every <span class="text-brand-blue">Commercial Fleet</span>
+        <h2 class="text-2xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900 tracking-tight leading-snug sm:leading-tight">
+          Trusted Commercial Vehicle Parts &amp; <span class="text-brand-blue">Lubricants Partner</span>
         </h2>
 
-        <p class="mt-2 text-xs sm:text-base text-slate-600 max-w-xl leading-relaxed">
-          Search verified <strong class="text-slate-900">TATA Motors</strong> &amp; <strong class="text-slate-900">Eicher</strong> assemblies, inspect multi-angle product photos, and send instant enquiries to <strong class="text-slate-900">Somani Auto Pvt. Ltd., Raipur</strong>.
+        <p class="mt-2.5 text-xs sm:text-base text-slate-600 max-w-2xl leading-relaxed">
+          Serving commercial fleets, workshops, and dealers for <strong class="text-slate-900">27+ years</strong> across <strong class="text-slate-900">Chhattisgarh &amp; Madhya Pradesh</strong> with genuine <strong class="text-slate-900">Commercial Vehicle Spares, Oils &amp; Illiquid Stock</strong> from global OEM leaders.
         </p>
 
-        <div class="mt-4 sm:mt-5 flex items-center justify-center">
+        <div class="mt-5 flex flex-wrap items-center justify-center gap-2.5 sm:gap-3">
           <a href="#catalogSection" class="bg-brand-blue hover:bg-brand-blueDark text-white font-bold text-xs sm:text-sm px-6 py-2.5 sm:py-3 rounded-full shadow-md shadow-blue-900/15 transition">
-            Browse Parts Catalogue
+            Explore Parts Catalogue
+          </a>
+          <a href="#vendorPartners" class="bg-white hover:bg-slate-50 text-slate-800 border border-slate-300 font-bold text-xs sm:text-sm px-5 py-2.5 sm:py-3 rounded-full shadow-2xs transition">
+            OEM Partners &amp; 10 Branches
           </a>
         </div>
 
         <div id="heroDots" class="mt-4 flex items-center gap-2"></div>
+      </div>
+    </section>
+
+    <!-- ==================================================================== -->
+    <!-- CORPORATE OVERVIEW: 27 YEARS LEGACY & 3 CORE BUSINESS VERTICALS      -->
+    <!-- ==================================================================== -->
+    <section id="aboutCorporate" class="max-w-7xl mx-auto px-3 sm:px-6 pt-6 sm:pt-9 space-y-5">
+      <div class="bg-white rounded-2xl border border-slate-200 p-5 sm:p-7 shadow-2xs corp-badge-shadow">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+          <div class="lg:col-span-7 space-y-3">
+            <span class="inline-block text-[11px] font-extrabold uppercase tracking-widest text-brand-orange bg-orange-50 border border-orange-200 px-3 py-1 rounded-full">
+              About Somani Auto Pvt. Ltd. • Est. 27 Years
+            </span>
+            <h3 class="text-xl sm:text-3xl font-extrabold text-slate-900 tracking-tight leading-snug">
+              Driving Commercial Mobility Across Central India for <span class="text-brand-blue">27+ Years</span>
+            </h3>
+            <p class="text-xs sm:text-sm text-slate-600 leading-relaxed">
+              Headquartered in <strong class="text-slate-900">Raipur, Chhattisgarh</strong>, <strong class="text-slate-900">Somani Auto Pvt. Ltd.</strong> is a premier authorized distributor specializing exclusively in <strong class="text-slate-900">Commercial Vehicle Spare Parts, Automotive Oils &amp; Lubricants, and Rare / Illiquid Stock</strong>. With <strong class="text-slate-900">10 strategically located branches</strong> spanning Chhattisgarh and Madhya Pradesh, we keep heavy &amp; light commercial fleets running without downtime.
+            </p>
+
+            <!-- 3 Core Business Pillars -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-2">
+              <div class="rounded-xl bg-slate-50 border border-slate-200/90 p-3">
+                <div class="text-xs font-extrabold text-brand-blue">01. Commercial Vehicle Parts</div>
+                <p class="text-[11px] text-slate-600 mt-1 leading-snug">100% genuine HCV, MCV &amp; LCV assemblies, drivetrain, braking, suspension &amp; electrical spares.</p>
+              </div>
+              <div class="rounded-xl bg-slate-50 border border-slate-200/90 p-3">
+                <div class="text-xs font-extrabold text-brand-orange">02. Commercial Oils &amp; Lubes</div>
+                <p class="text-[11px] text-slate-600 mt-1 leading-snug">Heavy-duty diesel engine oils, gear &amp; axle lubricants, greases, coolants &amp; DEF fluids.</p>
+              </div>
+              <div class="rounded-xl bg-slate-50 border border-slate-200/90 p-3">
+                <div class="text-xs font-extrabold text-emerald-700">03. Illiquid &amp; Hard-to-Find Stock</div>
+                <p class="text-[11px] text-slate-600 mt-1 leading-snug">Dedicated inventory of slow-moving, legacy &amp; specialized commercial vehicle parts ready for dispatch.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: 4 Executive Stat Counters (Uno Minda Inspired) -->
+          <div class="lg:col-span-5 grid grid-cols-2 gap-3">
+            <div class="rounded-2xl bg-gradient-to-br from-[#1B569E] to-[#14427A] text-white p-4 sm:p-5 shadow-sm">
+              <span class="text-[10px] font-bold uppercase tracking-wider text-blue-200">Industry Legacy</span>
+              <div class="text-3xl sm:text-4xl font-extrabold font-mono mt-1">27+</div>
+              <p class="text-xs text-blue-100 mt-1 font-medium">Years of Dedicated Commercial Vehicle Service</p>
+            </div>
+
+            <div class="rounded-2xl bg-slate-900 text-white p-4 sm:p-5 shadow-sm">
+              <span class="text-[10px] font-bold uppercase tracking-wider text-orange-300">Regional Footprint</span>
+              <div class="text-3xl sm:text-4xl font-extrabold font-mono mt-1">10</div>
+              <p class="text-xs text-slate-300 mt-1 font-medium">Branches Across Chhattisgarh &amp; Madhya Pradesh</p>
+            </div>
+
+            <div class="rounded-2xl bg-orange-50 border border-orange-200 p-4 sm:p-5">
+              <span class="text-[10px] font-bold uppercase tracking-wider text-brand-orange">Global Alliances</span>
+              <div class="text-3xl sm:text-4xl font-extrabold font-mono text-slate-900 mt-1">8+</div>
+              <p class="text-xs text-slate-600 mt-1 font-medium">Tier-1 OEM &amp; Aftermarket Vendor Partners</p>
+            </div>
+
+            <div class="rounded-2xl bg-blue-50 border border-blue-200 p-4 sm:p-5">
+              <span class="text-[10px] font-bold uppercase tracking-wider text-brand-blue">100% Focused</span>
+              <div class="text-lg sm:text-xl font-extrabold text-slate-900 mt-1.5 leading-tight">CV Spares, Oil &amp; Illiquid Stock</div>
+              <p class="text-[11px] text-slate-600 mt-1">Exclusively Commercial Vehicles</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================================================================== -->
+      <!-- AUTHORIZED VENDOR & OEM PARTNERS SHOWCASE (8 PARTNERS)             -->
+      <!-- ================================================================== -->
+      <div id="vendorPartners" class="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-2xs space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-2">
+          <div>
+            <span class="text-[11px] font-extrabold uppercase tracking-wider text-brand-blue">Authorized Distribution &amp; Channel Partners</span>
+            <h3 class="text-lg sm:text-2xl font-extrabold text-slate-900 mt-0.5">Our Trusted OEM &amp; Vendor Partners</h3>
+          </div>
+          <p class="text-xs text-slate-500">Tap any partner card to filter matching parts in our live catalogue below</p>
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2.5 sm:gap-3">
+          <button type="button" onclick="filterByVendorBrand('TATA')" class="group text-left rounded-xl border border-slate-200 hover:border-brand-blue bg-slate-50/70 hover:bg-blue-50/60 p-3 transition cursor-pointer flex flex-col justify-between">
+            <div class="w-9 h-9 rounded-lg bg-[#1B569E] text-white font-extrabold text-xs flex items-center justify-center tracking-tight shadow-2xs">TATA</div>
+            <div class="mt-2.5">
+              <div class="text-xs font-extrabold text-slate-900 group-hover:text-brand-blue">TATA Motors</div>
+              <div class="text-[10px] text-slate-500 leading-tight mt-0.5">Genuine CV Parts &amp; Aggregates</div>
+            </div>
+          </button>
+
+          <button type="button" onclick="filterByVendorBrand('CUMMINS')" class="group text-left rounded-xl border border-slate-200 hover:border-brand-blue bg-slate-50/70 hover:bg-blue-50/60 p-3 transition cursor-pointer flex flex-col justify-between">
+            <div class="w-9 h-9 rounded-lg bg-rose-700 text-white font-extrabold text-xs flex items-center justify-center shadow-2xs">CMI</div>
+            <div class="mt-2.5">
+              <div class="text-xs font-extrabold text-slate-900 group-hover:text-brand-blue">Cummins</div>
+              <div class="text-[10px] text-slate-500 leading-tight mt-0.5">Heavy Diesel Engine Systems</div>
+            </div>
+          </button>
+
+          <button type="button" onclick="filterByVendorBrand('HOLSET')" class="group text-left rounded-xl border border-slate-200 hover:border-brand-blue bg-slate-50/70 hover:bg-blue-50/60 p-3 transition cursor-pointer flex flex-col justify-between">
+            <div class="w-9 h-9 rounded-lg bg-slate-800 text-white font-extrabold text-[11px] flex items-center justify-center shadow-2xs">HLS</div>
+            <div class="mt-2.5">
+              <div class="text-xs font-extrabold text-slate-900 group-hover:text-brand-blue">Holset</div>
+              <div class="text-[10px] text-slate-500 leading-tight mt-0.5">Turbochargers &amp; Air Handling</div>
+            </div>
+          </button>
+
+          <button type="button" onclick="filterByVendorBrand('JOST')" class="group text-left rounded-xl border border-slate-200 hover:border-brand-blue bg-slate-50/70 hover:bg-blue-50/60 p-3 transition cursor-pointer flex flex-col justify-between">
+            <div class="w-9 h-9 rounded-lg bg-amber-600 text-white font-extrabold text-xs flex items-center justify-center shadow-2xs">JOST</div>
+            <div class="mt-2.5">
+              <div class="text-xs font-extrabold text-slate-900 group-hover:text-brand-blue">JOST</div>
+              <div class="text-[10px] text-slate-500 leading-tight mt-0.5">Fifth Wheels &amp; Trailer Coupling</div>
+            </div>
+          </button>
+
+          <button type="button" onclick="filterByVendorBrand('RSB')" class="group text-left rounded-xl border border-slate-200 hover:border-brand-blue bg-slate-50/70 hover:bg-blue-50/60 p-3 transition cursor-pointer flex flex-col justify-between">
+            <div class="w-9 h-9 rounded-lg bg-indigo-700 text-white font-extrabold text-xs flex items-center justify-center shadow-2xs">RSB</div>
+            <div class="mt-2.5">
+              <div class="text-xs font-extrabold text-slate-900 group-hover:text-brand-blue">RSB</div>
+              <div class="text-[10px] text-slate-500 leading-tight mt-0.5">Propeller Shafts &amp; Axles</div>
+            </div>
+          </button>
+
+          <button type="button" onclick="filterByVendorBrand('SKF')" class="group text-left rounded-xl border border-slate-200 hover:border-brand-blue bg-slate-50/70 hover:bg-blue-50/60 p-3 transition cursor-pointer flex flex-col justify-between">
+            <div class="w-9 h-9 rounded-lg bg-sky-700 text-white font-extrabold text-xs flex items-center justify-center shadow-2xs">SKF</div>
+            <div class="mt-2.5">
+              <div class="text-xs font-extrabold text-slate-900 group-hover:text-brand-blue">SKF Bearing</div>
+              <div class="text-[10px] text-slate-500 leading-tight mt-0.5">Wheel Hub &amp; Taper Bearings</div>
+            </div>
+          </button>
+
+          <button type="button" onclick="filterByVendorBrand('DRIV')" class="group text-left rounded-xl border border-slate-200 hover:border-brand-blue bg-slate-50/70 hover:bg-blue-50/60 p-3 transition cursor-pointer flex flex-col justify-between">
+            <div class="w-9 h-9 rounded-lg bg-emerald-700 text-white font-extrabold text-[11px] flex items-center justify-center shadow-2xs">DRiV</div>
+            <div class="mt-2.5">
+              <div class="text-xs font-extrabold text-slate-900 group-hover:text-brand-blue">DRiV</div>
+              <div class="text-[10px] text-slate-500 leading-tight mt-0.5">Ride Control, Sealing &amp; Engine</div>
+            </div>
+          </button>
+
+          <button type="button" onclick="filterByVendorBrand('UNO MINDA')" class="group text-left rounded-xl border border-slate-200 hover:border-brand-blue bg-slate-50/70 hover:bg-blue-50/60 p-3 transition cursor-pointer flex flex-col justify-between">
+            <div class="w-9 h-9 rounded-lg bg-blue-900 text-white font-extrabold text-[10px] flex items-center justify-center shadow-2xs">MINDA</div>
+            <div class="mt-2.5">
+              <div class="text-xs font-extrabold text-slate-900 group-hover:text-brand-blue">Uno Minda</div>
+              <div class="text-[10px] text-slate-500 leading-tight mt-0.5">Lighting, Switches &amp; Horns</div>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      <!-- ================================================================== -->
+      <!-- 10-BRANCH NETWORK (CHHATTISGARH & MADHYA PRADESH)                  -->
+      <!-- ================================================================== -->
+      <div id="branchNetwork" class="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-2xs space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <span class="text-[11px] font-extrabold uppercase tracking-wider text-brand-orange">Regional Presence • 10 Locations</span>
+            <h3 class="text-lg sm:text-2xl font-extrabold text-slate-900 mt-0.5">Our Branches Across Chhattisgarh &amp; Madhya Pradesh</h3>
+          </div>
+
+          <div class="inline-flex bg-slate-100 p-1 rounded-xl text-xs font-bold self-start sm:self-auto">
+            <button type="button" id="brTabAll" onclick="filterBranches('ALL')" class="px-3 py-1.5 rounded-lg bg-white text-brand-blue shadow-2xs cursor-pointer">All (10)</button>
+            <button type="button" id="brTabCG" onclick="filterBranches('CG')" class="px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 cursor-pointer">Chhattisgarh (6)</button>
+            <button type="button" id="brTabMP" onclick="filterBranches('MP')" class="px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 cursor-pointer">Madhya Pradesh (4)</button>
+          </div>
+        </div>
+
+        <div id="branchCardsGrid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 sm:gap-3">
+          <!-- Raipur Headquarter -->
+          <div data-state="CG" class="branch-card rounded-xl border-2 border-brand-blue bg-blue-50/40 p-3.5 flex flex-col justify-between">
+            <div class="flex items-center justify-between gap-1">
+              <span class="text-[10px] font-extrabold uppercase tracking-wider bg-brand-blue text-white px-2 py-0.5 rounded-full">Headquarter</span>
+              <span class="text-[10px] font-bold text-slate-500">CG</span>
+            </div>
+            <div class="mt-2.5">
+              <h4 class="text-sm font-extrabold text-slate-900">Raipur HQ</h4>
+              <p class="text-[11px] text-slate-600 mt-0.5">Central Warehouse, CV Parts, Oils &amp; Illiquid Stock Hub</p>
+            </div>
+          </div>
+
+          <!-- Korba -->
+          <div data-state="CG" class="branch-card rounded-xl border border-slate-200 bg-slate-50/70 p-3.5 flex flex-col justify-between">
+            <div class="flex items-center justify-between gap-1">
+              <span class="text-[10px] font-bold uppercase text-brand-blue bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-full">Branch</span>
+              <span class="text-[10px] font-bold text-slate-500">CG</span>
+            </div>
+            <div class="mt-2.5">
+              <h4 class="text-sm font-extrabold text-slate-900">Korba</h4>
+              <p class="text-[11px] text-slate-600 mt-0.5">Mining &amp; Heavy Tipper Fleet Parts &amp; Lubricants</p>
+            </div>
+          </div>
+
+          <!-- Raigarh -->
+          <div data-state="CG" class="branch-card rounded-xl border border-slate-200 bg-slate-50/70 p-3.5 flex flex-col justify-between">
+            <div class="flex items-center justify-between gap-1">
+              <span class="text-[10px] font-bold uppercase text-brand-blue bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-full">Branch</span>
+              <span class="text-[10px] font-bold text-slate-500">CG</span>
+            </div>
+            <div class="mt-2.5">
+              <h4 class="text-sm font-extrabold text-slate-900">Raigarh</h4>
+              <p class="text-[11px] text-slate-600 mt-0.5">Industrial &amp; Commercial Transport Spares</p>
+            </div>
+          </div>
+
+          <!-- Bilaspur -->
+          <div data-state="CG" class="branch-card rounded-xl border border-slate-200 bg-slate-50/70 p-3.5 flex flex-col justify-between">
+            <div class="flex items-center justify-between gap-1">
+              <span class="text-[10px] font-bold uppercase text-brand-blue bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-full">Branch</span>
+              <span class="text-[10px] font-bold text-slate-500">CG</span>
+            </div>
+            <div class="mt-2.5">
+              <h4 class="text-sm font-extrabold text-slate-900">Bilaspur</h4>
+              <p class="text-[11px] text-slate-600 mt-0.5">Central CG Commercial Parts &amp; Oil Distribution</p>
+            </div>
+          </div>
+
+          <!-- Jagdalpur -->
+          <div data-state="CG" class="branch-card rounded-xl border border-slate-200 bg-slate-50/70 p-3.5 flex flex-col justify-between">
+            <div class="flex items-center justify-between gap-1">
+              <span class="text-[10px] font-bold uppercase text-brand-blue bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-full">Branch</span>
+              <span class="text-[10px] font-bold text-slate-500">CG</span>
+            </div>
+            <div class="mt-2.5">
+              <h4 class="text-sm font-extrabold text-slate-900">Jagdalpur</h4>
+              <p class="text-[11px] text-slate-600 mt-0.5">Bastar Region Fleet Spares &amp; Lubricants</p>
+            </div>
+          </div>
+
+          <!-- Ambikapur -->
+          <div data-state="CG" class="branch-card rounded-xl border border-slate-200 bg-slate-50/70 p-3.5 flex flex-col justify-between">
+            <div class="flex items-center justify-between gap-1">
+              <span class="text-[10px] font-bold uppercase text-brand-blue bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-full">Branch</span>
+              <span class="text-[10px] font-bold text-slate-500">CG</span>
+            </div>
+            <div class="mt-2.5">
+              <h4 class="text-sm font-extrabold text-slate-900">Ambikapur</h4>
+              <p class="text-[11px] text-slate-600 mt-0.5">Surguja Division CV Parts &amp; Oil Supply</p>
+            </div>
+          </div>
+
+          <!-- Jabalpur -->
+          <div data-state="MP" class="branch-card rounded-xl border border-slate-200 bg-slate-50/70 p-3.5 flex flex-col justify-between">
+            <div class="flex items-center justify-between gap-1">
+              <span class="text-[10px] font-bold uppercase text-brand-orange bg-orange-50 border border-orange-200 px-2 py-0.5 rounded-full">Branch</span>
+              <span class="text-[10px] font-bold text-slate-500">MP</span>
+            </div>
+            <div class="mt-2.5">
+              <h4 class="text-sm font-extrabold text-slate-900">Jabalpur</h4>
+              <p class="text-[11px] text-slate-600 mt-0.5">Mahakoshal Region CV Spares &amp; Lubricants</p>
+            </div>
+          </div>
+
+          <!-- Indore -->
+          <div data-state="MP" class="branch-card rounded-xl border border-slate-200 bg-slate-50/70 p-3.5 flex flex-col justify-between">
+            <div class="flex items-center justify-between gap-1">
+              <span class="text-[10px] font-bold uppercase text-brand-orange bg-orange-50 border border-orange-200 px-2 py-0.5 rounded-full">Branch</span>
+              <span class="text-[10px] font-bold text-slate-500">MP</span>
+            </div>
+            <div class="mt-2.5">
+              <h4 class="text-sm font-extrabold text-slate-900">Indore</h4>
+              <p class="text-[11px] text-slate-600 mt-0.5">Malwa Transport Hub Parts &amp; Dealer Support</p>
+            </div>
+          </div>
+
+          <!-- Khandwa -->
+          <div data-state="MP" class="branch-card rounded-xl border border-slate-200 bg-slate-50/70 p-3.5 flex flex-col justify-between">
+            <div class="flex items-center justify-between gap-1">
+              <span class="text-[10px] font-bold uppercase text-brand-orange bg-orange-50 border border-orange-200 px-2 py-0.5 rounded-full">Branch</span>
+              <span class="text-[10px] font-bold text-slate-500">MP</span>
+            </div>
+            <div class="mt-2.5">
+              <h4 class="text-sm font-extrabold text-slate-900">Khandwa</h4>
+              <p class="text-[11px] text-slate-600 mt-0.5">Nimar Region Commercial Vehicle Spares</p>
+            </div>
+          </div>
+
+          <!-- Neemuch -->
+          <div data-state="MP" class="branch-card rounded-xl border border-slate-200 bg-slate-50/70 p-3.5 flex flex-col justify-between">
+            <div class="flex items-center justify-between gap-1">
+              <span class="text-[10px] font-bold uppercase text-brand-orange bg-orange-50 border border-orange-200 px-2 py-0.5 rounded-full">Branch</span>
+              <span class="text-[10px] font-bold text-slate-500">MP</span>
+            </div>
+            <div class="mt-2.5">
+              <h4 class="text-sm font-extrabold text-slate-900">Neemuch</h4>
+              <p class="text-[11px] text-slate-600 mt-0.5">Western MP Fleet Parts &amp; Lubricants</p>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -578,10 +872,33 @@
     </div>
   </div>
 
-  <!-- Footer -->
-  <footer class="max-w-7xl mx-auto px-3 sm:px-6 py-6 border-t border-slate-200 mt-8 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-500">
-    <div><strong class="text-slate-800">Somani Auto Pvt. Ltd.</strong> &bull; Raipur, Chhattisgarh</div>
-    <div>TATA &bull; Eicher &bull; Genuine Commercial Vehicle Parts &amp; Lubricants</div>
+  <!-- Corporate Footer -->
+  <footer class="bg-white border-t border-slate-200 mt-10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-8 grid grid-cols-1 md:grid-cols-3 gap-6 text-xs text-slate-600">
+      <div class="space-y-2">
+        <div class="text-sm font-extrabold text-slate-900 uppercase tracking-tight">Somani Auto Pvt. Ltd.</div>
+        <p class="leading-relaxed text-slate-500">
+          <strong>27+ Years of Serving</strong> commercial vehicle fleets, workshops, and dealers. Exclusively dealing in genuine <strong>Commercial Vehicle Parts, Automotive Oils &amp; Illiquid Stock</strong>.
+        </p>
+      </div>
+
+      <div class="space-y-1.5">
+        <div class="text-xs font-extrabold uppercase tracking-wider text-brand-blue">Authorized Vendor Partners</div>
+        <p class="leading-relaxed text-slate-600">
+          Tata Motors &bull; Cummins &bull; Holset &bull; JOST &bull; RSB &bull; SKF Bearing &bull; DRiV &bull; Uno Minda
+        </p>
+      </div>
+
+      <div class="space-y-1.5">
+        <div class="text-xs font-extrabold uppercase tracking-wider text-brand-orange">10 Branches (CG &amp; MP)</div>
+        <p class="leading-relaxed text-slate-600">
+          <strong>Raipur (HQ)</strong>, Korba, Raigarh, Jagdalpur, Bilaspur, Ambikapur, Jabalpur, Indore, Khandwa &amp; Neemuch
+        </p>
+      </div>
+    </div>
+    <div class="border-t border-slate-100 py-3.5 px-4 sm:px-6 text-center text-[11px] text-slate-400">
+      &copy; 2026 Somani Auto Pvt. Ltd. &bull; Raipur Headquarter &bull; Commercial Vehicle Spares, Oils &amp; Illiquid Stock
+    </div>
   </footer>
 
   <!-- ====================================================================== -->
@@ -1001,6 +1318,6 @@
     <div id="zoomThumbsBar" class="hidden px-4 py-2.5 bg-slate-900/95 border-t border-slate-800 flex items-center justify-center gap-2 overflow-x-auto no-scrollbar shrink-0"></div>
   </div>
 
-  <script src="app.js?v=20261121-twofinger1"></script>
+  <script src="app.js?v=20261123-corporate1"></script>
 </body>
 </html>
