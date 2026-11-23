@@ -35,7 +35,7 @@
       }
     };
   </script>
-  <link rel="stylesheet" href="styles.css?v=20261123-compactmob1" />
+  <link rel="stylesheet" href="styles.css?v=20261123-drawerfix1" />
 </head>
 <body class="min-h-screen font-sans antialiased selection:bg-brand-blue selection:text-white">
 
@@ -123,8 +123,8 @@
       </div>
     </div>
 
-    <!-- Compact Overlay Menu Drawer (2-Column Grid on Mobile — Does Not Push Hero Down) -->
-    <div id="corporateMenuDrawer" class="hidden absolute left-0 right-0 top-full z-40 border-t border-slate-200 bg-white/98 backdrop-blur-md shadow-2xl">
+    <!-- Compact Overlay Menu Drawer (Closed by Default; Solid White Backdrop for High Contrast) -->
+    <div id="corporateMenuDrawer" class="hidden fixed left-0 right-0 top-[56px] sm:top-[66px] z-40 border-b border-slate-200 bg-white shadow-2xl">
       <div class="max-w-7xl mx-auto px-3 sm:px-6 py-3 sm:py-4 grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 text-[11px] sm:text-xs">
         <div class="space-y-1.5">
           <p class="text-[9px] sm:text-[10px] font-extrabold uppercase tracking-widest text-slate-400">Corporate</p>
@@ -163,7 +163,7 @@
       <section id="top" class="relative w-full min-h-[300px] sm:min-h-[500px] lg:min-h-[560px] overflow-hidden bg-slate-950 flex items-center">
         <div id="heroBgLayerA" class="bg-4k-layer absolute inset-0 opacity-100 scale-100"></div>
         <div id="heroBgLayerB" class="bg-4k-layer absolute inset-0 opacity-0 scale-105"></div>
-        <div class="absolute inset-0 bg-gradient-to-r from-slate-950/92 via-slate-950/72 to-slate-950/40"></div>
+        <div class="absolute inset-0 bg-gradient-to-r from-slate-950/90 via-slate-950/75 to-slate-950/45"></div>
 
         <div class="relative z-10 w-full max-w-7xl mx-auto px-3.5 sm:px-8 py-7 sm:py-14">
           <div class="uno-hero-bracket max-w-2xl pl-3.5 sm:pl-8 py-4 sm:py-8 pr-2">
@@ -1562,6 +1562,6 @@
     <div id="zoomThumbsBar" class="hidden px-4 py-2.5 bg-slate-900/95 border-t border-slate-800 flex items-center justify-center gap-2 overflow-x-auto no-scrollbar shrink-0"></div>
   </div>
 
-  <script src="app.js?v=20261123-compactmob1"></script>
+  <script src="app.js?v=20261123-drawerfix1"></script>
 </body>
 </html>

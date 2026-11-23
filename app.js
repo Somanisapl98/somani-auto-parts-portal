@@ -2497,6 +2497,19 @@ function bindEvents() {
     if (!e.target.closest('#suggestions') && e.target.id !== 'searchInput') {
       $('#suggestions').classList.add('hidden');
     }
+    const menuDrawer = $('#corporateMenuDrawer');
+    if (menuDrawer && !menuDrawer.classList.contains('hidden') && !e.target.closest('header')) {
+      menuDrawer.classList.add('hidden');
+    }
+  });
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      const menuDrawer = $('#corporateMenuDrawer');
+      if (menuDrawer && !menuDrawer.classList.contains('hidden')) {
+        menuDrawer.classList.add('hidden');
+      }
+    }
   });
 
   $('#hierarchyFilter').addEventListener('change', e => {
