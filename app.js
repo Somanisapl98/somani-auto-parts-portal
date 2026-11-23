@@ -802,7 +802,7 @@ function resetAllFilters() {
 // ---------------------------------------------------------------------------
 function openDealerAuth(tab = 'login') {
   if (authState.token && authState.role === 'dealer') {
-    if (confirm(`Signed in as Dealer ${authState.user}. Sign out?`)) {
+    if (confirm(`Signed in as ${authState.user}. Sign out?`)) {
       logoutSession();
     }
     return;
@@ -1127,26 +1127,26 @@ function logoutSession() {
 function updateAuthUI() {
   const mobLabel = $('#dealerBtnMobile');
   const deskLabel = $('#dealerBtnDesktop');
-  const adminBtn = $('#adminBtn');
+  const drawerAdminBtn = $('#drawerAdminStudioBtn');
 
   if (authState.role === 'dealer' && authState.token) {
     if (mobLabel) mobLabel.textContent = authState.user;
-    if (deskLabel) deskLabel.textContent = `Dealer: ${authState.user}`;
-    adminBtn.textContent = 'Admin';
+    if (deskLabel) deskLabel.textContent = authState.user;
+    if (drawerAdminBtn) drawerAdminBtn.classList.add('hidden');
     $('#kpiTierLabel').textContent = authState.user;
-    $('#kpiTierSub').textContent = `${authState.businessName || 'Dealer'} • Net rates active`;
+    $('#kpiTierSub').textContent = `${authState.businessName || 'Partner'} • Net rates active`;
   } else if (authState.role === 'admin' && authState.token) {
-    adminBtn.textContent = 'Admin Studio';
-    if (mobLabel) mobLabel.textContent = 'Dealer';
-    if (deskLabel) deskLabel.textContent = 'Dealer Login';
+    if (mobLabel) mobLabel.textContent = 'Sign In';
+    if (deskLabel) deskLabel.textContent = 'Sign In';
+    if (drawerAdminBtn) drawerAdminBtn.classList.remove('hidden');
     $('#kpiTierLabel').textContent = 'Admin Mode';
     $('#kpiTierSub').textContent = 'Backend Studio unlocked';
   } else {
-    if (mobLabel) mobLabel.textContent = 'Dealer';
-    if (deskLabel) deskLabel.textContent = 'Dealer Login';
-    adminBtn.textContent = 'Admin';
+    if (mobLabel) mobLabel.textContent = 'Sign In';
+    if (deskLabel) deskLabel.textContent = 'Sign In';
+    if (drawerAdminBtn) drawerAdminBtn.classList.add('hidden');
     $('#kpiTierLabel').textContent = 'Public Store';
-    $('#kpiTierSub').textContent = 'Tap for Dealer Net Pricing';
+    $('#kpiTierSub').textContent = 'Sign In for Net Pricing';
   }
 }
 
@@ -3012,3 +3012,43 @@ window.openShopPortal = openShopPortal;
 window.openCorporateHome = openCorporateHome;
 window.openShopPortalWithBrand = openShopPortalWithBrand;
 window.openShopPortalWithPG = openShopPortalWithPG;
+
+// ---------------------------------------------------------------------------
+// UNO MINDA HAMBURGER MENU & DISCREET STAFF ADMIN ACCESS
+// ---------------------------------------------------------------------------
+function toggleCorporateMenu() {
+  const drawer = $('#corporateMenuDrawer');
+  if (!drawer) return;
+  drawer.classList.toggle('hidden');
+}
+
+let _staffTapCount = 0;
+let _staffTapTimer = null;
+
+function handleStaffSecretTap() {
+  _staffTapCount += 1;
+  clearTimeout(_staffTapTimer);
+  _staffTapTimer = setTimeout(() => {
+    _staffTapCount = 0;
+  }, 1200);
+  if (_staffTapCount >= 3) {
+    _staffTapCount = 0;
+    openAdminPortal();
+  }
+}
+
+document.addEventListener('keydown', e => {
+  if (e.ctrlKey && e.shiftKey && (e.key === 'A' || e.key === 'a')) {
+    e.preventDefault();
+    openAdminPortal();
+  }
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+  if (window.location.hash === '#staff-admin') {
+    openAdminPortal();
+  }
+});
+
+window.toggleCorporateMenu = toggleCorporateMenu;
+window.handleStaffSecretTap = handleStaffSecretTap;
