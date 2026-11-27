@@ -35,12 +35,13 @@
       }
     };
   </script>
-  <link rel="stylesheet" href="styles.css?v=20261127-locmerge1" />
+  <link rel="stylesheet" href="styles.css?v=20261127-ocrcutthumb1" />
 </head>
 <body class="min-h-screen font-sans antialiased selection:bg-brand-blue selection:text-white">
 
   <!-- Hidden Camera, Multi-Angle & Excel Inputs (Strictly Admin Backend Only) -->
   <input type="file" id="adminCamInput" accept="image/*" capture="environment" hidden />
+  <input type="file" id="adminThumbInput" accept="image/*" hidden />
   <input type="file" id="adminGalleryInput" accept="image/*" multiple hidden />
   <input type="file" id="excelFileInput" accept=".xlsx,.xls,.csv" hidden />
 
@@ -783,6 +784,10 @@
         <div onclick="triggerAdminCamera()" class="relative border-2 border-dashed border-slate-300 hover:border-brand-orange rounded-xl bg-slate-50 hover:bg-orange-50/40 min-h-[220px] flex flex-col items-center justify-center text-center p-4 cursor-pointer transition">
           <div id="adminPhotoPreviewWrap" onclick="event.stopPropagation();openAdminStep1Zoom()" title="Click image to zoom &amp; inspect" class="hidden relative group cursor-zoom-in">
             <img id="adminPhotoPreview" class="max-h-56 rounded-lg object-contain shadow-xs" alt="Part preview" />
+            <!-- Small X cut button to remove OCR photo while keeping autofilled text -->
+            <button type="button" onclick="event.stopPropagation();clearAdminOcrPhotoOnly()" title="Remove / Cut OCR Photo (Keep Autofilled Details)" aria-label="Remove OCR photo" class="absolute -top-2.5 -right-2.5 w-7 h-7 rounded-full bg-rose-600 hover:bg-rose-700 text-white font-extrabold text-sm shadow-md border-2 border-white flex items-center justify-center cursor-pointer z-10">
+              &times;
+            </button>
             <span class="absolute bottom-2 right-2 bg-slate-900/80 text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-xs flex items-center gap-1">
               &#128269; Click to Zoom
             </span>
@@ -794,8 +799,8 @@
                 <path stroke-linecap="round" stroke-linejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
               </svg>
             </div>
-            <p class="text-sm font-bold text-slate-800">Tap to Open Camera or Select Photo</p>
-            <p class="text-xs text-slate-500">Auto-enhances lighting &amp; sharpness + reads TATA/Eicher labels</p>
+            <p class="text-sm font-bold text-slate-800">Tap to Scan Label for OCR Autofill</p>
+            <p class="text-xs text-slate-500">Reads TATA/Eicher labels to autofill fields (you can cut &times; photo after scan)</p>
           </div>
         </div>
 
@@ -806,8 +811,34 @@
             Capture / Retake
           </button>
           <button id="btnUploadAndOcr" type="button" disabled onclick="uploadAndScanAdminPhoto()" class="w-full py-2.5 px-3 rounded-xl bg-brand-blue hover:bg-brand-blueDark disabled:opacity-50 text-white text-xs font-bold cursor-pointer">
-            Upload &amp; Scan OCR
+            Scan OCR Autofill
           </button>
+        </div>
+
+        <!-- Custom Storefront Thumbnail Picker Card -->
+        <div class="rounded-xl border border-slate-200 bg-slate-50/80 p-3 space-y-2">
+          <div class="flex items-center justify-between gap-2">
+            <div>
+              <span class="text-[11px] font-extrabold uppercase tracking-wider text-slate-700 block">Storefront Thumbnail Photo</span>
+              <span class="text-[11px] text-slate-500">Choose your own product photo to display on the website card</span>
+            </div>
+            <button type="button" onclick="triggerCustomThumbnailPicker()" class="px-3 py-1.5 rounded-lg bg-brand-orange hover:bg-brand-orangeDark text-white text-xs font-bold shrink-0 cursor-pointer">
+              Choose Thumbnail
+            </button>
+          </div>
+
+          <div id="customThumbPreviewRow" class="hidden items-center justify-between gap-2.5 bg-white border border-slate-200 rounded-lg p-2">
+            <div class="flex items-center gap-2.5 min-w-0">
+              <img id="customThumbPreviewImg" src="" alt="Custom Thumbnail" class="w-12 h-12 rounded-lg object-cover border border-slate-200 shrink-0" />
+              <div class="min-w-0">
+                <span class="text-[11px] font-bold text-emerald-700 block">Selected Cover Thumbnail</span>
+                <span id="customThumbName" class="text-[10px] text-slate-500 truncate block">Ready for storefront</span>
+              </div>
+            </div>
+            <button type="button" onclick="clearCustomThumbnail()" title="Remove Thumbnail" aria-label="Remove Thumbnail" class="w-7 h-7 rounded-full bg-rose-50 hover:bg-rose-600 text-rose-600 hover:text-white border border-rose-200 font-extrabold text-sm flex items-center justify-center shrink-0 cursor-pointer">
+              &times;
+            </button>
+          </div>
         </div>
 
         <div id="adminOcrStatus" class="hidden rounded-xl px-3.5 py-2.5 text-xs font-medium bg-blue-50 border border-blue-200 text-brand-blue"></div>
@@ -1539,6 +1570,6 @@
     <div id="zoomThumbsBar" class="hidden px-4 py-2.5 bg-slate-900/95 border-t border-slate-800 flex items-center justify-center gap-2 overflow-x-auto no-scrollbar shrink-0"></div>
   </div>
 
-  <script src="app.js?v=20261127-locmerge1"></script>
+  <script src="app.js?v=20261127-ocrcutthumb1"></script>
 </body>
 </html>

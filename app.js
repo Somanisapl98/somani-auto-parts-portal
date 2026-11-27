@@ -1200,7 +1200,8 @@ async function loadAdminUsers() {
     const res = await fetch(`${API_BASE}/admin/users`, {
       headers: { Authorization: `Bearer ${authState.token}` }
     });
-    const data = await res.json();
+    const rawText = await res.text();
+    const data = rawText ? JSON.parse(rawText) : { ok: false, error: `Endpoint /api/admin/users returned status ${res.status}` };
     if (!res.ok || !data.ok) throw new Error(data.error || 'Could not load users');
 
     const users = data.users || [];
@@ -1675,6 +1676,8 @@ async function uploadEnhancedBlobToAzure(blob, fileName) {
   };
 }
 
+let lastOcrUploadedBlobName = '';
+
 async function uploadAndScanAdminPhoto() {
   if (!pendingAdminBlob || authState.role !== 'admin' || !authState.token) return;
 
@@ -1685,14 +1688,11 @@ async function uploadAndScanAdminPhoto() {
   statusBox.classList.remove('hidden');
 
   try {
-    statusBox.textContent = '1/2 Uploading auto-enhanced photo to Azure Blob Storage...';
+    statusBox.textContent = '1/2 Preparing label image for OCR scan...';
     const uploaded = await uploadEnhancedBlobToAzure(pendingAdminBlob.blob, pendingAdminBlob.fileName);
+    lastOcrUploadedBlobName = uploaded.blobName;
 
-    $('#fBlobName').value = uploaded.blobName;
-    $('#fImageUrl').value = uploaded.url;
-    clearAllPhotosFlag = false;
-
-    statusBox.textContent = '2/2 Scanning label via Azure Computer Vision OCR...';
+    statusBox.textContent = '2/2 Reading label text via Azure Computer Vision OCR...';
     const ocrRes = await fetch(`${API_BASE}/ocr/scan`, {
       method: 'POST',
       headers: {
@@ -1708,22 +1708,6 @@ async function uploadAndScanAdminPhoto() {
     if (!ocrRes.ok || !ocrData.ok) throw new Error(ocrData.error || 'Vision OCR failed');
 
     const ext = ocrData.extracted || {};
-    const finalThumb = ext.thumbnailUrl || uploaded.url;
-    $('#fThumbnailUrl').value = finalThumb;
-
-    // Add or replace primary angle in adminGalleryItems
-    const primaryEntry = {
-      blobName: uploaded.blobName,
-      url: uploaded.url,
-      thumbUrl: finalThumb,
-      label: 'Front / Primary'
-    };
-    if (adminGalleryItems.length > 0) {
-      adminGalleryItems[0] = primaryEntry;
-    } else {
-      adminGalleryItems.push(primaryEntry);
-    }
-    renderAdminGalleryGrid();
 
     if (ext.partNo && !$('#fPartNo').value) $('#fPartNo').value = ext.partNo;
     const scannedKey = ($('#fPartNo').value || ext.partNo || '').trim().toUpperCase();
@@ -1752,13 +1736,132 @@ async function uploadAndScanAdminPhoto() {
     }
 
     statusBox.className = 'rounded-xl px-3.5 py-2.5 text-xs font-medium bg-emerald-50 border border-emerald-200 text-emerald-700';
-    statusBox.textContent = 'Auto-enhanced photo uploaded & label scanned! You can also add more angles below.';
+    statusBox.textContent = 'OCR autofill complete! Click the red × on the photo to cut/remove it, or choose your own thumbnail below.';
   } catch (err) {
     statusBox.className = 'rounded-xl px-3.5 py-2.5 text-xs font-medium bg-rose-50 border border-rose-200 text-rose-700';
     statusBox.textContent = err.message;
   } finally {
     btn.disabled = false;
   }
+}
+
+function clearAdminOcrPhotoOnly() {
+  // Cuts/removes only the OCR label image while preserving all autofilled form fields!
+  if (lastOcrUploadedBlobName) {
+    adminGalleryItems = adminGalleryItems.filter(item => item.blobName !== lastOcrUploadedBlobName);
+    if ($('#fBlobName').value === lastOcrUploadedBlobName) {
+      $('#fBlobName').value = '';
+      $('#fImageUrl').value = '';
+      $('#fThumbnailUrl').value = '';
+    }
+    lastOcrUploadedBlobName = '';
+  }
+  pendingAdminBlob = null;
+  showingEnhancedPreview = true;
+
+  const camInp = $('#adminCamInput');
+  if (camInp) camInp.value = '';
+
+  $('#adminPhotoPreview').src = '';
+  $('#adminPhotoPreviewWrap').classList.add('hidden');
+  $('#cameraPlaceholder').classList.remove('hidden');
+  $('#btnToggleEnhancePreview').classList.add('hidden');
+  $('#compressionStats').classList.add('hidden');
+  $('#adminOcrRawWrap').classList.add('hidden');
+  $('#adminOcrStatus').classList.add('hidden');
+  $('#btnUploadAndOcr').disabled = true;
+
+  if (adminGalleryItems.length === 0 && !$('#fThumbnailUrl').value) {
+    clearAllPhotosFlag = true;
+  }
+  renderAdminGalleryGrid();
+  showToast('OCR photo removed — autofilled details kept');
+}
+
+function triggerCustomThumbnailPicker() {
+  if (authState.role !== 'admin' || !authState.token) {
+    openAdminPortal();
+    return;
+  }
+  const inp = $('#adminThumbInput');
+  if (!inp) return;
+  inp.value = '';
+  inp.click();
+}
+
+async function handleCustomThumbnailFile(file) {
+  if (!file) return;
+  const statusBox = $('#adminOcrStatus');
+  statusBox.className = 'rounded-xl px-3.5 py-2.5 text-xs font-medium bg-blue-50 border border-blue-200 text-brand-blue';
+  statusBox.classList.remove('hidden');
+  statusBox.textContent = 'Enhancing & uploading your custom thumbnail...';
+
+  try {
+    const comp = await autoEnhanceImageFile(file, 1200, 0.86);
+    const uploaded = await uploadEnhancedBlobToAzure(comp.blob, file.name || 'custom-thumbnail.jpg');
+
+    $('#fBlobName').value = uploaded.blobName;
+    $('#fImageUrl').value = uploaded.url;
+    $('#fThumbnailUrl').value = uploaded.thumbUrl;
+    clearAllPhotosFlag = false;
+
+    const thumbEntry = {
+      blobName: uploaded.blobName,
+      url: uploaded.url,
+      thumbUrl: uploaded.thumbUrl,
+      label: 'Front / Primary'
+    };
+
+    if (adminGalleryItems.length > 0) {
+      adminGalleryItems[0] = thumbEntry;
+    } else {
+      adminGalleryItems.unshift(thumbEntry);
+    }
+    renderAdminGalleryGrid();
+
+    const row = $('#customThumbPreviewRow');
+    if (row) {
+      row.classList.remove('hidden');
+      row.classList.add('flex');
+      $('#customThumbPreviewImg').src = comp.enhancedDataUrl;
+      $('#customThumbName').textContent = file.name || 'Custom Thumbnail';
+    }
+
+    statusBox.className = 'rounded-xl px-3.5 py-2.5 text-xs font-medium bg-emerald-50 border border-emerald-200 text-emerald-700';
+    statusBox.textContent = 'Custom thumbnail uploaded and set as primary storefront photo!';
+    showToast('Custom thumbnail selected!');
+  } catch (err) {
+    statusBox.className = 'rounded-xl px-3.5 py-2.5 text-xs font-medium bg-rose-50 border border-rose-200 text-rose-700';
+    statusBox.textContent = err.message;
+  }
+}
+
+function clearCustomThumbnail() {
+  const row = $('#customThumbPreviewRow');
+  if (row) {
+    row.classList.add('hidden');
+    row.classList.remove('flex');
+  }
+  $('#customThumbPreviewImg').src = '';
+  const inp = $('#adminThumbInput');
+  if (inp) inp.value = '';
+
+  if (adminGalleryItems.length > 0) {
+    adminGalleryItems.shift();
+  }
+  if (adminGalleryItems.length > 0) {
+    const nextFirst = adminGalleryItems[0];
+    $('#fBlobName').value = nextFirst.blobName || '';
+    $('#fImageUrl').value = nextFirst.url || '';
+    $('#fThumbnailUrl').value = nextFirst.thumbUrl || nextFirst.url || '';
+  } else {
+    $('#fBlobName').value = '';
+    $('#fImageUrl').value = '';
+    $('#fThumbnailUrl').value = '';
+    clearAllPhotosFlag = true;
+  }
+  renderAdminGalleryGrid();
+  showToast('Custom thumbnail removed');
 }
 
 
@@ -2012,6 +2115,13 @@ function startEditProduct(partNoKey) {
     $('#adminPhotoPreview').src = first.url || first.thumbUrl;
     $('#adminPhotoPreviewWrap').classList.remove('hidden');
     $('#cameraPlaceholder').classList.add('hidden');
+    const thumbRow = $('#customThumbPreviewRow');
+    if (thumbRow) {
+      thumbRow.classList.remove('hidden');
+      thumbRow.classList.add('flex');
+      $('#customThumbPreviewImg').src = first.thumbUrl || first.url;
+      $('#customThumbName').textContent = first.label || 'Existing Thumbnail';
+    }
   } else {
     $('#fBlobName').value = '';
     $('#fImageUrl').value = '';
@@ -2109,6 +2219,13 @@ function resetAdminForm() {
   $('#editModeBanner').classList.add('hidden');
   $('#formStepKicker').textContent = 'Step 2 • Catalogue Entry & Multi-Angle Gallery';
   $('#formStepTitle').textContent = 'Save Part to Live Database';
+  lastOcrUploadedBlobName = '';
+  const thumbRow = $('#customThumbPreviewRow');
+  if (thumbRow) {
+    thumbRow.classList.add('hidden');
+    thumbRow.classList.remove('flex');
+  }
+  if ($('#customThumbPreviewImg')) $('#customThumbPreviewImg').src = '';
   if ($('#fLocation')) $('#fLocation').value = 'Location 1';
   clearExistingPartMergeBanner();
   $('#btnSavePart').textContent = 'Save Part to Live Catalogue';
@@ -2611,6 +2728,15 @@ function bindEvents() {
     }
   });
 
+  const thumbInp = $('#adminThumbInput');
+  if (thumbInp) {
+    thumbInp.addEventListener('change', e => {
+      if (e.target.files && e.target.files[0]) {
+        handleCustomThumbnailFile(e.target.files[0]);
+      }
+    });
+  }
+
   $('#adminGalleryInput').addEventListener('change', e => {
     if (e.target.files && e.target.files.length > 0) {
       handleAdminGalleryFiles(e.target.files);
@@ -2675,6 +2801,9 @@ window.submitEnquiry = submitEnquiry;
 window.triggerAdminCamera = triggerAdminCamera;
 window.toggleEnhanceComparison = toggleEnhanceComparison;
 window.uploadAndScanAdminPhoto = uploadAndScanAdminPhoto;
+window.clearAdminOcrPhotoOnly = clearAdminOcrPhotoOnly;
+window.triggerCustomThumbnailPicker = triggerCustomThumbnailPicker;
+window.clearCustomThumbnail = clearCustomThumbnail;
 window.triggerAdminGalleryPicker = triggerAdminGalleryPicker;
 window.setPrimaryGalleryAngle = setPrimaryGalleryAngle;
 window.updateGalleryAngleLabel = updateGalleryAngleLabel;
