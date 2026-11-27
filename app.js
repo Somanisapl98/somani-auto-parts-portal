@@ -587,6 +587,9 @@ function openProductDetail(partNoKey) {
 
   $('#pdBrand').textContent = p.brand || 'TATA / OEM';
   $('#pdCategory').textContent = `${p.pg} • ${p.hierarchy || 'General'}`;
+  if ($('#pdLocationBadge')) {
+    $('#pdLocationBadge').textContent = p.location || 'Location 1';
+  }
   $('#pdTitle').textContent = p.name;
   $('#pdPartNo').textContent = p.partNo;
   $('#pdQtyVal').textContent = '1';
@@ -1723,16 +1726,25 @@ async function uploadAndScanAdminPhoto() {
     renderAdminGalleryGrid();
 
     if (ext.partNo && !$('#fPartNo').value) $('#fPartNo').value = ext.partNo;
-    if (ext.name && !$('#fName').value) $('#fName').value = ext.name;
-    if (ext.brand) $('#fBrand').value = ext.brand;
-    if (ext.pg) $('#fPG').value = ext.pg;
-    if (ext.hierarchy) $('#fHierarchy').value = ext.hierarchy;
-    if (ext.mrp && Number($('#fMrp').value || 0) === 0) {
-      $('#fMrp').value = ext.mrp;
-      $('#fDealerPrice').value = ext.mrp;
+    const scannedKey = ($('#fPartNo').value || ext.partNo || '').trim().toUpperCase();
+    const existingMatch = scannedKey
+      ? products.find(x => String(x.partNo || '').trim().toUpperCase() === scannedKey)
+      : null;
+
+    if (existingMatch && !$('#fEditId').value) {
+      applyExistingPartMergeState(existingMatch, ext.stockQty || 1);
+    } else {
+      if (ext.name && !$('#fName').value) $('#fName').value = ext.name;
+      if (ext.brand) $('#fBrand').value = ext.brand;
+      if (ext.pg) $('#fPG').value = ext.pg;
+      if (ext.hierarchy) $('#fHierarchy').value = ext.hierarchy;
+      if (ext.mrp && Number($('#fMrp').value || 0) === 0) {
+        $('#fMrp').value = ext.mrp;
+        $('#fDealerPrice').value = ext.mrp;
+      }
+      if (ext.stockQty) $('#fStockQty').value = ext.stockQty;
+      if (ext.uom) $('#fUom').value = ext.uom;
     }
-    if (ext.stockQty) $('#fStockQty').value = ext.stockQty;
-    if (ext.uom) $('#fUom').value = ext.uom;
 
     if (ext.rawText) {
       $('#adminOcrRawWrap').classList.remove('hidden');
@@ -1746,6 +1758,70 @@ async function uploadAndScanAdminPhoto() {
     statusBox.textContent = err.message;
   } finally {
     btn.disabled = false;
+  }
+}
+
+
+function applyExistingPartMergeState(existingPart, addQty = 1) {
+  if (!existingPart) return;
+  $('#fPartNo').value = existingPart.partNo;
+  $('#fName').value = existingPart.name || '';
+  $('#fDescription').value = existingPart.description || '';
+  $('#fBrand').value = existingPart.brand || 'TATA / OEM';
+  $('#fPG').value = ['PG1', 'PG2', 'PG3', 'PG4', 'PG5', 'PG6'].includes(existingPart.pg) ? existingPart.pg : 'PG1';
+  $('#fHierarchy').value = existingPart.hierarchy || 'General';
+  $('#fMrp').value = Number(existingPart.mrp || 0);
+  $('#fDealerPrice').value = Number(existingPart.dealerPrice || existingPart.mrp || 0);
+  $('#fUom').value = existingPart.uom || 'NOS';
+  if ($('#fLocation')) {
+    $('#fLocation').value = existingPart.location === 'Location 2' ? 'Location 2' : 'Location 1';
+  }
+  $('#fStockQty').value = Math.max(1, parseInt(addQty, 10) || 1);
+
+  const curStock = Number(existingPart.stockQty || 0);
+  const uom = existingPart.uom || 'NOS';
+  const loc = existingPart.location || 'Location 1';
+  const addVal = parseInt($('#fStockQty').value, 10) || 0;
+
+  const banner = $('#existingPartMatchBanner');
+  if (banner) {
+    banner.classList.remove('hidden');
+    $('#existingPartStockBadge').textContent = `Current Stock: ${curStock} ${uom} (${loc})`;
+    $('#existingPartInfoText').textContent =
+      `Keeping existing description "${existingPart.name}". Saving will add +${addVal} ${uom} to existing stock (New Total: ${curStock + addVal} ${uom}).`;
+  }
+  const qtyLbl = $('#fStockQtyLabel');
+  if (qtyLbl) qtyLbl.textContent = 'Add Qty (+)';
+  const saveBtn = $('#btnSavePart');
+  if (saveBtn) saveBtn.textContent = 'Add Quantity to Existing Part';
+}
+
+function clearExistingPartMergeBanner() {
+  const banner = $('#existingPartMatchBanner');
+  if (banner) banner.classList.add('hidden');
+  const qtyLbl = $('#fStockQtyLabel');
+  if (qtyLbl) qtyLbl.textContent = 'Stock Qty';
+  if (!$('#fEditId').value) {
+    const saveBtn = $('#btnSavePart');
+    if (saveBtn) saveBtn.textContent = 'Save Part to Live Catalogue';
+  }
+}
+
+function checkPartNoAutoMerge() {
+  if ($('#fEditId').value) {
+    clearExistingPartMergeBanner();
+    return;
+  }
+  const key = ($('#fPartNo').value || '').trim().toUpperCase();
+  if (!key) {
+    clearExistingPartMergeBanner();
+    return;
+  }
+  const existing = products.find(x => String(x.partNo || '').trim().toUpperCase() === key);
+  if (existing) {
+    applyExistingPartMergeState(existing, $('#fStockQty').value || 1);
+  } else {
+    clearExistingPartMergeBanner();
   }
 }
 
@@ -1902,6 +1978,10 @@ function startEditProduct(partNoKey) {
   $('#fDealerPrice').value = Number(p.dealerPrice || p.mrp || 0);
   $('#fStockQty').value = Number(p.stockQty || 0);
   $('#fUom').value = p.uom || 'NOS';
+  if ($('#fLocation')) {
+    $('#fLocation').value = p.location === 'Location 2' ? 'Location 2' : 'Location 1';
+  }
+  clearExistingPartMergeBanner();
 
   // Populate existing gallery / primary photos
   clearAllPhotosFlag = false;
@@ -1973,6 +2053,7 @@ async function savePartMaster(e) {
     dealerPrice: parseFloat($('#fDealerPrice').value || '0'),
     stockQty: parseInt($('#fStockQty').value || '0', 10),
     uom: $('#fUom').value,
+    location: $('#fLocation') ? $('#fLocation').value : 'Location 1',
     blobName: $('#fBlobName').value || null,
     imageUrl: $('#fImageUrl').value || null,
     thumbnailUrl: $('#fThumbnailUrl').value || $('#fImageUrl').value || null,
@@ -1993,7 +2074,11 @@ async function savePartMaster(e) {
     const data = await res.json();
     if (!res.ok || !data.ok) throw new Error(data.error || 'Save failed');
 
-    showToast(isEditing ? `Updated ${payload.partNo}!` : `Saved ${payload.partNo} to live catalogue!`);
+    if (data.mergedExisting && data.part) {
+      showToast(`Added +${payload.stockQty} ${payload.uom} to ${payload.partNo} (New Stock: ${data.part.stockQty} ${data.part.uom} at ${data.part.location})`);
+    } else {
+      showToast(isEditing ? `Updated ${payload.partNo} (${payload.location})!` : `Saved ${payload.partNo} (${payload.location}) to live catalogue!`);
+    }
     resetAdminForm();
     await loadCatalogueData();
   } catch (err) {
@@ -2024,6 +2109,8 @@ function resetAdminForm() {
   $('#editModeBanner').classList.add('hidden');
   $('#formStepKicker').textContent = 'Step 2 • Catalogue Entry & Multi-Angle Gallery';
   $('#formStepTitle').textContent = 'Save Part to Live Database';
+  if ($('#fLocation')) $('#fLocation').value = 'Location 1';
+  clearExistingPartMergeBanner();
   $('#btnSavePart').textContent = 'Save Part to Live Catalogue';
   $('#btnUploadAndOcr').disabled = true;
   renderAdminGalleryGrid();
@@ -2229,7 +2316,7 @@ function renderAdminPartsTable() {
                     }">${p.isLive ? 'Live DB' : 'Seed'}</span>
                   </div>
                   <p class="text-xs font-bold text-slate-900 mt-1 line-clamp-2">${esc(p.name)}</p>
-                  <p class="text-[11px] text-slate-500 mt-0.5">${esc(p.brand || 'OEM')} &bull; ${esc(p.pg)} &bull; MRP ${money(p.mrp)}</p>
+                  <p class="text-[11px] text-slate-500 mt-0.5">${esc(p.brand || 'OEM')} &bull; <strong class="text-slate-700">${esc(p.location || 'Location 1')}</strong> &bull; Qty: <strong class="font-mono text-slate-800">${Number(p.stockQty || 0)}</strong> &bull; MRP ${money(p.mrp)}</p>
                 </div>
               </div>
 
@@ -2290,7 +2377,7 @@ function renderAdminPartsTable() {
                     <div class="truncate">${esc(p.name)}</div>
                     <span class="text-[10px] text-slate-400">${esc(p.brand || 'OEM')}</span>
                   </td>
-                  <td class="py-2 px-3 text-slate-600">${esc(p.pg)} &bull; ${esc(p.hierarchy)}</td>
+                  <td class="py-2 px-3 text-slate-600">${esc(p.pg)} &bull; ${esc(p.hierarchy)}<span class="block text-[10px] font-bold text-brand-blue">${esc(p.location || 'Location 1')} &bull; Stock: ${Number(p.stockQty || 0)} ${esc(p.uom || 'NOS')}</span></td>
                   <td class="py-2 px-3 font-mono">${money(p.mrp)} / ${money(p.dealerPrice || p.mrp)}</td>
                   <td class="py-2 px-3">${
                     p.isLive
@@ -2535,6 +2622,20 @@ function bindEvents() {
       handleExcelFile(e.target.files[0]);
     }
   });
+
+  const fPartNoEl = $('#fPartNo');
+  if (fPartNoEl) {
+    fPartNoEl.addEventListener('change', checkPartNoAutoMerge);
+    fPartNoEl.addEventListener('blur', checkPartNoAutoMerge);
+  }
+  const fStockQtyEl = $('#fStockQty');
+  if (fStockQtyEl) {
+    fStockQtyEl.addEventListener('input', () => {
+      if (!$('#fEditId').value && !$('#existingPartMatchBanner').classList.contains('hidden')) {
+        checkPartNoAutoMerge();
+      }
+    });
+  }
 }
 
 window.switchView = switchView;
