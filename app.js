@@ -1197,11 +1197,11 @@ async function loadAdminUsers() {
 
   wrap.innerHTML = '<p class="py-4 text-slate-500">Loading accounts...</p>';
   try {
-    const res = await fetch(`${API_BASE}/admin/users`, {
+    const res = await fetch(`${API_BASE}/manage/users`, {
       headers: { Authorization: `Bearer ${authState.token}` }
     });
     const rawText = await res.text();
-    const data = rawText ? JSON.parse(rawText) : { ok: false, error: `Endpoint /api/admin/users returned status ${res.status}` };
+    const data = rawText ? JSON.parse(rawText) : { ok: false, error: `Endpoint /api/manage/users returned status ${res.status}` };
     if (!res.ok || !data.ok) throw new Error(data.error || 'Could not load users');
 
     const users = data.users || [];
@@ -1262,7 +1262,7 @@ async function loadAdminUsers() {
 
 async function toggleDealerAccount(id) {
   try {
-    const res = await fetch(`${API_BASE}/admin/users/${id}/toggle`, {
+    const res = await fetch(`${API_BASE}/manage/users/${id}/toggle`, {
       method: 'POST',
       headers: { Authorization: `Bearer ${authState.token}` }
     });
@@ -1276,7 +1276,7 @@ async function toggleDealerAccount(id) {
 async function saveAdminRecoveryProfile(e) {
   e.preventDefault();
   try {
-    const res = await fetch(`${API_BASE}/admin/profile`, {
+    const res = await fetch(`${API_BASE}/manage/profile`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
