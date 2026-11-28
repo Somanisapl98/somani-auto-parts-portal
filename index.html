@@ -8,10 +8,32 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="preconnect" href="https://func-sapl-parts-api-dev-h6fsevdbe3gfg7cx.centralindia-01.azurewebsites.net" crossorigin />
+<link rel="preconnect" href="https://stgsaplpartsdev.blob.core.windows.net" crossorigin />
+<link rel="preconnect" href="https://images.unsplash.com" crossorigin />
+<script>
+(function(){
+  var URL = 'https://func-sapl-parts-api-dev-h6fsevdbe3gfg7cx.centralindia-01.azurewebsites.net/api/parts';
+  if (typeof window.fetch !== 'function') return;
+  var origFetch = window.fetch.bind(window);
+  var pre = origFetch(URL, { headers: { 'Accept': 'application/json' } }).catch(function(){ return null; });
+  window.fetch = function(input, init){
+    var reqUrl = typeof input === 'string' ? input : (input && input.url) || '';
+    var method = ((init && init.method) || 'GET').toUpperCase();
+    var noStore = init && init.cache === 'no-store';
+    if (pre && method === 'GET' && !noStore && reqUrl === URL) {
+      var p = pre;
+      pre = null;
+      return p.then(function(res){ return res && res.ok ? res : origFetch(input, init); });
+    }
+    return origFetch(input, init);
+  };
+})();
+</script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet" />
 
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
   <script>
     tailwind.config = {

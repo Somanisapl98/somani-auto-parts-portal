@@ -2,15 +2,15 @@ const API_BASE = 'https://func-sapl-parts-api-dev-h6fsevdbe3gfg7cx.centralindia-
 
 const HERO_4K_SLIDES = [
   {
-    url: 'https://images.unsplash.com/photo-1519003722824-194d4455a60c?auto=format&fit=crop&w=2560&q=92',
+    url: 'https://images.unsplash.com/photo-1519003722824-194d4455a60c?auto=format&fit=crop&w=1440&q=75&fm=webp',
     kicker: '27 Years of Excellence • Commercial Vehicles Only'
   },
   {
-    url: 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&w=2560&q=92',
+    url: 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&w=1440&q=75&fm=webp',
     kicker: 'Tata • Cummins • Holset • JOST • RSB • SKF • DRiV • Uno Minda'
   },
   {
-    url: 'https://images.unsplash.com/photo-1565043589221-1a6fd9ae45c7?auto=format&fit=crop&w=2560&q=92',
+    url: 'https://images.unsplash.com/photo-1565043589221-1a6fd9ae45c7?auto=format&fit=crop&w=1440&q=75&fm=webp',
     kicker: 'Raipur HQ & 10 Branches • Parts, Oils & Illiquid Stock'
   }
 ];
@@ -500,7 +500,7 @@ function renderCatalog() {
               <tr class="hover:bg-slate-50">
                 <td onclick="openProductDetail('${safeKey}')" class="py-2.5 px-4 cursor-pointer">
                   <div class="flex items-center gap-2.5">
-                    <img onclick="openProductZoomByPartNo('${safeKey}')" title="Click to zoom &amp; inspect" src="${esc(imageFor(p))}" onerror="this.onerror=null;this.src='${fallback}'" class="w-10 h-10 rounded-lg object-cover border border-slate-200 hover:border-brand-blue shrink-0 cursor-zoom-in" alt="" />
+                    <img loading="lazy" decoding="async" onclick="openProductZoomByPartNo('${safeKey}')" title="Click to zoom &amp; inspect" src="${esc(imageFor(p))}" onerror="this.onerror=null;this.src='${fallback}'" class="w-10 h-10 rounded-lg object-cover border border-slate-200 hover:border-brand-blue shrink-0 cursor-zoom-in" alt="" />
                     <div>
                       <span class="font-bold text-slate-900 hover:text-brand-blue text-xs sm:text-sm block">${esc(p.name)}</span>
                       <span class="text-[10px] text-brand-blue font-semibold">View Details</span>
@@ -693,7 +693,7 @@ function renderProductDetailAngle() {
         class="relative shrink-0 w-16 h-16 rounded-xl overflow-hidden border-2 transition cursor-pointer ${
           idx === detailAngleIndex ? 'border-brand-orange ring-2 ring-orange-500/20' : 'border-slate-200 opacity-75 hover:opacity-100'
         }">
-        <img src="${esc(a.thumbUrl || a.url)}" onerror="this.onerror=null;this.src='${fallback}'" class="w-full h-full object-cover" alt="${esc(a.label)}" />
+        <img loading="lazy" decoding="async" src="${esc(a.thumbUrl || a.url)}" onerror="this.onerror=null;this.src='${fallback}'" class="w-full h-full object-cover" alt="${esc(a.label)}" />
         <span class="absolute bottom-0 inset-x-0 bg-slate-900/75 text-white text-[9px] font-semibold px-1 truncate">${esc(a.label)}</span>
       </button>`
     )
@@ -2017,7 +2017,7 @@ function renderAdminGalleryGrid() {
       (item, idx) => `
       <div class="bg-white border ${idx === 0 ? 'border-brand-blue ring-1 ring-brand-blue/20' : 'border-slate-200'} rounded-xl p-2 space-y-1.5 shadow-2xs">
         <div class="relative aspect-[4/3] bg-slate-100 rounded-lg overflow-hidden">
-          <img onclick="openAdminGalleryZoom(${idx})" title="Click to zoom &amp; inspect" src="${esc(item.thumbUrl || item.url)}" class="w-full h-full object-cover cursor-zoom-in hover:scale-[1.03] transition-transform" alt="${esc(item.label)}" />
+          <img loading="lazy" decoding="async" onclick="openAdminGalleryZoom(${idx})" title="Click to zoom &amp; inspect" src="${esc(item.thumbUrl || item.url)}" class="w-full h-full object-cover cursor-zoom-in hover:scale-[1.03] transition-transform" alt="${esc(item.label)}" />
           ${
             idx === 0
               ? '<span class="absolute top-1 left-1 bg-brand-blue text-white text-[9px] font-bold px-1.5 py-0.5 rounded">PRIMARY</span>'
@@ -2523,7 +2523,7 @@ function renderAdminPartsTable() {
             <div onclick="openAdminPartActions('${safeKey}')" class="border border-slate-200 hover:border-brand-blue rounded-xl p-3 bg-slate-50/60 active:bg-blue-50/40 transition cursor-pointer space-y-2.5">
               <div class="flex items-start gap-3">
                 <div class="relative shrink-0">
-                  <img onclick="event.stopPropagation();openProductZoomByPartNo('${safeKey}')" src="${esc(imageFor(p))}" onerror="this.onerror=null;this.src='${fallback}'" class="w-14 h-14 rounded-xl object-cover border border-slate-200 bg-white cursor-zoom-in" alt="" />
+                  <img loading="lazy" decoding="async" onclick="event.stopPropagation();openProductZoomByPartNo('${safeKey}')" src="${esc(imageFor(p))}" onerror="this.onerror=null;this.src='${fallback}'" class="w-14 h-14 rounded-xl object-cover border border-slate-200 bg-white cursor-zoom-in" alt="" />
                   ${
                     angleCount > 1
                       ? `<span class="absolute -bottom-1 -right-1 bg-brand-blue text-white text-[9px] font-bold px-1.5 py-0.2 rounded-full">${angleCount}</span>`
@@ -2584,7 +2584,7 @@ function renderAdminPartsTable() {
                 <tr class="hover:bg-slate-50">
                   <td class="py-2 px-3">
                     <div class="flex items-center gap-1.5">
-                      <img onclick="openProductZoomByPartNo('${safeKey}')" title="Click to zoom &amp; inspect" src="${esc(imageFor(p))}" onerror="this.onerror=null;this.src='${fallback}'" class="w-10 h-10 rounded-lg object-cover border border-slate-200 hover:border-brand-blue shrink-0 cursor-zoom-in" alt="" />
+                      <img loading="lazy" decoding="async" onclick="openProductZoomByPartNo('${safeKey}')" title="Click to zoom &amp; inspect" src="${esc(imageFor(p))}" onerror="this.onerror=null;this.src='${fallback}'" class="w-10 h-10 rounded-lg object-cover border border-slate-200 hover:border-brand-blue shrink-0 cursor-zoom-in" alt="" />
                       ${
                         angleCount > 1
                           ? `<span class="bg-blue-50 text-brand-blue border border-blue-200 px-1.5 py-0.5 rounded text-[10px] font-bold">${angleCount} views</span>`
@@ -3078,7 +3078,7 @@ function renderZoomAngle() {
         <button type="button" onclick="selectZoomAngle(${i})" class="shrink-0 w-14 h-14 rounded-lg overflow-hidden border-2 transition cursor-pointer ${
           i === zoomState.index ? 'border-brand-orange scale-105' : 'border-slate-700 opacity-65 hover:opacity-100'
         }">
-          <img src="${esc(a.thumbUrl || a.url)}" class="w-full h-full object-cover" alt="${esc(a.label)}" />
+          <img loading="lazy" decoding="async" src="${esc(a.thumbUrl || a.url)}" class="w-full h-full object-cover" alt="${esc(a.label)}" />
         </button>`
       )
       .join('');
