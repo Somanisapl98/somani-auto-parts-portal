@@ -1936,6 +1936,22 @@ function triggerAdminGalleryPicker() {
     openAdminPortal();
     return;
   }
+
+function triggerCustomThumbnailCamera() {
+  if (authState.role !== 'admin' || !authState.token) return;
+  const inp = $('#adminThumbCamInput');
+  if (!inp) return;
+  inp.value = '';
+  inp.click();
+}
+
+function triggerAdminGalleryCamera() {
+  if (authState.role !== 'admin' || !authState.token) return;
+  const inp = $('#adminGalleryCamInput');
+  if (!inp) return;
+  inp.value = '';
+  inp.click();
+}
   $('#adminGalleryInput').value = '';
   $('#adminGalleryInput').click();
 }
@@ -2248,13 +2264,98 @@ function downloadExcelTemplate() {
       'MRP': 684,
       'Dealer Price': 580,
       'Stock Qty': 24,
-      'UOM': 'NOS'
+      'UOM': 'NOS',
+      'Location': 'Location 1',
+      'Details': 'Genuine OEM gasket for commercial vehicle engine'
     }
   ];
   const ws = XLSX.utils.json_to_sheet(sampleRows);
+  ws['!cols'] = [
+    { wch: 18 }, { wch: 34 }, { wch: 8 }, { wch: 20 }, { wch: 14 },
+    { wch: 10 }, { wch: 13 }, { wch: 11 }, { wch: 8 }, { wch: 14 }, { wch: 36 }
+  ];
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'Parts_Upload');
   XLSX.writeFile(wb, 'Somani_Auto_Parts_Template.xlsx');
+}
+
+async function exportCatalogToExcel() {
+  if (authState.role !== 'admin' || !authState.token) {
+    showToast('Admin login required to export catalog.');
+    return;
+  }
+  if (typeof XLSX === 'undefined') {
+    showToast('Excel library not loaded. Refresh the page and try again.');
+    return;
+  }
+
+  const btn = $('#btnExportCatalogExcel');
+  const banner = $('#excelStatusBanner');
+  const origHtml = btn ? btn.innerHTML : '';
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'Exporting Live Parts...';
+  }
+
+  try {
+    let list = Array.isArray(products) ? products : [];
+    try {
+      const res = await fetch(`${API_BASE}/parts`, { cache: 'no-store' });
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.ok && Array.isArray(data.parts) && data.parts.length > 0) {
+          list = data.parts;
+        }
+      }
+    } catch (_) {}
+
+    if (!list.length) {
+      showToast('No parts available to export.');
+      return;
+    }
+
+    const exportRows = list.map(p => ({
+      'Part No': String(p.partNo || '').trim().toUpperCase(),
+      'Part Name': String(p.name || '').trim(),
+      'PG': String(p.pg || 'PG1').trim().toUpperCase(),
+      'Hierarchy': String(p.hierarchy || 'General').trim(),
+      'Brand': String(p.brand || 'TATA / OEM').trim(),
+      'MRP': Number(p.mrp || 0),
+      'Dealer Price': Number(p.dealerPrice || 0),
+      'Stock Qty': Number(p.stockQty || 0),
+      'UOM': String(p.uom || 'NOS').trim().toUpperCase(),
+      'Location': String(p.location || 'Location 1').trim(),
+      'Details': String(p.description || '').trim()
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(exportRows);
+    ws['!cols'] = [
+      { wch: 18 }, { wch: 36 }, { wch: 8 }, { wch: 22 }, { wch: 15 },
+      { wch: 11 }, { wch: 13 }, { wch: 11 }, { wch: 8 }, { wch: 14 }, { wch: 38 }
+    ];
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Live_Parts_Catalog');
+    const stamp = new Date().toISOString().slice(0, 10);
+    XLSX.writeFile(wb, `Somani_Auto_Live_Catalog_${stamp}.xlsx`);
+
+    if (banner) {
+      banner.className = 'rounded-xl px-4 py-3 text-xs font-semibold bg-emerald-50 border border-emerald-200 text-emerald-700';
+      banner.classList.remove('hidden');
+      banner.textContent = `Exported ${exportRows.length} live parts! Edit Stock Qty, MRP, Dealer Price, Location, or Details in Excel and re-upload below to bulk update (existing product photos are preserved).`;
+    }
+    showToast(`Exported ${exportRows.length} live parts to Excel!`);
+  } catch (err) {
+    if (banner) {
+      banner.className = 'rounded-xl px-4 py-3 text-xs font-semibold bg-rose-50 border border-rose-200 text-rose-700';
+      banner.classList.remove('hidden');
+      banner.textContent = `Export error: ${err.message}`;
+    }
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = origHtml;
+    }
+  }
 }
 
 function triggerExcelPicker() {
@@ -2309,7 +2410,12 @@ function handleExcelFile(file) {
         const stockQty = parseInt(normalizeExcelColumn(r, ['stockqty', 'qty', 'stock', 'quantity']).replace(/[^\d]/g, ''), 10) || 0;
         const uom = (normalizeExcelColumn(r, ['uom', 'unit']) || 'NOS').toUpperCase();
 
-        parsedExcelParts.push({ partNo, name, pg, hierarchy, brand, mrp, dealerPrice, stockQty, uom });
+        const rawLoc = normalizeExcelColumn(r, ['location', 'warehouse', 'branch']);
+        const location = rawLoc ? (/2/.test(rawLoc) ? 'Location 2' : 'Location 1') : '';
+        const detailsKey = Object.keys(r).find(k => ['details', 'productdescription', 'longdescription', 'notes'].includes(k.trim().toLowerCase().replace(/[^a-z0-9]/g, '')));
+        const hasDescription = Boolean(detailsKey);
+        const description = detailsKey ? String(r[detailsKey] ?? '').trim() : '';
+        parsedExcelParts.push({ partNo, name, pg, hierarchy, brand, mrp, dealerPrice, stockQty, uom, location, description, hasDescription });
       });
 
       if (!parsedExcelParts.length) {
@@ -2336,6 +2442,7 @@ function handleExcelFile(file) {
             <td class="py-2 px-3">${esc(p.brand)}</td>
             <td class="py-2 px-3 font-mono">${money(p.mrp)}</td>
             <td class="py-2 px-3 font-mono">${money(p.dealerPrice)}</td>
+            <td class="py-2 px-3 font-mono font-bold text-emerald-700">${esc(p.stockQty)}</td>
           </tr>`
         )
         .join('');
@@ -2736,12 +2843,26 @@ function bindEvents() {
       }
     });
   }
+  const thumbCamInp = $('#adminThumbCamInput');
+  if (thumbCamInp) {
+    thumbCamInp.addEventListener('change', e => {
+      if (e.target.files && e.target.files[0]) {
+        handleCustomThumbnailFile(e.target.files[0]);
+      }
+    });
+  }
 
   $('#adminGalleryInput').addEventListener('change', e => {
     if (e.target.files && e.target.files.length > 0) {
       handleAdminGalleryFiles(e.target.files);
     }
   });
+  const galCamInp = $('#adminGalleryCamInput');
+  if (galCamInp) {
+    galCamInp.addEventListener('change', e => {
+      if (e.target.files && e.target.files.length) handleAdminGalleryFiles(e.target.files);
+    });
+  }
 
   $('#excelFileInput').addEventListener('change', e => {
     if (e.target.files && e.target.files[0]) {
@@ -2813,6 +2934,9 @@ window.removeProduct = removeProduct;
 window.savePartMaster = savePartMaster;
 window.resetAdminForm = resetAdminForm;
 window.downloadExcelTemplate = downloadExcelTemplate;
+window.exportCatalogToExcel = exportCatalogToExcel;
+window.triggerCustomThumbnailCamera = triggerCustomThumbnailCamera;
+window.triggerAdminGalleryCamera = triggerAdminGalleryCamera;
 window.triggerExcelPicker = triggerExcelPicker;
 window.clearExcelPreview = clearExcelPreview;
 window.uploadExcelRowsToDb = uploadExcelRowsToDb;
