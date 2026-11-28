@@ -179,74 +179,134 @@ async function checkApiHealth() {
 }
 
 async function loadCatalogueData() {
+  const CACHE_KEY = 'sapl_catalog_cache_v1';
+  const CACHE_MAX_AGE_MS = 12 * 60 * 60 * 1000;
+  const isRefresh = Array.isArray(products) && products.length > 0;
+  let renderedEarly = false;
+
+  function applyCatalogSnapshot(apiParts, inactiveSet, fallbackParts, fallbackHierarchy) {
+  const byPartNo = new Map();
+    apiParts.forEach(p => {
+      const key = String(p.partNo).toUpperCase();
+      if (!inactiveSet.has(key)) {
+        byPartNo.set(key, { ...p, isLive: true });
+      }
+    });
+    fallbackParts.forEach(p => {
+      const key = String(p.partNo).toUpperCase();
+      if (!inactiveSet.has(key) && !byPartNo.has(key)) {
+        byPartNo.set(key, { ...p, description: p.description || '', gallery: p.gallery || [], isLive: false });
+      }
+    });
+
+    products = Array.from(byPartNo.values());
+
+    const mergedHier = {};
+    Object.entries(fallbackHierarchy).forEach(([pg, list]) => {
+      mergedHier[pg] = new Set(list);
+    });
+    products.forEach(p => {
+      const pg = p.pg || 'PG1';
+      if (!mergedHier[pg]) mergedHier[pg] = new Set();
+      if (p.hierarchy) mergedHier[pg].add(p.hierarchy);
+    });
+
+    hierarchy = {};
+    Object.entries(mergedHier).forEach(([pg, setObj]) => {
+      hierarchy[pg] = Array.from(setObj).sort();
+    });
+
+    $('#kpiTotal').textContent = products.length.toLocaleString('en-IN');
+    $('#kpiSourceText').textContent =
+      apiParts.length > 0
+        ? `${apiParts.length} live DB items + ${products.length - apiParts.length} catalogue`
+        : 'Verified OEM commercial parts';
+
+    buildPG();
+    updateHierarchy();
+    renderCatalog();
+    renderAdminPartsTable();
+  }
+
+  // 1. Instant <30ms paint from localStorage on initial visit (eliminates cold-start blank screen)
+  if (!isRefresh) {
+    try {
+      const rawCache = localStorage.getItem(CACHE_KEY);
+      if (rawCache) {
+        const cached = JSON.parse(rawCache);
+        if (cached && (Date.now() - Number(cached.ts || 0)) < CACHE_MAX_AGE_MS) {
+          const cApi = Array.isArray(cached.apiParts) ? cached.apiParts : [];
+          const cInact = new Set(Array.isArray(cached.inactiveList) ? cached.inactiveList : []);
+          const cFall = Array.isArray(cached.fallbackParts) ? cached.fallbackParts : [];
+          const cHier = cached.fallbackHierarchy && typeof cached.fallbackHierarchy === 'object' ? cached.fallbackHierarchy : {};
+          if (cApi.length > 0 || cFall.length > 0) {
+            applyCatalogSnapshot(cApi, cInact, cFall, cHier);
+            renderedEarly = true;
+          }
+        }
+      }
+    } catch (_) {}
+  }
+
   let apiParts = [];
   let inactiveSet = new Set();
   let fallbackParts = [];
   let fallbackHierarchy = {};
+  let apiDone = false;
 
-  try {
-    const res = await fetch(`${API_BASE}/parts`);
-    if (res.ok) {
-      const data = await res.json();
-      if (data.ok && Array.isArray(data.parts)) {
-        apiParts = data.parts;
+  // 2. Fetch live API + static catalogue files in PARALLEL (removes sequential waterfall)
+  const apiFetchOpts = isRefresh ? { cache: 'no-store' } : undefined;
+  const apiPromise = (async () => {
+    try {
+      const res = await fetch(`${API_BASE}/parts`, apiFetchOpts);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.ok && Array.isArray(data.parts)) {
+          apiParts = data.parts;
+        }
+        if (Array.isArray(data.inactivePartNos)) {
+          inactiveSet = new Set(data.inactivePartNos.map(x => String(x).toUpperCase()));
+        }
       }
-      if (Array.isArray(data.inactivePartNos)) {
-        inactiveSet = new Set(data.inactivePartNos.map(x => String(x).toUpperCase()));
+    } catch (err) {}
+    apiDone = true;
+  })();
+
+  const staticPromise = (async () => {
+    try {
+      const [pRes, hRes] = await Promise.all([
+        fetch('data/products.json').then(r => (r.ok ? r.json() : [])),
+        fetch('data/product-hierarchy.json').then(r => (r.ok ? r.json() : {}))
+      ]);
+      fallbackParts = Array.isArray(pRes) ? pRes : [];
+      fallbackHierarchy = hRes || {};
+      // First-ever visitor progressive render if Azure Function is cold-starting
+      if (!isRefresh && !renderedEarly && !apiDone && fallbackParts.length > 0) {
+        applyCatalogSnapshot([], new Set(), fallbackParts, fallbackHierarchy);
+        renderedEarly = true;
       }
-    }
-  } catch (err) {}
+    } catch (e) {}
+  })();
 
-  try {
-    const [pRes, hRes] = await Promise.all([
-      fetch('data/products.json').then(r => (r.ok ? r.json() : [])),
-      fetch('data/product-hierarchy.json').then(r => (r.ok ? r.json() : {}))
-    ]);
-    fallbackParts = Array.isArray(pRes) ? pRes : [];
-    fallbackHierarchy = hRes || {};
-  } catch (e) {}
+  await Promise.all([apiPromise, staticPromise]);
 
-  const byPartNo = new Map();
-  apiParts.forEach(p => {
-    const key = String(p.partNo).toUpperCase();
-    if (!inactiveSet.has(key)) {
-      byPartNo.set(key, { ...p, isLive: true });
-    }
-  });
-  fallbackParts.forEach(p => {
-    const key = String(p.partNo).toUpperCase();
-    if (!inactiveSet.has(key) && !byPartNo.has(key)) {
-      byPartNo.set(key, { ...p, description: p.description || '', gallery: p.gallery || [], isLive: false });
-    }
-  });
+  // 3. Final render with fresh live DB data + update localStorage cache
+  applyCatalogSnapshot(apiParts, inactiveSet, fallbackParts, fallbackHierarchy);
 
-  products = Array.from(byPartNo.values());
-
-  const mergedHier = {};
-  Object.entries(fallbackHierarchy).forEach(([pg, list]) => {
-    mergedHier[pg] = new Set(list);
-  });
-  products.forEach(p => {
-    const pg = p.pg || 'PG1';
-    if (!mergedHier[pg]) mergedHier[pg] = new Set();
-    if (p.hierarchy) mergedHier[pg].add(p.hierarchy);
-  });
-
-  hierarchy = {};
-  Object.entries(mergedHier).forEach(([pg, setObj]) => {
-    hierarchy[pg] = Array.from(setObj).sort();
-  });
-
-  $('#kpiTotal').textContent = products.length.toLocaleString('en-IN');
-  $('#kpiSourceText').textContent =
-    apiParts.length > 0
-      ? `${apiParts.length} live DB items + ${products.length - apiParts.length} catalogue`
-      : 'Verified OEM commercial parts';
-
-  buildPG();
-  updateHierarchy();
-  renderCatalog();
-  renderAdminPartsTable();
+  if (apiParts.length > 0 || fallbackParts.length > 0) {
+    try {
+      localStorage.setItem(
+        CACHE_KEY,
+        JSON.stringify({
+          ts: Date.now(),
+          apiParts,
+          inactiveList: Array.from(inactiveSet),
+          fallbackParts,
+          fallbackHierarchy
+        })
+      );
+    } catch (_) {}
+  }
 }
 
 // ---------------------------------------------------------------------------
