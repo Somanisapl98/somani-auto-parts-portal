@@ -1996,22 +1996,6 @@ function triggerAdminGalleryPicker() {
     openAdminPortal();
     return;
   }
-
-function triggerCustomThumbnailCamera() {
-  if (authState.role !== 'admin' || !authState.token) return;
-  const inp = $('#adminThumbCamInput');
-  if (!inp) return;
-  inp.value = '';
-  inp.click();
-}
-
-function triggerAdminGalleryCamera() {
-  if (authState.role !== 'admin' || !authState.token) return;
-  const inp = $('#adminGalleryCamInput');
-  if (!inp) return;
-  inp.value = '';
-  inp.click();
-}
   $('#adminGalleryInput').value = '';
   $('#adminGalleryInput').click();
 }
@@ -2946,6 +2930,22 @@ function bindEvents() {
 }
 
 window.switchView = switchView;
+function triggerCustomThumbnailCamera() {
+  if (authState.role !== 'admin' || !authState.token) return;
+  const inp = $('#adminThumbCamInput');
+  if (!inp) return;
+  inp.value = '';
+  inp.click();
+}
+
+function triggerAdminGalleryCamera() {
+  if (authState.role !== 'admin' || !authState.token) return;
+  const inp = $('#adminGalleryCamInput');
+  if (!inp) return;
+  inp.value = '';
+  inp.click();
+}
+
 window.openAdminPortal = openAdminPortal;
 window.switchAdminTab = switchAdminTab;
 window.openDealerAuth = openDealerAuth;
